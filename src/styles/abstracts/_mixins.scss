@@ -1,0 +1,97 @@
+@use 'sass:map';
+@use 'variables' as v;
+
+// =============================================================================
+// 1. MOTOR RESPONSIVO (El Cerebro)
+// =============================================================================
+@mixin respond-to($breakpoint) {
+  // Si el nombre existe en tu mapa (mobile, tablet, laptop...)
+  @if map.has-key(v.$breakpoints, $breakpoint) {
+    $value: map.get(v.$breakpoints, $breakpoint);
+    @media (max-width: $value) {
+      @content;
+    }
+  } 
+  
+  // Si pasas un valor a mano (ej: 500px)
+  @else if type-of($breakpoint) == 'number' {
+    @media (max-width: $breakpoint) {
+      @content;
+    }
+  }
+  
+  @else {
+    @warn "Breakpoint desconocido: #{$breakpoint}. Revisa _variables.scss";
+  }
+}
+
+// =============================================================================
+// 2. UTILIDADES DE LAYOUT (Ahorra tiempo)
+// =============================================================================
+@mixin flex-column {
+  display: flex;
+  flex-direction: column;
+}
+
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@mixin flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+@mixin flex-align-center {
+  display: flex;
+  align-items: center;
+}
+
+// =============================================================================
+// 3. ESTÉTICA UI
+// =============================================================================
+
+// Texto cortado con "..." (Ellipsis)
+@mixin text-truncate {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+// Scrollbar invisible estilo Mac (Limpio)
+@mixin hide-scrollbar {
+  scrollbar-width: none; // Firefox
+  -ms-overflow-style: none; // IE
+  &::-webkit-scrollbar { 
+    display: none; // Chrome/Safari
+  }
+}
+
+// Scrollbar personalizada sutil (Para tablas o zonas de contenido)
+@mixin custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: var(--text-muted) transparent;
+  
+  &::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background-color: var(--border-color);
+    border-radius: 10px;
+    border: 2px solid transparent; // Truco para que parezca más fina
+    background-clip: content-box;
+    
+    &:hover {
+      background-color: var(--text-secondary);
+    }
+  }
+}

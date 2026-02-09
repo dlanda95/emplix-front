@@ -1,1 +1,21 @@
-/* You can add global styles to this file, and also import other style files */
+/* =========================================
+   EMPLIX - GLOBAL STYLES MANIFEST
+   ========================================= */
+
+// 1. ABSTRACTS (Variables & Herramientas)
+// No generan CSS, solo lógica disponible.
+@use 'abstracts/variables';
+@use 'abstracts/mixins';
+
+// 2. THEMES (Configuración de Material & Colores)
+// Genera los estilos base de los componentes de Angular.
+@use 'themes/material-theme';
+
+// 3. BASE (Resets & Tipografía global)
+
+// Si creaste un _reset.scss en el paso anterior, impórtalo aquí.
+@use 'base/reset'; 
+
+// 4. LAYOUT (Estructura general)
+// Aquí importaremos el sidebar y main-layout más adelante.
+// @use 'layout/main-layout';

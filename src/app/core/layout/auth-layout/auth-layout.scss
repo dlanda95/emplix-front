@@ -1,0 +1,25 @@
+@use 'abstracts/variables' as v;
+
+// El layout debe ser invisible estructuralmente para dejar 
+// que el RegisterComponent (el hijo) tome el control total.
+
+.auth-layout {
+  display: block; // 🔥 IMPORTANTE: Bloque normal, NO Flex Center.
+  width: 100%;
+  
+  // En móvil: Crece lo que necesite el hijo
+  min-height: 100vh; 
+  height: auto;      
+  
+  background: var(--bg-body); // Tu fondo base
+
+  // Reset de márgenes y paddings por si acaso
+  margin: 0;
+  padding: 0;
+  
+  // Aseguramos que el router-outlet ocupe todo
+  & > * {
+    width: 100%;
+    display: block;
+  }
+}

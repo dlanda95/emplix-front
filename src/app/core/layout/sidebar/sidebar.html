@@ -1,0 +1,34 @@
+<aside class="sidebar-container">
+  
+  <div class="sidebar-header">
+    <div class="logo-box">
+      <span class="material-icons-round logo-icon">auto_awesome</span> 
+      <h1 class="app-name">Emplix</h1>
+    </div>
+  </div>
+
+  <nav class="sidebar-nav">
+    <ul class="nav-list">
+      
+      <li *ngFor="let item of menuItems">
+        <a [routerLink]="item.route" 
+           routerLinkActive="active"
+           [routerLinkActiveOptions]="{exact: false}"
+           class="nav-item">
+           
+          <span class="material-icons-round nav-icon">{{ item.icon }}</span>
+          <span class="nav-label">{{ item.label }}</span>
+        </a>
+      </li>
+
+    </ul>
+  </nav>
+
+  <div class="sidebar-footer">
+    <app-logout-btn [collapsed]="isCollapsed"></app-logout-btn>
+
+    <div style="height: 1rem;"></div>
+    <span class="version-text">Emplix {{ appVersion }}</span>
+  </div>
+
+</aside>

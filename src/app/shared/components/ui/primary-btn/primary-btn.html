@@ -1,0 +1,13 @@
+<button 
+      class="btn-base" 
+      [class.full-width]="fullWidth"
+      [disabled]="disabled || loading"
+      (click)="onClick.emit($event)">
+      
+      <span *ngIf="loading" class="spinner"></span>
+      
+      <span [style.opacity]="loading ? 0 : 1">
+        <ng-content></ng-content>
+      </span>
+      
+    </button>

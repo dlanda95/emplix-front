@@ -1,0 +1,24 @@
+<div class="dashboard-layout">
+  
+  <div class="mobile-backdrop" 
+       [class.show]="sidebarOpen()"
+       (click)="closeMobileSidebar()">
+  </div>
+
+  <aside class="dashboard-sidebar" 
+         [class.desktop-collapsed]="!sidebarOpen()"
+         [class.mobile-open]="sidebarOpen()">
+         
+    <app-sidebar [class.collapsed]="!sidebarOpen()"></app-sidebar>
+    
+  </aside>
+
+  <main class="dashboard-main">
+    <app-topbar></app-topbar>
+    <div class="content-scrollable">
+      <div class="content-wrapper">
+        <router-outlet></router-outlet>
+      </div>
+    </div>
+  </main>
+</div>

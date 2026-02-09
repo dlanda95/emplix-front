@@ -1,0 +1,51 @@
+@use 'abstracts/variables' as v;
+@use 'abstracts/mixins' as m;
+
+.logout-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem; // Espacio entre icono y texto
+  width: 100%;
+  
+  // Reset de botón
+  background: transparent;
+  border: none;
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  
+  // Tipografía
+  font-family: var(--font-main);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--text-secondary); // Gris discreto por defecto
+  
+  // Forma
+  border-radius: var(--radius-sm);
+  transition: all 0.2s ease-in-out;
+  
+  // --- ESTADO HOVER (Efecto Apple Danger) ---
+  &:hover {
+    background-color: var(--color-danger-soft); // Fondo rojo muy pálido
+    color: var(--color-danger); // Texto e icono rojo
+    
+    .icon {
+      transform: translateX(2px); // Pequeña animación de "salir"
+    }
+  }
+
+  // --- ICONO ---
+  .icon {
+    font-size: 1.25rem; // 20px
+    transition: transform 0.2s ease;
+  }
+
+  // --- VARIANTE COLAPSADA (Solo icono) ---
+  &.collapsed {
+    justify-content: center; // Centrar icono
+    padding: 0.75rem; // Padding cuadrado
+    
+    .label {
+      display: none;
+    }
+  }
+}

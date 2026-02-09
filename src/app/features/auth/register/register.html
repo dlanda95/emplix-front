@@ -1,0 +1,100 @@
+<div class="register-container">
+  
+  <aside class="brand-panel">
+    <div class="brand-content">
+      <div class="logo-container">
+        <span class="material-icons-round logo-icon">bolt</span>
+      </div>
+      <h1 class="tenant-name">Únete a {{ tenantName() }}</h1>
+      <p class="tenant-desc">
+        Plataforma integral para la gestión de talento y cultura organizacional.
+      </p>
+    </div>
+    <div class="bg-pattern"></div>
+  </aside>
+
+  <main class="form-panel">
+    
+    <div class="scroll-content">
+      
+      <div class="mobile-header">
+        <div class="mobile-logo">
+          <span class="material-icons-round">bolt</span>
+        </div>
+        <span class="mobile-tenant">{{ tenantName() }}</span>
+      </div>
+
+      <div class="form-card slide-in">
+        
+        <div class="form-header">
+          <h2 class="title">{{ step() === 1 ? 'Crea tu cuenta' : 'Completa tus datos' }}</h2>
+          <p class="subtitle">
+            {{ step() === 1 ? 'Ingresa tu correo corporativo' : 'Configura tu acceso' }}
+          </p>
+        </div>
+
+        @if (errorMessage()) {
+          <div class="error-banner fade-in">
+            <span class="material-icons-round">error</span>
+            <span>{{ errorMessage() }}</span>
+          </div>
+        }
+
+        <form [formGroup]="registerForm" class="auth-form" (submit)="$event.preventDefault()">
+          
+          <div class="input-group-email" [class.is-locked]="step() === 2">
+            <app-input-field 
+              label="Correo Electrónico" 
+              placeholder="nombre@empresa.com" 
+              type="email" 
+              icon="mail"
+              [control]="getControl('email')"
+              [readonly]="step() === 2">
+            </app-input-field>
+
+            @if (step() === 2) {
+              <button type="button" class="edit-btn" (click)="changeEmail()">Cambiar</button>
+            }
+          </div>
+
+          @if (step() === 2) {
+            <div class="step-content expand-animation">
+              
+              <div class="form-row two-cols">
+                <app-input-field label="Nombre" [control]="getControl('firstName')"></app-input-field>
+                <app-input-field label="Segundo Nombre" [control]="getControl('middleName')"></app-input-field>
+              </div>
+              
+              <div class="form-row two-cols">
+                <app-input-field label="Primer Apellido" [control]="getControl('lastName')"></app-input-field>
+                <app-input-field label="Segundo Apellido" [control]="getControl('secondLastName')"></app-input-field>
+              </div>
+
+              <div class="form-row">
+                <app-input-field label="Contraseña" type="password" icon="lock" [control]="getControl('password')"></app-input-field>
+              </div>
+              
+              <div class="form-row">
+                <app-input-field label="Confirmar" type="password" icon="verified_user" [control]="getControl('confirmPassword')"></app-input-field>
+              </div>
+
+            </div>
+          }
+
+          <div class="form-actions">
+            <app-primary-btn 
+              [fullWidth]="true" 
+              [loading]="isLoading()" 
+              (click)="onSubmit()">
+              {{ step() === 1 ? 'Continuar' : 'Crear Cuenta' }}
+            </app-primary-btn>
+          </div>
+
+        </form>
+
+        <div class="form-footer">
+          <p>¿Ya tienes cuenta? <a routerLink="/auth/login">Inicia Sesión</a></p>
+        </div>
+
+      </div> </div> </main>
+</div>

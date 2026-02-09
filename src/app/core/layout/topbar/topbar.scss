@@ -1,0 +1,101 @@
+@use 'abstracts/variables' as v;
+@use 'abstracts/mixins' as m;
+
+:host {
+  display: block;
+  position: sticky; // Se pega arriba
+  top: 0;
+  z-index: map-get(v.$z-layers, 'sticky'); // Capa 500
+}
+
+.topbar {
+  height: var(--header-height);
+  width: 100%;
+  
+  // ✅ ESTILO APPLE GLASS (Usando variables globales)
+  background-color: var(--bg-glass);
+  backdrop-filter: var(--backdrop-blur);
+  -webkit-backdrop-filter: var(--backdrop-blur); // Safari
+  
+  border-bottom: 1px solid var(--border-color);
+  
+  // Layout interno
+  @include m.flex-between; // Mixin reutilizable
+  padding: 0 1.5rem; // Padding lateral
+  
+  @include m.respond-to('mobile') {
+    padding: 0 1rem;
+  }
+}
+
+.topbar-left {
+  @include m.flex-align-center;
+  gap: 1rem;
+
+  .page-title {
+    margin: 0;
+    font-size: var(--text-lg);
+    font-weight: 600;
+    color: var(--text-main);
+    
+    // Ocultar título en móvil muy pequeño si quieres espacio
+    @include m.respond-to('mobile') {
+      font-size: var(--text-base);
+    }
+  }
+}
+
+.topbar-right {
+  @include m.flex-align-center;
+  gap: 0.75rem;
+}
+
+// --- BOTONES ICONO REUTILIZABLES (Estilo local por ahora) ---
+.icon-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+
+  span {
+    font-size: var(--text-xl); // 24px aprox
+  }
+
+  &:hover {
+    background-color: var(--border-subtle);
+    color: var(--text-main);
+  }
+}
+
+// Botón de menú: Solo visible en pantallas < Laptop
+.menu-trigger {
+  display: flex; 
+  align-items: center;
+  justify-content: center;
+  
+  // Estilo base (hereda de .icon-btn pero aseguramos)
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.user-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+  cursor: pointer;
+  
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}

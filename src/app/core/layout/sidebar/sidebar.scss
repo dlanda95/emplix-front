@@ -1,0 +1,173 @@
+@use 'abstracts/variables' as v;
+@use 'abstracts/mixins' as m;
+
+:host {
+  display: block;
+  height: 100%;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.sidebar-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  
+  background-color: var(--bg-surface);
+  border-right: 1px solid var(--border-color);
+  
+  // Padding interno
+  padding: 1.5rem 1rem;
+  overflow: hidden;
+}
+
+
+// =========================================================
+// 🔄 LÓGICA DE COLAPSO (ESTADO COMPACTO)
+// =========================================================
+// Usamos :host-context o una clase padre. 
+// Angular aplica la clase .collapsed al componente host si se lo indicamos.
+
+:host(.collapsed) {
+  // Ajuste de padding cuando está chiquito
+  .sidebar-container {
+    padding: 1.5rem 0.5rem; // Menos padding lateral
+  }
+
+  // 1. Ocultar Textos (Nombre App, Etiquetas, Versión)
+  .app-name, 
+  .nav-label, 
+  .sidebar-footer {
+    opacity: 0;
+    pointer-events: none;
+    display: none; // Desaparecen del flujo
+  }
+
+  // 2. Centrar Iconos
+  .logo-box, .nav-item {
+    justify-content: center; // Todo al centro
+    padding-left: 0;
+    padding-right: 0;
+  }
+  
+  .logo-box { gap: 0; } // Quitar espacio entre icono y texto invisible
+  .nav-item { gap: 0; }
+  
+  // 3. Ajustar tamaño de iconos (opcional, para estética)
+  .nav-icon {
+    font-size: var(--text-2xl); // Un pelín más grandes al estar solos
+  }
+}
+
+
+
+// --- 1. HEADER (Logo) ---
+.sidebar-header {
+  margin-bottom: 2.5rem; 
+  padding: 0 0.5rem;
+  min-height: 40px; // Evita saltos de altura
+
+  .logo-box {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    white-space: nowrap; 
+    
+    .logo-icon {
+      // ⚠️ ANTES: 2rem (Fijo)
+      // ✅ AHORA: Usa la variable. Si cambias el tamaño global, cambia aquí.
+      font-size: var(--text-3xl); 
+      color: var(--color-primary);
+      min-width: 32px; // Fija el ancho del icono para que no baile
+      text-align: center;
+    }
+
+    .app-name {
+      margin: 0;
+      // ⚠️ ANTES: 1.25rem
+      // ✅ AHORA: Variable semántica
+      font-size: var(--text-xl); 
+      font-weight: 600;
+      color: var(--text-main);
+      letter-spacing: -0.5px;
+      transition: opacity 0.2s; // Desvanecimiento suave
+    }
+  }
+}
+
+// --- 2. NAVEGACIÓN ---
+.sidebar-nav {
+  flex: 1; 
+  overflow-y: auto;
+  @include m.hide-scrollbar; 
+}
+
+.nav-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem; 
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.85rem 1rem;
+  
+  text-decoration: none;
+  color: var(--text-secondary);
+  font-weight: 500;
+  
+  // ✅ CORRECTO: Ya estabas usando la variable aquí
+  font-size: var(--text-sm); 
+  
+  border-radius: var(--radius-sm); 
+  transition: all 0.2s ease-in-out;
+  white-space: nowrap; // 🔥 Importante
+
+  .nav-icon {
+    // ⚠️ ANTES: 1.25rem
+    // ✅ AHORA: Variable semántica (el icono suele ser un paso más grande que el texto)
+    font-size: var(--text-xl); 
+    color: inherit; 
+    flex-shrink: 0; // Seguridad para que no se aplaste
+  }
+
+  // --- HOVER ---
+  &:hover {
+    background-color: var(--bg-hover);
+    color: var(--text-main);
+  }
+
+  // --- ACTIVE ---
+  &.active {
+    background-color: var(--color-primary-soft); 
+    color: var(--color-primary);
+    font-weight: 600;
+  }
+}
+
+// --- 3. FOOTER ---
+.sidebar-footer {
+  margin-top: auto;
+  padding-top: 1rem;
+  text-align: center;
+  border-top: 1px solid var(--border-subtle);
+
+
+  display: flex;
+  flex-direction: column;
+  align-items: center; // Centrado por si está colapsado
+  &:not(.collapsed) {
+    align-items: stretch; 
+  }
+  
+  .version-text {
+    // ⚠️ ANTES: 0.75rem
+    // ✅ AHORA: Variable semántica (Texto diminuto)
+    font-size: var(--text-xs); 
+    color: var(--text-muted);
+  }
+}

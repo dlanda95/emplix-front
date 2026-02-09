@@ -1,0 +1,96 @@
+<div class="login-split-layout">
+  
+  <div class="brand-panel">
+    <div class="brand-content">
+      <div class="logo-circle">
+        <span class="material-icons-round">bolt</span>
+      </div>
+      <h1 class="brand-title">Emplix</h1>
+      <p class="brand-subtitle">Gestión inteligente de RRHH</p>
+    </div>
+    <div class="glass-card"></div>
+  </div>
+
+  <div class="form-panel">
+    <div class="form-container">
+      
+      <div class="form-header">
+        @if (step() === 1) {
+          <h2 class="welcome-title">Bienvenido</h2>
+          <p class="welcome-subtitle">Ingresa el ID de tu organización</p>
+        } @else {
+          <div class="step-2-header">
+            <button class="back-link" (click)="goBack()">
+              <span class="material-icons-round">arrow_back</span>
+              <span>Cambiar de empresa</span>
+            </button>
+            <h2 class="welcome-title">{{ tenantForm.value.slug }}</h2>
+            <p class="welcome-subtitle">Ingresa tus credenciales</p>
+          </div>
+        }
+      </div>
+
+      @if (errorMessage()) {
+        <div class="error-banner">
+          <span class="material-icons-round">error</span>
+          {{ errorMessage() }}
+        </div>
+      }
+
+      @if (step() === 1) {
+        <form [formGroup]="tenantForm" (ngSubmit)="onVerifyTenant()" class="login-form fade-in">
+          
+          <app-input-field 
+            label="Empresa" 
+            placeholder="ej. mi-empresa" 
+            icon="domain"
+            [control]="getControl(tenantForm, 'slug')"
+            hint="Es el identificador único de tu organización">
+          </app-input-field>
+
+          <app-primary-btn [fullWidth]="true" [loading]="isLoading()"> 
+            Continuar
+          </app-primary-btn>
+
+        </form>
+      }
+
+      @if (step() === 2) {
+        <form [formGroup]="loginForm" (ngSubmit)="onLogin()" class="login-form fade-in">
+          
+          <app-input-field 
+            label="Correo Corporativo" 
+            placeholder="nombre@empresa.com" 
+            type="email"
+            icon="email"
+            [control]="getControl(loginForm, 'email')">
+          </app-input-field>
+
+          <app-input-field 
+            label="Contraseña" 
+            placeholder="••••••" 
+            type="password"
+            icon="lock"
+            [control]="getControl(loginForm, 'password')">
+          </app-input-field>
+
+          <div class="form-actions">
+            <a routerLink="/auth/forgot-password" class="forgot-link">¿Olvidaste tu contraseña?</a>
+          </div>
+
+          <app-primary-btn [fullWidth]="true" [loading]="isLoading()"> 
+            Iniciar Sesión
+          </app-primary-btn>
+
+        </form>
+
+         <div class="form-footer fade-in">
+        <p>¿No tienes cuenta? <a routerLink="/auth/register" class="register-link">Regístrate</a></p>
+      </div>
+      }
+
+     
+
+    </div>
+  </div>
+</div>
