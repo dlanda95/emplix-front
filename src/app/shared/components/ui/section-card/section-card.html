@@ -1,16 +1,9 @@
-<div class="section-card">
-      <div class="card-header" *ngIf="title">
-        <div class="title-group">
-          <h3 class="card-title">{{ title }}</h3>
-          <p class="card-subtitle" *ngIf="subtitle">{{ subtitle }}</p>
-        </div>
-        <div class="header-actions">
-          <ng-content select="[actions]"></ng-content>
-        </div>
-      </div>
-
-      <div class="card-body" [class.no-padding]="noPadding">
+<section class="section-container">
+      <h3 class="section-title">
+        {{ title }}
+      </h3>
+      
+      <div class="section-grid" [ngClass]="'cols-' + columns">
         <ng-content></ng-content>
       </div>
-    </div>
-  `,
+    </section>

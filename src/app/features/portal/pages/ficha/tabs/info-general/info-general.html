@@ -1,29 +1,29 @@
 <div class="info-general-layout">
   
-  <app-tabs 
+  <app-tabs-card 
     [items]="tabItems" 
     [(current)]="activeTab">
-  </app-tabs>
+  </app-tabs-card>
 
   <div class="content-wrapper fade-in">
     
-    <app-section title="Identificación" [columns]="3">
+    <app-section-card title="Identificación" [columns]="3">
       <app-field label="Nombres" value="Juan Carlos"></app-field>
       <app-field label="Apellidos" value="Pérez Rodríguez"></app-field>
       <app-field label="Tipo Documento" value="DNI"></app-field>
       <app-field label="Nro. Documento" value="44556677"></app-field>
       <app-field label="Fecha Nacimiento" value="15/04/1990"></app-field>
       <app-field label="Estado Civil" value="Casado"></app-field>
-    </app-section>
+    </app-section-card>
 
-    <app-section title="Información de Contacto" [columns]="2">
+    <app-section-card title="Información de Contacto" [columns]="2">
       <app-field label="Email Personal" value="juan.perez@gmail.com"></app-field>
       <app-field label="Teléfono Móvil" value="+51 999 888 777"></app-field>
       
       <app-field label="Estado Verificación">
         <span class="badge-success">Verificado</span>
       </app-field>
-    </app-section>
+    </app-section-card>
 
   </div>
 </div>

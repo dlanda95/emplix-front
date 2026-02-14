@@ -1,44 +1,61 @@
 @use 'abstracts/variables' as v;
+@use 'abstracts/mixins' as m;
 
-.section-card {
-  background: var(--bg-surface);
+:host { 
+  display: block; 
+  margin-bottom: 2rem; 
+}
+
+.section-container {
+  position: relative;
+  
+  // El borde contenedor
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-md); // 16px
-  box-shadow: var(--shadow-sm);
-  overflow: hidden;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
+  border-radius: var(--radius-md); // 12px o 16px
+  padding: 1.5rem; // Espacio interno para que los inputs no toquen el borde
+  padding-top: 2rem; // Espacio extra arriba para el título
+  margin-top: 1rem; // Espacio externo para separar secciones
 
-  .card-header {
-    padding: 1.5rem;
-    border-bottom: 1px solid var(--border-subtle);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background-color: rgba(255, 255, 255, 0.5); // Glass effect sutil
-
-    .title-group {
-      .card-title {
-        margin: 0;
-        font-size: 1.1rem;
-        font-weight: 600;
-        color: var(--text-main);
-      }
-      .card-subtitle {
-        margin: 0.25rem 0 0;
-        font-size: 0.85rem;
-        color: var(--text-secondary);
-      }
-    }
+  // Transición suave al pasar el mouse (opcional, efecto premium)
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  
+  &:hover {
+    border-color: rgba(var(--color-primary-rgb), 0.3); // Se pone un poco guinda
+    box-shadow: 0 4px 12px rgba(0,0,0,0.03);
   }
+}
 
-  .card-body {
-    padding: 1.5rem;
-    flex: 1; // Ocupa el resto
-    
-    &.no-padding {
-      padding: 0;
-    }
+// EL TÍTULO FLOTANTE
+.section-title {
+  position: absolute;
+  top: -12px; // Sube el título para que quede sobre el borde
+  left: 1.5rem; // Margen izquierdo
+  background-color: white; // IMPORTANTE: Tapa el borde de atrás
+  padding: 0 0.75rem; // Espacio a los lados del texto para que no toque la línea
+  
+  margin: 0;
+  color: var(--color-primary);
+  font-size: 1.1rem;
+  font-weight: 700;
+  display: flex; align-items: center; gap: 0.5rem;
+  
+  // Icono opcional si decides ponerle uno en el futuro
+  .icon { font-size: 1.2rem; opacity: 0.8; }
+}
+
+// GRID DE CONTENIDO
+.section-grid {
+  display: grid;
+  gap: 1.5rem;
+
+  // Lógica de Columnas (Igual que antes)
+  &.cols-1 { grid-template-columns: 1fr; }
+  &.cols-2 { grid-template-columns: repeat(2, 1fr); }
+  &.cols-3 { grid-template-columns: repeat(3, 1fr); }
+  &.cols-4 { grid-template-columns: repeat(4, 1fr); }
+
+  @include m.respond-to('tablet') {
+    grid-template-columns: 1fr !important;
+    gap: 1rem;
   }
 }
