@@ -1,173 +1,177 @@
 @use 'abstracts/variables' as v;
 @use 'abstracts/mixins' as m;
 
+// =========================================================
+// 1. CONFIGURACIÓN DEL HOST
+// =========================================================
 :host {
   display: block;
   height: 100%;
-  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  transition: padding 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
 .sidebar-container {
   display: flex;
   flex-direction: column;
   height: 100%;
-  
   background-color: var(--bg-surface);
-  border-right: 1px solid var(--border-color);
+  //border-right: 1px solid var(--border-color);
   
-  // Padding interno
-  padding: 1.5rem 1rem;
+  width: 100%; // 260px
+  padding: 1.5rem 0.75rem;          
+  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
   overflow: hidden;
+
+  // =========================================================
+  // ESTADO COLAPSADO
+  // =========================================================
+  &.is-collapsed {
+    width: v.$sidebar-width-collapsed; // 80px
+    padding: 1.5rem 0.5rem;            
+
+    // 1. Ocultar Textos y Flechas (Display none saca del DOM visual)
+    .app-info, .text, .arrow, .sidebar-footer {
+      display: none !important; 
+    }
+    
+    // Ocultar submenús abiertos
+    .submenu { 
+      display: none !important; 
+    }
+
+    // 2. Centrar Header
+    .sidebar-header {
+      padding: 0;
+      justify-content: center;
+      .logo-box { margin: 0; }
+    }
+
+    // 3. Centrar Iconos
+    .nav-item {
+      justify-content: center;
+      padding: 0;
+      width: 48px; 
+      height: 48px;
+      margin: 0 auto;
+      
+      // Icono un poco más grande al estar solo
+      .icon { margin: 0; font-size: 1.6em; } 
+    }
+  }
 }
 
-
 // =========================================================
-// 🔄 LÓGICA DE COLAPSO (ESTADO COMPACTO)
+// 2. HEADER
 // =========================================================
-// Usamos :host-context o una clase padre. 
-// Angular aplica la clase .collapsed al componente host si se lo indicamos.
-
-:host(.collapsed) {
-  // Ajuste de padding cuando está chiquito
-  .sidebar-container {
-    padding: 1.5rem 0.5rem; // Menos padding lateral
-  }
-
-  // 1. Ocultar Textos (Nombre App, Etiquetas, Versión)
-  .app-name, 
-  .nav-label, 
-  .sidebar-footer {
-    opacity: 0;
-    pointer-events: none;
-    display: none; // Desaparecen del flujo
-  }
-
-  // 2. Centrar Iconos
-  .logo-box, .nav-item {
-    justify-content: center; // Todo al centro
-    padding-left: 0;
-    padding-right: 0;
-  }
-  
-  .logo-box { gap: 0; } // Quitar espacio entre icono y texto invisible
-  .nav-item { gap: 0; }
-  
-  // 3. Ajustar tamaño de iconos (opcional, para estética)
-  .nav-icon {
-    font-size: var(--text-2xl); // Un pelín más grandes al estar solos
-  }
-}
-
-
-
-// --- 1. HEADER (Logo) ---
 .sidebar-header {
-  margin-bottom: 2.5rem; 
-  padding: 0 0.5rem;
-  min-height: 40px; // Evita saltos de altura
+  display: flex; align-items: center; gap: 0.75rem;
+  margin-bottom: 2rem; padding: 0 0.5rem;
+  min-height: 44px; white-space: nowrap;
 
   .logo-box {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    white-space: nowrap; 
-    
-    .logo-icon {
-      // ⚠️ ANTES: 2rem (Fijo)
-      // ✅ AHORA: Usa la variable. Si cambias el tamaño global, cambia aquí.
-      font-size: var(--text-3xl); 
-      color: var(--color-primary);
-      min-width: 32px; // Fija el ancho del icono para que no baile
-      text-align: center;
-    }
+    color: var(--color-primary);
+    display: flex; align-items: center; justify-content: center;
+    // El icono del logo escala con el texto
+    .logo-icon { font-size: 2.5em; filter: drop-shadow(0 4px 6px rgba(var(--color-primary-rgb), 0.2)); }
+  }
 
-    .app-name {
-      margin: 0;
-      // ⚠️ ANTES: 1.25rem
-      // ✅ AHORA: Variable semántica
-      font-size: var(--text-xl); 
-      font-weight: 600;
-      color: var(--text-main);
-      letter-spacing: -0.5px;
-      transition: opacity 0.2s; // Desvanecimiento suave
-    }
+  .app-name {
+    // 🔥 USO CORRECTO: Variable global (aprox 18px en desktop, menos en laptop)
+    font-size: var(--text-lg); 
+    font-weight: 700; 
+    color: var(--text-main); 
+    letter-spacing: -0.02em;
   }
 }
 
-// --- 2. NAVEGACIÓN ---
+// =========================================================
+// 3. NAVEGACIÓN
+// =========================================================
 .sidebar-nav {
-  flex: 1; 
-  overflow-y: auto;
-  @include m.hide-scrollbar; 
+  flex: 1; display: flex; flex-direction: column; gap: 0.25rem;
+  overflow-y: auto; @include m.hide-scrollbar;
 }
 
-.nav-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem; 
-}
-
+// --- ÍTEMS (Píldoras Flotantes) ---
 .nav-item {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 0.85rem 1rem;
+  position: relative;
+  display: flex; align-items: center;
+  width: 100%; 
+  min-height: 40px; // 🔥 Más compacto (antes 44px)
+  padding: 0 12px; 
+  border-radius: var(--radius-sm); // Usar variable global de radio
   
-  text-decoration: none;
+  text-decoration: none; 
   color: var(--text-secondary);
+  
+  // 🔥 USO CORRECTO: Variable global (aprox 14px o 12px)
+  // Esto hará que el texto se sienta más refinado y no "gigante"
+  font-size: var(--text-sm); 
   font-weight: 500;
   
-  // ✅ CORRECTO: Ya estabas usando la variable aquí
-  font-size: var(--text-sm); 
-  
-  border-radius: var(--radius-sm); 
-  transition: all 0.2s ease-in-out;
-  white-space: nowrap; // 🔥 Importante
+  background: transparent; border: none; cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
 
-  .nav-icon {
-    // ⚠️ ANTES: 1.25rem
-    // ✅ AHORA: Variable semántica (el icono suele ser un paso más grande que el texto)
-    font-size: var(--text-xl); 
-    color: inherit; 
-    flex-shrink: 0; // Seguridad para que no se aplaste
+  .icon {
+    // 🔥 USO DE 'EM': 1.5 veces el tamaño del texto.
+    // Si el texto baja de tamaño, el icono también. ¡Magia!
+    font-size: 1.5em; 
+    margin-right: 12px; 
+    color: inherit; flex-shrink: 0;
+    transition: margin 0.3s;
   }
 
-  // --- HOVER ---
+  .text { flex: 1; text-align: left; }
+
+  .arrow { font-size: 1.2em; opacity: 0.5; transition: transform 0.2s; }
+
+  // Hover
   &:hover {
     background-color: var(--bg-hover);
     color: var(--text-main);
   }
 
-  // --- ACTIVE ---
+  // Active
   &.active {
-    background-color: var(--color-primary-soft); 
+    background-color: var(--color-primary-soft);
     color: var(--color-primary);
     font-weight: 600;
-  }
-}
-
-// --- 3. FOOTER ---
-.sidebar-footer {
-  margin-top: auto;
-  padding-top: 1rem;
-  text-align: center;
-  border-top: 1px solid var(--border-subtle);
-
-
-  display: flex;
-  flex-direction: column;
-  align-items: center; // Centrado por si está colapsado
-  &:not(.collapsed) {
-    align-items: stretch; 
+    .icon { color: var(--color-primary); }
   }
   
-  .version-text {
-    // ⚠️ ANTES: 0.75rem
-    // ✅ AHORA: Variable semántica (Texto diminuto)
-    font-size: var(--text-xs); 
-    color: var(--text-muted);
+  // Expanded
+  &.expanded {
+    .arrow { transform: rotate(180deg); color: var(--color-primary); opacity: 1; }
   }
 }
+
+// --- SUBMENÚ ---
+.submenu {
+  display: flex; flex-direction: column; gap: 0.15rem;
+  margin-left: 18px; padding-left: 12px; 
+  border-left: 2px solid var(--border-color); 
+
+  .nav-item.child {
+    min-height: 34px; // Hijos aún más compactos
+    font-size: var(--text-sm); // Mismo tamaño, pero visualmente menor por la altura
+    
+    .sub-icon { font-size: 0.7em; margin-right: 10px; opacity: 0.6; }
+    
+    &.active {
+      background: transparent; color: var(--color-primary);
+      .sub-icon { opacity: 1; transform: scale(1.5); color: var(--color-primary); }
+    }
+  }
+}
+
+// =========================================================
+// 4. FOOTER
+// =========================================================
+.sidebar-footer {
+  margin-top: auto; padding-top: 1rem; border-top: 1px solid var(--border-subtle);
+}
+
+// Animación
+.fade-in { animation: fadeIn 0.3s ease-out; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }

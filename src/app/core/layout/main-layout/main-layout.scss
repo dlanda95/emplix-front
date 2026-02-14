@@ -15,41 +15,44 @@
   flex-shrink: 0;
   background: var(--bg-surface);
   border-right: 1px solid var(--border-color);
-  z-index: map-get(v.$z-layers, 'sticky');
+  z-index: map-get(v.$z-layers, 'sticky'); // Nivel 500
   
-  // TRANSICIÓN DE ANCHO (Efecto suave Apple)
-  transition: width 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), 
-              transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  // Transición suave de ancho
+  transition: width 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), 
+              transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
 
-  // 🖥️ COMPORTAMIENTO DESKTOP (Por defecto)
-  // Estado Normal: Expandido
+  // ==========================================
+  // 🖥️ COMPORTAMIENTO DESKTOP
+  // ==========================================
   width: v.$sidebar-width-expanded; // 260px
 
-  // Estado: Colapsado (Clase agregada cuando isOpen = false)
-  &.desktop-collapsed {
+  // Estado: Colapsado (Mini)
+  &.is-collapsed {
     width: v.$sidebar-width-collapsed; // 80px
   }
 
+  // ==========================================
   // 📱 COMPORTAMIENTO MÓVIL / TABLET
+  // ==========================================
   @include m.respond-to('laptop') {
     position: fixed;
     top: 0; left: 0; bottom: 0;
-    width: 280px; // Ancho fijo móvil
+    width: v.$sidebar-width-expanded !important; // 🔥 IMPORTANTE: En móvil siempre es ancho fijo, ignora el estado "collapsed"
     
-    // En móvil, "colapsado" significa oculto fuera de pantalla
+    // Por defecto oculto a la izquierda
     transform: translateX(-100%);
     box-shadow: none;
-    
-    // Ignoramos el ancho colapsado en móvil, siempre es full o nada
-    &.desktop-collapsed {
-      width: 280px; 
-    }
+    z-index: map-get(v.$z-layers, 'modal'); // Nivel 1000 (Encima de todo)
 
-    // Estado: Abierto en Móvil
-    &.mobile-open {
+    // Estado: Abierto (Drawer)
+    &.is-mobile-open {
       transform: translateX(0);
       box-shadow: var(--shadow-float);
-      z-index: map-get(v.$z-layers, 'modal');
+    }
+    
+    // Si en desktop estaba colapsado, en móvil lo ignoramos
+    &.is-collapsed {
+      width: v.$sidebar-width-expanded !important; 
     }
   }
 }
@@ -58,32 +61,36 @@
 .mobile-backdrop {
   position: fixed;
   inset: 0;
-  background-color: rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(2px);
-  z-index: 900;
+  background-color: rgba(0, 0, 0, 0.4); // Un poco más oscuro
+  backdrop-filter: blur(4px); // Efecto Glass
+  z-index: 900; // Justo debajo del sidebar móvil
+  
+  // Estado inicial: Oculto
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.3s ease;
 
+  // Estado activo
   &.show {
     opacity: 1;
     pointer-events: auto;
-    
-    // Solo visible en móvil
-    display: none;
-    @include m.respond-to('laptop') {
-      display: block;
-    }
+  }
+  
+  // En desktop nunca se ve
+  @media (min-width: 1025px) {
+    display: none !important;
   }
 }
 
-// RESTO DEL LAYOUT (Igual)
+// --- MAIN CONTENT ---
 .dashboard-main {
   flex: 1;
   display: flex;
   flex-direction: column;
   min-width: 0; 
   height: 100%;
+  position: relative;
+  z-index: 1; // Base
 }
 
 .content-scrollable {

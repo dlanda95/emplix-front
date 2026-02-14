@@ -53,6 +53,15 @@ export const routes: Routes = [
         path: 'dashboard',
         loadComponent: () => import('./features/dashboard/home/home').then(m => m.Home)
       },
+
+      // 🚀 NUEVA RUTA PORTAL (Lazy Loaded)
+      { 
+        path: 'portal', 
+        loadChildren: () => import('./features/portal/portal.routes').then(m => m.PORTAL_ROUTES) 
+      },
+
+
+      { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
       // Aquí irán 'users', 'settings', 'reports', etc.
     ]
   },

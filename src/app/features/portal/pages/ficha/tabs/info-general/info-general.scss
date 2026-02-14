@@ -1,0 +1,4 @@
+.info-general-layout { padding: 0; }
+    .content-wrapper { padding: 2rem; }
+    .fade-in { animation: fadeIn 0.4s ease-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }

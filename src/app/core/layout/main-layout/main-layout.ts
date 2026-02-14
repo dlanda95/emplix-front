@@ -12,15 +12,15 @@ import { LayoutService } from '../services/layout';
   styleUrl: './main-layout.scss',
 })
 export class MainLayout {
-  layoutService = inject(LayoutService);
+private layoutService = inject(LayoutService);
   
-  // Getter para usar el signal en el HTML fácilmente
- // Signal directo
-  sidebarOpen = this.layoutService.sidebarOpen;
+  // 1. Signal para Desktop (Mini vs Full)
+  desktopCollapsed = this.layoutService.isSidebarCollapsed;
 
+  // 2. Signal para Móvil (Oculto vs Visible)
+  mobileOpen = this.layoutService.mobileMenuOpen;
 
-closeMobileSidebar() {
-    this.layoutService.closeSidebar();
+  closeMobileSidebar() {
+    this.layoutService.closeMobileMenu();
   }
-
 }

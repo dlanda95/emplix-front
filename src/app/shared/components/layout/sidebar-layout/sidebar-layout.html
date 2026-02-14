@@ -1,0 +1,22 @@
+<div class="layout-container">
+      
+      <aside class="layout-sidebar">
+        <nav class="nav-menu">
+          @for (item of items; track item.route) {
+            <a [routerLink]="item.route" 
+               routerLinkActive="active"
+               [routerLinkActiveOptions]="{ exact: item.exact || false }"
+               class="nav-item">
+              <span class="indicator"></span>
+              <span class="material-icons-round icon">{{ item.icon }}</span>
+              <span class="label">{{ item.label }}</span>
+            </a>
+          }
+        </nav>
+      </aside>
+
+      <main class="layout-content">
+        <ng-content></ng-content>
+      </main>
+
+    </div>

@@ -1,34 +1,58 @@
-<aside class="sidebar-container">
+<aside class="sidebar-container" [class.is-collapsed]="collapsed()">
   
   <div class="sidebar-header">
     <div class="logo-box">
-      <span class="material-icons-round logo-icon">auto_awesome</span> 
-      <h1 class="app-name">Emplix</h1>
+      <span class="material-icons-round logo-icon">bolt</span>
+    </div>
+    
+    <div class="app-info">
+      <span class="app-name">Emplix</span>
     </div>
   </div>
 
   <nav class="sidebar-nav">
-    <ul class="nav-list">
+    @for (item of menuItems(); track item.label) {
       
-      <li *ngFor="let item of menuItems">
+      @if (!item.children) {
         <a [routerLink]="item.route" 
-           routerLinkActive="active"
-           [routerLinkActiveOptions]="{exact: false}"
-           class="nav-item">
-           
-          <span class="material-icons-round nav-icon">{{ item.icon }}</span>
-          <span class="nav-label">{{ item.label }}</span>
+           routerLinkActive="active" 
+           class="nav-item"
+           [title]="collapsed() ? item.label : ''">
+          <span class="material-icons-round icon">{{ item.icon }}</span>
+          <span class="text">{{ item.label }}</span>
         </a>
-      </li>
+      } 
+      
+      @else {
+        <div class="nav-group">
+          <button class="nav-item parent" 
+                  (click)="toggleSubmenu(item)"
+                  [class.active]="isActive(item)"
+                  [class.expanded]="item.expanded">
+            <span class="material-icons-round icon">{{ item.icon }}</span>
+            <span class="text">{{ item.label }}</span>
+            <span class="material-icons-round arrow">expand_more</span>
+          </button>
 
-    </ul>
+          @if (!collapsed() && item.expanded) {
+            <div class="submenu fade-in">
+              @for (child of item.children; track child.route) {
+                <a [routerLink]="child.route" 
+                   routerLinkActive="active" 
+                   class="nav-item child">
+                  <span class="material-icons-round icon sub-icon">{{ child.icon }}</span>
+                  <span class="text">{{ child.label }}</span>
+                </a>
+              }
+            </div>
+          }
+        </div>
+      }
+    }
   </nav>
 
   <div class="sidebar-footer">
-    <app-logout-btn [collapsed]="isCollapsed"></app-logout-btn>
-
-    <div style="height: 1rem;"></div>
-    <span class="version-text">Emplix {{ appVersion }}</span>
+    <app-logout-btn [collapsed]="collapsed()"></app-logout-btn>
   </div>
 
 </aside>

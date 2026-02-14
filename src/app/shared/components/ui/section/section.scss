@@ -1,0 +1,35 @@
+@use 'abstracts/variables' as v;
+@use 'abstracts/mixins' as m;
+
+:host { display: block; margin-bottom: 2rem; }
+
+.section-title {
+  color: var(--color-primary);
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  display: flex; align-items: center; gap: 0.5rem;
+  
+  .line {
+    flex: 1; height: 1px;
+    background-color: var(--border-color);
+    opacity: 0.5;
+  }
+}
+
+.section-grid {
+  display: grid;
+  gap: 1.5rem;
+
+  // Lógica de Columnas
+  &.cols-1 { grid-template-columns: 1fr; }
+  &.cols-2 { grid-template-columns: repeat(2, 1fr); }
+  &.cols-3 { grid-template-columns: repeat(3, 1fr); }
+  &.cols-4 { grid-template-columns: repeat(4, 1fr); }
+
+  // Responsive automático
+  @include m.respond-to('tablet') {
+    grid-template-columns: 1fr !important; // En móvil siempre 1 columna
+    gap: 1rem;
+  }
+}

@@ -1,0 +1,44 @@
+@use 'abstracts/variables' as v;
+
+.section-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md); // 16px
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+
+  .card-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--border-subtle);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: rgba(255, 255, 255, 0.5); // Glass effect sutil
+
+    .title-group {
+      .card-title {
+        margin: 0;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--text-main);
+      }
+      .card-subtitle {
+        margin: 0.25rem 0 0;
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+      }
+    }
+  }
+
+  .card-body {
+    padding: 1.5rem;
+    flex: 1; // Ocupa el resto
+    
+    &.no-padding {
+      padding: 0;
+    }
+  }
+}

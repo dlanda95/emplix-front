@@ -5,22 +5,43 @@ import { Injectable, signal } from '@angular/core';
 })
 export class LayoutService {
   
-  // ✅ STATE (Usamos Signals para reactividad instantánea)
-  // false por defecto para móvil (cerrado)
-  private _sidebarOpen = signal<boolean>(false);
 
-  // Exponemos el signal como solo lectura para quien lo consuma
-  sidebarOpen = this._sidebarOpen.asReadonly();
+  
+  // ==========================================================
+  // 1. ESTADO MÓVIL (Overlay: Visible / Oculto)
+  // ==========================================================
+  // Controla si el sidebar aparece encima del contenido en celulares
+  private _mobileMenuOpen = signal<boolean>(false);
+  mobileMenuOpen = this._mobileMenuOpen.asReadonly();
 
+  toggleMobileMenu() {
+    this._mobileMenuOpen.update(v => !v);
+  }
+
+  closeMobileMenu() {
+    this._mobileMenuOpen.set(false);
+  }
+
+  // ==========================================================
+  // 2. ESTADO DESKTOP (Mini / Expandido)
+  // ==========================================================
+  // Controla si el sidebar está "flaco" (80px) o "ancho" (260px)
+  private _isSidebarCollapsed = signal<boolean>(false);
+  isSidebarCollapsed = this._isSidebarCollapsed.asReadonly();
+
+  // Acción del botón hamburguesa en Desktop
   toggleSidebar() {
-    this._sidebarOpen.update(value => !value);
+    this._isSidebarCollapsed.update(value => !value);
   }
 
-  closeSidebar() {
-    this._sidebarOpen.set(false);
+  // 🔥 MÉTODO FALTANTE (Necesario para tu SidebarComponent)
+  // Se llama automáticamente cuando la pantalla se hace pequeña
+  collapseSidebar() {
+    this._isSidebarCollapsed.set(true);
   }
 
-  openSidebar() {
-    this._sidebarOpen.set(true);
+  // Se llama cuando intentas abrir un submenú estando colapsado
+  expandSidebar() {
+    this._isSidebarCollapsed.set(false);
   }
 }
