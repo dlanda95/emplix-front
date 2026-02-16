@@ -1,0 +1,48 @@
+@use 'abstracts/mixins' as m;
+
+.address-layout {
+  display: grid;
+  grid-template-columns: 2fr 1fr; // Layout 2/3 y 1/3
+  gap: 2rem;
+  align-items: start;
+
+  @include m.respond-to('tablet') {
+    grid-template-columns: 1fr;
+  }
+}
+
+.nested-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+// Estilos del Mapa (Apple Style)
+.map-card {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  min-height: 300px;
+  display: flex; flex-direction: column;
+
+  .map-visual {
+    flex: 1;
+    background-color: #e5e5f7;
+    background-image: radial-gradient(#444cf7 0.5px, transparent 0.5px), radial-gradient(#444cf7 0.5px, #e5e5f7 0.5px);
+    background-size: 20px 20px;
+    background-position: 0 0, 10px 10px;
+    opacity: 0.8;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.5rem;
+    color: var(--color-primary);
+    
+    .map-icon { font-size: 3rem; filter: drop-shadow(0 4px 4px rgba(0,0,0,0.1)); }
+    .map-label { font-size: 0.8rem; font-weight: 600; background: white; padding: 4px 12px; border-radius: 20px; box-shadow: var(--shadow-sm); }
+  }
+
+  .map-footer {
+    padding: 1rem 1.5rem; background: white; border-top: 1px solid var(--border-color);
+    .address-summary { margin: 0; font-weight: 600; font-size: 1rem; color: var(--text-main); }
+    .city-summary { margin: 0.25rem 0 0; font-size: 0.85rem; color: var(--text-secondary); }
+  }
+}
+
+.fade-in { animation: fadeIn 0.4s ease-out; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }

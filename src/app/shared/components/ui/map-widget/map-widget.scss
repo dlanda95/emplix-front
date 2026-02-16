@@ -1,0 +1,53 @@
+.map-card {
+  position: relative;
+  height: 100%; min-height: 320px;
+  
+  background: white;
+  border-radius: var(--radius-md);
+  // Sombra elegante y difusa (Elevation)
+  box-shadow: 0 10px 30px -10px rgba(0,0,0, 0.08), 
+              0 0 0 1px rgba(0,0,0, 0.03); // Borde simulado
+  
+  overflow: hidden;
+  display: flex; flex-direction: column;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+  // Efecto Hover: El mapa se "levanta"
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 40px -10px rgba(0,0,0, 0.12),
+                0 0 0 1px rgba(var(--color-primary-rgb), 0.3);
+    
+    .map-visual { opacity: 1; }
+    .map-icon { transform: scale(1.1) translateY(-5px); color: var(--color-primary); }
+  }
+
+  .map-visual {
+    flex: 1;
+    background-color: #f0f2f5;
+    // Patrón de puntos más sutil
+    background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
+    background-size: 20px 20px;
+    opacity: 0.6;
+    transition: opacity 0.3s;
+    
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    
+    .map-icon { 
+      font-size: 3.5rem; 
+      color: var(--text-muted); 
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); // Efecto rebote
+      filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
+    }
+  }
+
+  .map-footer {
+    padding: 1.25rem 1.5rem;
+    background: rgba(255,255,255, 0.9);
+    backdrop-filter: blur(10px); // Efecto Glass
+    border-top: 1px solid rgba(0,0,0,0.05);
+
+    .address-sum { font-size: 1rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.25rem; }
+    .city-sum { font-size: 0.85rem; color: var(--text-secondary); display: flex; align-items: center; gap: 0.5rem; }
+  }
+}

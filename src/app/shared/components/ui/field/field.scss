@@ -3,27 +3,57 @@
 :host { display: block; width: 100%; }
 
 .field-group {
-  display: flex; flex-direction: column; gap: 0.35rem;
+  display: flex; flex-direction: column; gap: 0.4rem;
+  position: relative;
+  
+  // Transición suave en todo el grupo
+  transition: transform 0.2s ease;
 
+  // --- ETIQUETA (LABEL) ---
   .field-label {
-    font-size: var(--text-xs);
+    font-size: 0.7rem; // Texto pequeño
+    text-transform: uppercase; // Estilo técnico/profesional
+    letter-spacing: 0.05em; // Aire entre letras
     font-weight: 600;
-    color: var(--text-main);
+    color: var(--text-muted); // Gris suave, no negro
+    margin-left: 0.25rem; // Alineado sutilmente
+    transition: color 0.2s ease;
   }
 
+  // --- VALOR (VALUE BOX) ---
   .field-value {
-    background-color: #f8fafc; // Slate 50
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-sm);
+    // Fondo más integrado (Glass-like si tuvieras fondo de color)
+    background-color: var(--bg-body); // O un gris muy sutil (#f9fafb)
+    border: 1px solid transparent; // Borde invisible por defecto
+    border-radius: var(--radius-sm); // 8px
     padding: 0.75rem 1rem;
-    color: var(--text-secondary);
-    font-size: var(--text-sm);
-    font-weight: 400;
-    min-height: 42px;
-    display: flex; align-items: center;
-    box-shadow: inset 0 1px 2px rgba(0,0,0,0.02);
     
-    // Overflow protection
+    // Tipografía
+    color: var(--text-main);
+    font-size: var(--text-sm); // Adaptable
+    font-weight: 500;
+    line-height: 1.5;
+    
+    // Sombra sutil en lugar de borde duro
+    box-shadow: 0 1px 2px rgba(0,0,0, 0.03);
+    
+    // Interacción
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    
+    // Protección de texto
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    min-height: 44px; display: flex; align-items: center;
+  }
+
+  // --- ESTADOS DE INTERACCIÓN (Dinamismo) ---
+  &:hover {
+    .field-label { color: var(--color-primary); } // El label se ilumina con tu marca
+    
+    .field-value {
+      background-color: white; // Se "eleva" a blanco puro
+      border-color: rgba(var(--color-primary-rgb), 0.2); // Borde sutil de tu color
+      box-shadow: 0 4px 6px rgba(0,0,0, 0.04); // Sombra se eleva
+      transform: translateY(-1px); // Micro-movimiento hacia arriba
+    }
   }
 }

@@ -5,9 +5,18 @@ import { SectionCard } from '../../../../../../shared/components/ui/section-card
 import { TabsCard,TabItem } from '../../../../../../shared/components/ui/tabs-card/tabs-card';
 import { Field } from '../../../../../../shared/components/ui/field/field';
 
+
+
+
+// Importamos los Legos Hijos
+import { MisDatos } from './components/mis-datos/mis-datos';
+import { Direccion } from './components/direccion/direccion';
+
+
+
 @Component({
   selector: 'app-info-general',
-  imports: [CommonModule, SectionCard, TabsCard, Field],
+  imports: [CommonModule, SectionCard, TabsCard, Field, MisDatos,Direccion],
   templateUrl: './info-general.html',
   styleUrl: './info-general.scss',
 })

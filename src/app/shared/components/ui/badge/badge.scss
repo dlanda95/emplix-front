@@ -1,0 +1,35 @@
+.badge {
+    display: inline-flex; align-items: center; gap: 0.35rem;
+    padding: 0.35em 0.85em;
+    border-radius: 999px; // Pill shape (totalmente redondo)
+    
+    font-size: 0.7rem; 
+    font-weight: 700; 
+    text-transform: uppercase; 
+    letter-spacing: 0.05em;
+    line-height: 1;
+    
+    // Borde sutil para definición
+    border: 1px solid transparent;
+  }
+
+  // VARIANTE SUCCESS (Verde Apple)
+  .success { 
+    background-color: rgba(52, 199, 89, 0.12); 
+    color: #248a3d; 
+    border-color: rgba(52, 199, 89, 0.2);
+  }
+  
+  // VARIANTE WARNING (Naranja Apple)
+  .warning { 
+    background-color: rgba(255, 149, 0, 0.12); 
+    color: #b36b00; 
+    border-color: rgba(255, 149, 0, 0.2);
+  }
+
+  // VARIANTE NEUTRAL
+  .neutral { 
+    background-color: rgba(142, 142, 147, 0.12); 
+    color: #48484a; 
+    border-color: rgba(142, 142, 147, 0.2);
+  }
