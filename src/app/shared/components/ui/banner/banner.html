@@ -1,0 +1,11 @@
+<div class="banner-container fade-in" [ngClass]="variant">
+      @if (icon) {
+        <span class="material-icons-round banner-icon">{{ icon }}</span>
+      }
+      <div class="banner-content">
+        @if (title) { <strong class="banner-title">{{ title }}</strong> }
+        <div class="banner-text">
+          <ng-content></ng-content>
+        </div>
+      </div>
+    </div>

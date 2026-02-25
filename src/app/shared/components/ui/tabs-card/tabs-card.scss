@@ -1,112 +1,112 @@
 @use 'abstracts/variables' as v;
 @use 'abstracts/mixins' as m;
 
-:host {
-  display: block;
-  width: 100%;
-}
+:host { display: block; width: 100%; }
 
 .tabs-container {
   position: relative;
   width: 100%;
-  background-color: transparent;
+  margin-bottom: 1.5rem;
+  z-index: 5;
 }
 
-// --- NAVEGACIÓN ---
+// --- 1. EL RIEL (CONTENEDOR GRIS) ---
 .tabs-nav {
   display: flex;
   position: relative;
-  z-index: 2;
-  width: 100%;
+  z-index: 1;
   
-  // Scroll e interacción
+  // 🔥 CAMBIO CLAVE 1: Crear el espacio de "aire"
+  background-color: var(--bg-body); // Color de fondo del riel (Gris claro)
+  //border-radius:0px 0px 999px 999px; // Riel completamente redondo
+  
+  // Este padding es la distancia entre el borde gris y la píldora blanca.
+  // 4px (0.25rem) es un estándar bueno para este estilo.
+  padding: 0.25rem; 
+  
   overflow-x: auto;
   @include m.hide-scrollbar;
   
-  // Espaciado para que el indicador no se corte en los bordes
-  padding-bottom: 2px; 
+  // Sombra interna sutil para profundidad
+  box-shadow: inset 0 1px 2px rgba(0,0,0, 0.04); 
+  
+  // Asegura que los elementos internos respeten el padding
+  box-sizing: border-box;
+}
 
-  // --- BOTÓN TAB ---
-  .tab-btn {
-    // Layout
-    flex: 1; // Auto-fit inteligente
-    min-width: fit-content;
-    max-width: 300px;
-    
-    background: none; border: none; cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    gap: 0.6rem;
-    padding: 1rem 1.5rem;
-    
-    // Tipografía
-    font-family: inherit;
-    font-size: var(--text-sm);
-    font-weight: 500;
-    color: var(--text-secondary);
-    
-    // Transiciones de color (NO de posición, eso lo hace el indicador)
-    transition: color 0.3s ease, background-color 0.2s ease;
-    border-radius: var(--radius-sm); // Para el hover
+// --- 2. EL INDICADOR (PÍLDORA BLANCA) ---
+.sliding-indicator {
+  position: absolute;
+  
+  // 🔥 CAMBIO CLAVE 2: Sincronizar con el padding del riel
+  // Si el padding del padre es 0.25rem, el top/bottom aquí debe ser igual
+  // para que quede perfectamente encajado.
+  top: 0.25rem;
+  bottom: 0.25rem;
+  // (Left y Width los calcula el TS)
+  
+  background-color: white; 
+  border-radius: 999px; // Píldora redonda
+  
+  // Sombra suave para que "flote"
+  box-shadow: 0 2px 6px rgba(0,0,0, 0.06), 
+              0 0 1px rgba(0,0,0, 0.02);
+  
+  transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+  z-index: 1;
+  pointer-events: none;
+}
 
-    // Icono
-    .icon {
-      font-size: 1.3em;
-      color: inherit;
-      opacity: 0.7;
-      transition: opacity 0.3s;
-    }
+// --- 3. BOTÓN TAB ---
+.tab-btn {
+  flex: 1; 
+  min-width: fit-content;
+  
+  position: relative; z-index: 2;
+  background: transparent; border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+  
+  // 🔥 CAMBIO CLAVE 3: Ajustar padding del botón
+  // Como ahora hay un padding en el contenedor, reducimos un poco el del botón
+  // para que no se vea gigante.
+  padding: 0.6rem 1.25rem;
+  border-radius: 999px;
+  
+  // Tipografía
+  font-family: inherit;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--text-secondary);
+  transition: color 0.2s ease;
+  white-space: nowrap;
 
-    // --- ESTADOS ---
-    &:hover {
-      color: var(--text-main);
-      background-color: rgba(0,0,0, 0.03); // Gris muy sutil (Apple Hover)
-      .icon { opacity: 1; }
-    }
+  .icon {
+    font-size: 1.2em; margin-bottom: 1px;
+    opacity: 0.7; transition: all 0.2s ease;
+  }
 
-    &.active {
-      color: var(--color-primary);
-      font-weight: 600;
-      .icon { opacity: 1; color: var(--color-primary); }
-    }
+  // ESTADOS
+  &:hover {
+    color: var(--text-main);
+    .icon { opacity: 1; }
+  }
+
+  &.active {
+    color: var(--color-primary);
+    font-weight: 700;
+    .icon { opacity: 1; color: var(--color-primary); }
   }
 }
 
-// --- 🔥 EL INDICADOR DESLIZANTE (MAGIC LINE) ---
-.sliding-indicator {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  height: 3px; // Grosor elegante
-  background-color: var(--color-primary);
-  
-  // Forma redondeada arriba
-  border-radius: 3px 3px 0 0;
-  
-  // Sombra suave (Glow Effect) para resaltar
-  box-shadow: 0 -2px 6px rgba(var(--color-primary-rgb), 0.25);
-  
-  // LA ANIMACIÓN APPLE: Cubic Bezier
-  // Esto hace que arranque rápido y frene suavemente
-  transition: left 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), 
-              width 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-  
-  pointer-events: none; // Click-through
-  z-index: 10;
-}
-
-// --- EL RIEL (Fondo) ---
-.tabs-track {
-  position: absolute;
-  bottom: 0; left: 0; width: 100%; height: 1px;
-  //background-color: var(--border-color);
-  opacity: 0.6; // Un poco más sutil
-  z-index: 1;
-}
-
-// --- MOBILE ADJUSTMENTS ---
+// --- MOBILE ---
 @include m.respond-to('mobile') {
-  .tabs-nav .tab-btn {
-    flex: 0 0 auto; // Scroll natural
-    padding: 0.85rem 1.25rem;
+  // En móvil podemos hacer el riel un poco menos alto si se desea
+  .tabs-nav { padding: 3px; } 
+  .sliding-indicator { top: 3px; bottom: 3px; }
+  
+  .tab-btn {
+    flex: 0 0 auto;
+    padding: 0.5rem 1rem; // Más compacto en móvil
+    font-size: var(--text-xs);
   }
 }

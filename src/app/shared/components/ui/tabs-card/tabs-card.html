@@ -1,6 +1,12 @@
 <div class="tabs-container" (window:resize)="onResize()">
   
   <nav class="tabs-nav" [ngClass]="align">
+    
+    <div class="sliding-indicator"
+         [style.left]="indicatorLeft"
+         [style.width]="indicatorWidth">
+    </div>
+
     @for (item of items; track item.id) {
       <button #tabBtn
               class="tab-btn" 
@@ -14,12 +20,6 @@
       </button>
     }
 
-    <div class="sliding-indicator"
-         [style.left]="indicatorLeft"
-         [style.width]="indicatorWidth">
-    </div>
   </nav>
-
-  <div class="tabs-track"></div>
 
 </div>

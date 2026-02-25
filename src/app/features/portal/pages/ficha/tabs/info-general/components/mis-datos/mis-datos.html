@@ -1,22 +1,84 @@
+@if (profile(); as data) {
 
-  
-  <ng-container main>
-    <app-section-card title="Identificación" [columns]="3">
-      <app-field label="Nombres" value="Juan Carlos"></app-field>
-      <app-field label="Apellidos" value="Pérez Rodríguez"></app-field>
-      <app-field label="Tipo Documento" value="DNI"></app-field>
-      <app-field label="Nro. Documento" value="44556677"></app-field>
-      <app-field label="Fecha Nacimiento" value="15/04/1990"></app-field>
-      <app-field label="Estado Civil" value="Casado"></app-field>
-    </app-section-card>
+  <app-toolbar-layout>
+    
+    @if (hasPendingRequest()) {
+      <app-banner 
+        variant="warning" 
+        icon="pending_actions" 
+        title="Solicitud en Revisión">
+        <p>Tus correcciones están siendo evaluadas por Recursos Humanos.</p>
+      </app-banner>
+    }
 
-    <app-section-card title="Información de Contacto" [columns]="2">
-      <app-field label="Email Personal" value="juan.perez@gmail.com"></app-field>
-      <app-field label="Teléfono Móvil" value="+51 999 888 777"></app-field>
+    <ng-container actions>
+      @if (!isEditing() && !hasPendingRequest()) {
+        <app-button 
+          variant="secondary" 
+          icon="edit" 
+        
+          (clicked)="toggleEditMode()">
+          Solicitar Corrección
+        </app-button>
+      } @else if (isEditing())  {
+        <app-button 
+          variant="ghost" 
+          (clicked)="cancelEdit()">
+          Cancelar
+        </app-button>
+
+        <app-button 
+          variant="primary" 
+          icon="send" 
+          [loading]="isSubmitting()"
+          [disabled]="editForm.invalid"
+          (clicked)="submitRequest()">
+          {{ isSubmitting() ? 'Enviando...' : 'Enviar Solicitud' }}
+        </app-button>
+      }
+    </ng-container>
+
+  </app-toolbar-layout>
+
+  <form [formGroup]="editForm" class="fade-in">
+    
+ 
       
-      <app-field label="Estado Verificación">
-        <app-badge variant="success">Verificado</app-badge>
-      </app-field>
-    </app-section-card>
-  </ng-container>
+      <ng-container main>
+        
+        <app-section-card title="Identificación" [columns]="3">
+          
+          @if (!isEditing()) {
+            <app-field label="Primer Nombre" [value]="data.firstName"></app-field>
+            <app-field label="Segundo Nombre" [value]="data.middleName"></app-field>
+            <app-field label="Apellidos" [value]="data.lastName + ' ' + (data.secondLastName || '')"></app-field>
+            <app-field label="Tipo Doc" value="DNI"></app-field>
+            <app-field label="Nro. Documento" [value]="data.documentId"></app-field>
+            <app-field label="Fecha Nacimiento" [value]="data.birthDate | date:'dd/MM/yyyy'"></app-field>
+          } @else {
+            <app-input label="Primer Nombre" formControlName="firstName"></app-input>
+            <app-input label="Segundo Nombre" formControlName="middleName"></app-input>
+            <app-input label="Apellidos" formControlName="lastName"></app-input>
+            
+            <app-input label="Tipo Doc" formControlName="documentType"></app-input>
+            <app-input label="Nro. Documento" formControlName="documentId"></app-input>
+            <app-input label="Fecha Nacimiento" type="date" formControlName="birthDate"></app-input>
+          }
 
+        </app-section-card>
+
+        <app-section-card title="Información de Contacto" [columns]="2">
+          @if (!isEditing()) {
+            <app-field label="Email Personal" [value]="data.personalEmail"></app-field>
+            <app-field label="Teléfono Móvil" [value]="data.phone"></app-field>
+          } @else {
+            <app-input label="Email Personal" type="email" formControlName="personalEmail"></app-input>
+            <app-input label="Teléfono Móvil" type="tel" formControlName="phone"></app-input>
+          }
+        </app-section-card>
+
+      </ng-container>
+
+ 
+    
+  </form> } ```

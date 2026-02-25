@@ -9,6 +9,6 @@ import { CommonModule } from '@angular/common';
 export class Field {
 
   @Input({ required: true }) label!: string;
-  @Input() value?: string | number;
+  @Input() value?: string | number | null;
 
 }

@@ -1,34 +1,38 @@
-<app-split-layout>
-  
-  <ng-container main>
-    <app-section-card title="Ubicación Domiciliaria" [columns]="2">
-      <app-field label="Tipo de Vía" value="Avenida"></app-field>
-      <app-field label="Nombre de Vía" value="Javier Prado Este"></app-field>
-      
-      <app-field label="Nro. Exterior" value="455"></app-field>
-      <app-field label="Nro. Interior" value="201"></app-field>
-      
-      <app-field label="Urbanización / Zona" value="San Isidro Financiero"></app-field>
-    </app-section-card>
+@if (profile(); as data) {
 
-    <app-section-card title="Localización Geográfica" [columns]="3">
-      <app-field label="País" value="Perú"></app-field>
-      <app-field label="Departamento" value="Lima"></app-field>
-      <app-field label="Provincia" value="Lima"></app-field>
-      <app-field label="Distrito" value="San Isidro"></app-field>
-      <app-field label="Código Postal" value="15046"></app-field>
-    </app-section-card>
+  <app-split-layout>
     
-    <app-section-card title="Referencia" [columns]="1">
-      <app-field label="Detalle Adicional" value="Frente a la clínica Ricardo Palma."></app-field>
-    </app-section-card>
-  </ng-container>
+    <ng-container main>
+      
+      <app-section-card title="Ubicación Domiciliaria" [columns]="1">
+        <app-field label="Dirección Registrada" 
+                   [value]="data.address">
+        </app-field>
 
-  <ng-container side>
-    <app-map-widget 
-      address="Av. Javier Prado Este 455" 
-      city="San Isidro, Lima">
-    </app-map-widget>
-  </ng-container>
+        </app-section-card>
 
-</app-split-layout>
+      <app-section-card title="En Caso de Emergencia" [columns]="2">
+        <app-field label="Nombre de Contacto" 
+                   [value]="data.emergencyContactName">
+        </app-field>
+        
+        <app-field label="Teléfono de Contacto" 
+                   [value]="data.emergencyContactPhone">
+        </app-field>
+      </app-section-card>
+
+    </ng-container>
+
+    <ng-container side>
+      <app-map-widget 
+        [address]="data.address || 'Sin dirección registrada'" 
+        city="Lima, Perú"> </app-map-widget>
+    </ng-container>
+
+  </app-split-layout>
+
+} @else {
+  <div style="padding: 4rem; text-align: center; color: var(--text-secondary);">
+    Cargando dirección...
+  </div>
+}

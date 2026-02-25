@@ -1,0 +1,28 @@
+<button
+  [type]="type"
+  class="app-btn"
+  [ngClass]="[
+    variant, 
+    size, 
+    fullWidth ? 'full-width' : '', 
+    loading ? 'is-loading' : ''
+  ]"
+  [disabled]="disabled || loading"
+  (click)="onClick($event)"
+>
+  @if (loading) {
+    <span class="material-icons-round spinner">autorenew</span>
+    <span class="btn-text">
+      <ng-content></ng-content>
+    </span>
+  } 
+  
+  @else {
+    @if (icon) {
+      <span class="material-icons-round btn-icon">{{ icon }}</span>
+    }
+    <span class="btn-text">
+      <ng-content></ng-content>
+    </span>
+  }
+</button>
