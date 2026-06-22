@@ -3,8 +3,8 @@
   <nav class="tabs-nav" [ngClass]="align">
     
     <div class="sliding-indicator"
-         [style.left]="indicatorLeft"
-         [style.width]="indicatorWidth">
+         [style.left]="indicatorLeft()"
+         [style.width]="indicatorWidth()">
     </div>
 
     @for (item of items; track item.id) {

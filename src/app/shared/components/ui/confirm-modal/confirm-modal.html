@@ -1,0 +1,29 @@
+@if (isOpen) {
+  <div
+    class="confirm-backdrop fade-in"
+    role="dialog"
+    aria-modal="true"
+    (click)="cancelled.emit()">
+
+    <div class="confirm-box slide-up" (click)="$event.stopPropagation()">
+
+      <div class="confirm-icon-wrap" [class]="confirmVariant">
+        <span class="material-icons-round" aria-hidden="true">{{ icon }}</span>
+      </div>
+
+      <h4 class="confirm-title">{{ title }}</h4>
+
+      @if (message) {
+        <p class="confirm-message">{{ message }}</p>
+      }
+
+      <div class="confirm-actions">
+        <app-button variant="ghost" (clicked)="cancelled.emit()">Cancelar</app-button>
+        <app-button [variant]="confirmVariant" (clicked)="confirmed.emit()">
+          {{ confirmLabel }}
+        </app-button>
+      </div>
+
+    </div>
+  </div>
+}

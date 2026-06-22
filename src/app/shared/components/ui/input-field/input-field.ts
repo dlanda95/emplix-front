@@ -1,8 +1,6 @@
-import { Component, Input, forwardRef,input ,signal} from '@angular/core';
+import { Component, Input, forwardRef, input, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ControlValueAccessor,FormControl, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms';
-
-
+import { ControlValueAccessor, FormControl, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-input-field',
@@ -13,39 +11,50 @@ import { ControlValueAccessor,FormControl, NG_VALUE_ACCESSOR, ReactiveFormsModul
     {
       provide: NG_VALUE_ACCESSOR,
       useExisting: forwardRef(() => InputField),
-      multi: true
-    }
-  ]
+      multi: true,
+    },
+  ],
 })
-export class InputField {// --- INPUTS (Configuración visual) ---
-  // Usamos 'input' (Signals) para modernizar y alinear con tu Register
-  label = input('');
-  type = input('text');
+export class InputField {
+  label       = input('');
+  type        = input('text');
   placeholder = input('');
-  control = input.required<FormControl>();
-  icon = input('');
-  hint = input(''); // Opcional: Para texto de ayuda gris
-  readonly = input(false);
+  control     = input.required<FormControl>();
+  icon        = input('');
+  hint        = input('');
+  readonly    = input(false);
 
-  // 🔥 NUEVO ESTADO: Saber si el input tiene el foco
-  focused = signal(false);
-  // Helper para saber si hay error (Validación de Angular)
+  readonly focused = signal(false);
+
   get isInvalid(): boolean {
     return this.control().invalid && this.control().touched;
   }
- // 🔥 LÓGICA APPLE: 
-  // Mostrar mensaje de TEXTO solo si es inválido Y está enfocado
+
+  get hasServerError(): boolean {
+    return this.control().hasError('serverError');
+  }
+
   get showErrorMessage(): boolean {
-    return this.isInvalid && this.focused();
+    // Server errors always visible once set; validation errors only while focused
+    return this.isInvalid && (this.focused() || this.hasServerError);
   }
 
-  // Manejadores de eventos para el HTML
-  onFocus() {
+  onFocus(): void {
     this.focused.set(true);
+    // Clear server-set error so user can re-attempt without stale message
+    this.clearServerError();
   }
 
-  onBlur() {
+  onBlur(): void {
     this.focused.set(false);
-    this.control().markAsTouched(); // Marcamos que el usuario ya pasó por aquí
+    this.control().markAsTouched();
+  }
+
+  private clearServerError(): void {
+    const errors = this.control().errors;
+    if (!errors || !('serverError' in errors)) return;
+
+    const { serverError: _, ...rest } = errors;
+    this.control().setErrors(Object.keys(rest).length ? rest : null);
   }
 }

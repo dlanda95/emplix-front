@@ -1,39 +1,45 @@
 <div class="input-wrapper">
-  
-  <label *ngIf="label()" class="input-label">
-    {{ label() }}
-  </label>
-  
-  <div class="input-container" 
-      [class.has-error]="isInvalid" 
-       [class.is-focused]="focused()"
-       [class.is-readonly]="readonly()">
-    
-    <span *ngIf="icon()" class="material-icons-round prefix-icon">
-      {{ icon() }}
-    </span>
-    
-    <input 
-    class="native-input"
-      [type]="type()" 
+
+  @if (label()) {
+    <label class="input-label">{{ label() }}</label>
+  }
+
+  <div class="input-container"
+      [class.has-error]="isInvalid"
+      [class.is-focused]="focused()"
+      [class.is-readonly]="readonly()">
+
+    @if (icon()) {
+      <span class="material-icons-round prefix-icon">{{ icon() }}</span>
+    }
+
+    <input
+      class="native-input"
+      [type]="type()"
       [placeholder]="placeholder()"
-      [formControl]="control()" 
+      [formControl]="control()"
       [readonly]="readonly()"
-      (focus)="onFocus()" 
+      (focus)="onFocus()"
       (blur)="onBlur()"
     >
   </div>
 
   @if (showErrorMessage) {
     <div class="error-msg fade-in">
-      @if (control().hasError('required')) { <span>Campo obligatorio</span> }
-      @if (control().hasError('email')) { <span>Correo inválido</span> }
-      @if (control().hasError('minlength')) { 
-        <span>Mínimo {{ control().errors?.['minlength'].requiredLength }} caracteres</span> 
+      @if (control().hasError('serverError')) {
+        <span>{{ control().errors?.['serverError'] }}</span>
+      } @else if (control().hasError('required')) {
+        <span>Campo obligatorio</span>
+      } @else if (control().hasError('email')) {
+        <span>Correo inválido</span>
+      } @else if (control().hasError('minlength')) {
+        <span>Mínimo {{ control().errors?.['minlength'].requiredLength }} caracteres</span>
+      } @else if (control().hasError('mismatch')) {
+        <span>Las contraseñas no coinciden</span>
       }
-      @if (control().hasError('mismatch')) { <span>Las contraseñas no coinciden</span> }
     </div>
+  } @else if (hint() && !isInvalid) {
+    <div class="hint-msg fade-in">{{ hint() }}</div>
   }
-  @else if (hint() && !isInvalid) {
-    <div class="hint-msg fade-in">{{ hint() }}</div> }
+
 </div>

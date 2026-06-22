@@ -1,13 +1,10 @@
-import { Component, inject ,signal} from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, ReactiveFormsModule, Validators, AbstractControl,FormGroup } from '@angular/forms';
+import { FormBuilder, ReactiveFormsModule, Validators, FormControl, FormGroup } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { AuthService } from '../../../core/auth/auth';
-import { TenantService } from '../../../core/services/tenant.service';
-import { FormControl } from '@angular/forms';
-
-import { InputField } from '../../../shared/components/ui/input-field/input-field';
-import { PrimaryBtn } from '../../../shared/components/ui/primary-btn/primary-btn';
+import { AuthService } from '@core/auth/auth';
+import { TenantService } from '@core/services/tenant.service';
+import { InputField, PrimaryBtn } from '@shared/ui';
 
 @Component({
   selector: 'app-register',
@@ -16,126 +13,91 @@ import { PrimaryBtn } from '../../../shared/components/ui/primary-btn/primary-bt
   styleUrl: './register.scss',
 })
 export class Register {
+  private readonly fb            = inject(FormBuilder);
+  private readonly authService   = inject(AuthService);
+  private readonly tenantService = inject(TenantService);
+  private readonly router        = inject(Router);
 
-private fb = inject(FormBuilder);
-  private authService = inject(AuthService);
-  private tenantService = inject(TenantService);
-  private router = inject(Router);
-
-  // --- ESTADOS (Usando Signals para mejor reactividad) ---
-  step = signal<1 | 2>(1);
-  isLoading = signal(false);
-  errorMessage = signal<string>(''); // Para mostrar errores en pantalla
-  tenantName = signal('');
+  readonly step         = signal<1 | 2>(1);
+  readonly isLoading    = signal(false);
+  readonly errorMessage = signal('');
+  readonly tenantName   = signal('');
 
   registerForm: FormGroup = this.fb.group({
-    email: ['', [Validators.required, Validators.email]],
-    firstName: ['', [Validators.required, Validators.minLength(2)]],
-    middleName: ['', [Validators.minLength(2)]],
-    lastName: ['', [Validators.required, Validators.minLength(2)]],
-    secondLastName: [''],
-    password: ['', [Validators.required, Validators.minLength(6)]],
-    confirmPassword: ['', [Validators.required]]
-  }, { validators: this.passwordMatchValidator }); // Validador a nivel de grupo
+    email:           ['', [Validators.required, Validators.email]],
+    firstName:       ['', [Validators.required, Validators.minLength(2)]],
+    middleName:      ['', [Validators.minLength(2)]],
+    lastName:        ['', [Validators.required, Validators.minLength(2)]],
+    secondLastName:  [''],
+    password:        ['', [Validators.required, Validators.minLength(6)]],
+    confirmPassword: ['', Validators.required],
+  }, { validators: this.passwordMatchValidator });
 
   constructor() {
-    // 🚨 GATEKEEPER: Verificar Tenant
     const currentTenant = this.tenantService.getTenant();
     if (!currentTenant) {
-      this.router.navigate(['/auth/login']); // O a selección de tenant
+      this.router.navigate(['/auth/login']);
     } else {
       this.tenantName.set(currentTenant);
     }
   }
 
-  // Helper para el HTML
   getControl(name: string): FormControl {
     return this.registerForm.get(name) as FormControl;
   }
 
-  passwordMatchValidator(g: FormGroup) {
-    return g.get('password')?.value === g.get('confirmPassword')?.value
-      ? null : { mismatch: true };
+  onSubmit(): void {
+    this.errorMessage.set('');
+    if (this.step() === 1) this.handleStepOne();
+    else this.handleStepTwo();
   }
 
-  // --- ORQUESTADOR PRINCIPAL ---
-  onSubmit() {
-    this.errorMessage.set(''); // Limpiar errores previos
-    console.log('Click en botón. Paso actual:', this.step());
-
-    if (this.step() === 1) {
-      this.handleStepOne();
-    } else {
-      this.handleStepTwo();
-    }
+  changeEmail(): void {
+    this.step.set(1);
+    this.errorMessage.set('');
+    this.registerForm.patchValue({ password: '', confirmPassword: '' });
   }
 
-  // --- PASO 1: VALIDAR CORREO ---
-  private handleStepOne() {
+  private handleStepOne(): void {
     const emailControl = this.getControl('email');
+    if (emailControl.invalid) { emailControl.markAsTouched(); return; }
 
-    // 1. Validación Local
-    if (emailControl.invalid) {
-      console.log('Formulario inválido:', emailControl.errors);
-      emailControl.markAsTouched(); // Esto hace que el input se ponga rojo
-      return;
-    }
-
-    // 2. Validación Backend
     this.isLoading.set(true);
-    const email = emailControl.value;
-
-    this.authService.checkEmailAvailability(email).subscribe({
+    this.authService.checkEmailAvailability(emailControl.value).subscribe({
       next: (exists) => {
         this.isLoading.set(false);
         if (exists) {
-          alert('El usuario ya existe. Redirigiendo al login...');
-          this.router.navigate(['/auth/login'], { state: { email } });
+          this.router.navigate(['/auth/login'], { state: { email: emailControl.value } });
         } else {
-          this.step.set(2); // Avanzar al siguiente paso
+          this.step.set(2);
         }
       },
-      error: (err) => {
+      error: () => {
         this.isLoading.set(false);
-        console.error('Error backend:', err);
-        // Mostrar error en pantalla para que el usuario sepa qué pasó
         this.errorMessage.set('Error de conexión o el servicio no responde.');
-      }
+      },
     });
   }
 
-  // --- PASO 2: REGISTRO ---
-  private handleStepTwo() {
-    if (this.registerForm.invalid) {
-      this.registerForm.markAllAsTouched();
-      return;
-    }
+  private handleStepTwo(): void {
+    if (this.registerForm.invalid) { this.registerForm.markAllAsTouched(); return; }
 
     this.isLoading.set(true);
-    // Usamos getRawValue() por si bloqueamos el input de email
-    const formData = this.registerForm.getRawValue();
-
-    this.authService.register(formData).subscribe({
+    this.authService.register(this.registerForm.getRawValue()).subscribe({
       next: () => {
         this.isLoading.set(false);
-        this.router.navigate(['/auth/login'],{ 
-        state: { 
-          email: formData.email 
-        } 
-      });
+        this.router.navigate(['/auth/login'], { state: { email: this.getControl('email').value } });
       },
       error: (err) => {
         this.isLoading.set(false);
         this.errorMessage.set(err.message || 'No se pudo crear la cuenta.');
-      }
+      },
     });
   }
 
-  changeEmail() {
-    this.step.set(1);
-    this.errorMessage.set('');
-    // No borramos el email para permitir correcciones rápidas
-    this.registerForm.patchValue({ password: '', confirmPassword: '' });
+  private passwordMatchValidator(group: FormGroup) {
+    const pass    = group.get('password')?.value;
+    const confirm = group.get('confirmPassword')?.value;
+    return pass === confirm ? null : { mismatch: true };
   }
 }
- 

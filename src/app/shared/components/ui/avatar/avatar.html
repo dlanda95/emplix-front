@@ -1,0 +1,15 @@
+@if (src) {
+  <img
+    class="avatar avatar-{{ size }}"
+    [src]="src"
+    [alt]="name" />
+} @else {
+  <div
+    class="avatar avatar-{{ size }}"
+    [style.background]="palette.bg"
+    [style.color]="palette.color"
+    role="img"
+    [attr.aria-label]="name">
+    {{ initials }}
+  </div>
+}

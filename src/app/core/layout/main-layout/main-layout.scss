@@ -1,3 +1,4 @@
+@use 'sass:map';
 @use 'abstracts/variables' as v;
 @use 'abstracts/mixins' as m;
 
@@ -15,7 +16,7 @@
   flex-shrink: 0;
   background: var(--bg-surface);
   border-right: 1px solid var(--border-color);
-  z-index: map-get(v.$z-layers, 'sticky'); // Nivel 500
+  z-index: map.get(v.$z-layers, 'sticky'); // Nivel 500
   
   // Transición suave de ancho
   transition: width 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), 
@@ -42,7 +43,7 @@
     // Por defecto oculto a la izquierda
     transform: translateX(-100%);
     box-shadow: none;
-    z-index: map-get(v.$z-layers, 'modal'); // Nivel 1000 (Encima de todo)
+    z-index: map.get(v.$z-layers, 'modal'); // Nivel 1000 (Encima de todo)
 
     // Estado: Abierto (Drawer)
     &.is-mobile-open {

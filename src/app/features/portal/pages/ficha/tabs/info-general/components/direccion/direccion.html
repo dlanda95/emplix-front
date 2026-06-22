@@ -1,38 +1,80 @@
 @if (profile(); as data) {
 
-  <app-split-layout>
+  <app-toolbar-layout>
     
+    <ng-container main>
+      <div style="display: flex; flex-direction: column; justify-content: center;">
+        <h3 style="margin: 0; font-size: var(--text-lg); color: var(--text-main); font-weight: 700;">Ubicación</h3>
+        <p style="margin: 0.2rem 0 0; font-size: var(--text-sm); color: var(--text-secondary);">
+          Información domiciliaria y contactos.
+        </p>
+      </div>
+    </ng-container>
+
+    <ng-container actions>
+      <app-button variant="secondary" icon="edit_location" (clicked)="openModal()">
+        Actualizar Dirección
+      </app-button>
+    </ng-container>
+
+  </app-toolbar-layout>
+
+  <app-split-layout class="fade-in">
     <ng-container main>
       
       <app-section-card title="Ubicación Domiciliaria" [columns]="1">
-        <app-field label="Dirección Registrada" 
-                   [value]="data.address">
-        </app-field>
-
-        </app-section-card>
+        <app-field label="Dirección Registrada" [value]="data.address || 'Sin dirección registrada'"></app-field>
+      </app-section-card>
 
       <app-section-card title="En Caso de Emergencia" [columns]="2">
-        <app-field label="Nombre de Contacto" 
-                   [value]="data.emergencyContactName">
-        </app-field>
-        
-        <app-field label="Teléfono de Contacto" 
-                   [value]="data.emergencyContactPhone">
-        </app-field>
+        <app-field label="Nombre de Contacto" [value]="data.emergencyContactName"></app-field>
+        <app-field label="Teléfono de Contacto" [value]="data.emergencyContactPhone"></app-field>
       </app-section-card>
 
     </ng-container>
 
     <ng-container side>
       <app-map-widget 
-        [address]="data.address || 'Sin dirección registrada'" 
-        city="Lima, Perú"> </app-map-widget>
+        [address]="data.address || 'Lima, Perú'" 
+        city="Perú">
+      </app-map-widget>
     </ng-container>
-
   </app-split-layout>
 
-} @else {
-  <div style="padding: 4rem; text-align: center; color: var(--text-secondary);">
-    Cargando dirección...
-  </div>
+  <app-modal 
+    [isOpen]="isModalOpen()" 
+    title="Actualizar Dirección" 
+    (close)="closeModal()">
+    
+   <form [formGroup]="addressForm" style="display: flex; flex-direction: column; gap: 1rem;">
+      
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <app-input-field label="País" [control]="$any(addressForm.get('country'))"></app-input-field>
+        <app-input-field label="Departamento" [control]="$any(addressForm.get('department'))" placeholder="Ej. Lima"></app-input-field>
+      </div>
+
+      <app-input-field label="Distrito" [control]="$any(addressForm.get('district'))" placeholder="Ej. Miraflores"></app-input-field>
+
+      <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1rem;">
+        <app-input-field label="Dirección (Calle/Av/Jr)" [control]="$any(addressForm.get('street'))" placeholder="Ej. Av. Larco"></app-input-field>
+        <app-input-field label="Nro / Dpto" [control]="$any(addressForm.get('number'))" placeholder="Ej. 123"></app-input-field>
+      </div>
+
+      <app-input-field label="Referencia (Opcional)" [control]="$any(addressForm.get('reference'))" placeholder="Ej. Frente al parque"></app-input-field>
+      
+    </form>
+    
+    <ng-container modal-actions>
+      <app-button variant="ghost" (clicked)="closeModal()">Cancelar</app-button>
+      <app-button 
+        variant="primary" 
+        [loading]="isSubmitting()"
+        [disabled]="addressForm.invalid"
+        (clicked)="submitAddressUpdate()">
+        Guardar Dirección
+      </app-button>
+    </ng-container>
+
+  </app-modal>
+
 }

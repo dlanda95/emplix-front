@@ -19,3 +19,26 @@
 // 4. LAYOUT (Estructura general)
 // Aquí importaremos el sidebar y main-layout más adelante.
 // @use 'layout/main-layout';
+
+// 5. COMPONENTES GLOBALES (Estilos de librerías externas que no admiten encapsulación)
+
+// Toast (Angular Material SnackBar) — los panelClass se aplican globalmente
+.mat-mdc-snack-bar-container {
+  &.toast-success .mdc-snackbar__surface {
+    background: var(--color-success) !important;
+    color: #fff !important;
+  }
+  &.toast-error .mdc-snackbar__surface {
+    background: var(--color-danger) !important;
+    color: #fff !important;
+  }
+  &.toast-info .mdc-snackbar__surface {
+    background: var(--color-info) !important;
+    color: #fff !important;
+  }
+
+  .mat-mdc-button.mat-mdc-snack-bar-action {
+    color: rgba(255, 255, 255, 0.85) !important;
+    font-weight: var(--font-semibold, 600) !important;
+  }
+}

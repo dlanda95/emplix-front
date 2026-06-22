@@ -1,23 +1,22 @@
-import { environment } from '../../../environments/environment';
+import { environment } from '@env';
 
-// Este archivo es el "Engranaje Central". 
-// Construye las rutas usando el entorno actual (sea local o producción).
+const base = environment.apiUrl;
 
 export const API_ENDPOINTS = {
   auth: {
-    login: `${environment.apiUrl}/auth/login`,
-    register: `${environment.apiUrl}/auth/register`,
-     checkEmail: `${environment.apiUrl}/auth/check-email`, // <--- NUEVO
-    me: `${environment.apiUrl}/auth/me`, // Perfil del usuario
-    microsoft: `${environment.apiUrl}/auth/microsoft`, // <--- AGREGA
-    verifytenant: `${environment.apiUrl}/auth/verify-tenant`
-
+    login:        `${base}/auth/login`,
+    register:     `${base}/auth/register`,
+    checkEmail:   `${base}/auth/check-email`,
+    me:           `${base}/auth/me`,
+    microsoft:    `${base}/auth/microsoft`,
+    verifytenant: `${base}/auth/verify-tenant`,
   },
-  portal: {
-    requests: `${environment.apiUrl}/requests`, // Solicitudes
-    // Aquí agregarás boletas, etc.
+  employees: {
+    me:   `${base}/employees/me`,
+    root: `${base}/employees`,
   },
-  admin: {
-    users: `${environment.apiUrl}/users`,
-  }
+  requests: {
+    root: `${base}/requests`,
+    me:   `${base}/requests/me`,
+  },
 };

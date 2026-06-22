@@ -2,113 +2,142 @@
 // 1. VARIABLES SASS (Fuente de la verdad para compilación)
 // =============================================================================
 
-// --- Colores Base (Tu Identidad) ---
-$color-primary:       #800020; // Tu Guinda Corporativo
+// --- Colores Base (Identidad de marca) ---
+$color-primary:       #800020;
 $color-primary-rgb:   128, 0, 32;
-$color-primary-soft:  #fff0f3; // Fondo muy suave para hovers
+$color-primary-soft:  #fff0f3;
 $color-accent:        #607d8b;
 $color-warn:          #ef4444;
 $color-success:       #10b981;
+$color-warning:       #f59e0b;
+$color-info:          #3b82f6;
 
-// --- Breakpoints (Nombres Representativos) ---
-// Definimos el ancho MÁXIMO del dispositivo
+// --- Breakpoints ---
 $breakpoints: (
-  'mobile':   480px,   // Celulares verticales
-  'tablet':   768px,   // Tablets verticales / Celulares grandes
-  'laptop':   1024px,  // Laptops 13" / iPad Horizontal (Punto clave para el Sidebar)
-  'desktop':  1440px   // Monitores de escritorio grandes
+  'mobile':   480px,
+  'tablet':   768px,
+  'laptop':   1024px,
+  'desktop':  1440px
 );
 
-// --- Z-Index (Capas de profundidad) ---
+// --- Z-Index ---
 $z-layers: (
-  'base': 1,
+  'base':    1,
   'dropdown': 100,
-  'sticky': 500,   // Header pegajoso
-  'overlay': 900,  // Fondo oscuro para móvil
-  'modal': 1000,   // Ventanas emergentes
-  'toast': 2000    // Notificaciones (encima de todo)
+  'sticky':  500,
+  'overlay': 900,
+  'modal':   1000,
+  'toast':   2000
 );
 
-// --- Dimensiones SASS ---
-$sidebar-width-expanded: 260px;
+// --- Dimensiones ---
+$sidebar-width-expanded:  260px;
 $sidebar-width-collapsed: 80px;
-$header-height: 64px;
+$header-height:           64px;
 
-// --- Radios de Borde (Estilo Apple: más redondeado) ---
-$radius-sm: 8px;   // Botones pequeños, inputs
-$radius-md: 16px;  // Tarjetas, Modales (Apple usa radios amplios)
-$radius-lg: 24px;  // Contenedores grandes
+// --- Radios ---
+$radius-sm: 8px;
+$radius-md: 16px;
+$radius-lg: 24px;
 
 // =============================================================================
-// 2. VARIABLES CSS (Para el Navegador :root)
+// 2. TOKENS CSS (Custom Properties en :root)
 // =============================================================================
 :root {
-  // --- COLORES ---
+  // --- MARCA ---
   --color-primary:      #{$color-primary};
   --color-primary-rgb:  #{$color-primary-rgb};
   --color-primary-soft: #{$color-primary-soft};
-  
   --color-accent:       #{$color-accent};
-  --color-warn:         #{$color-warn};
-  --color-success:      #{$color-success};
 
-  // --- BACKGROUNDS (Limpios y "Airy") ---
-  --bg-body:    #f5f7fa; // Un gris azulado muy pálido, más moderno que el blanco
-  --bg-surface: #ffffff; // Blanco puro para las tarjetas
+  // --- ESTADOS SEMÁNTICOS ---
+  --color-success:       #{$color-success};
+  --color-success-soft:  #ecfdf5;
+
+  --color-warning:       #{$color-warning};
+  --color-warning-soft:  #fffbeb;
+
+  --color-danger:       #{$color-warn};
+  --color-danger-soft:  #fef2f2;
+  --color-warn:         #{$color-warn};   // alias para compatibilidad
+
+  --color-info:         #{$color-info};
+  --color-info-soft:    #eff6ff;
+
+  // --- FONDOS ---
+  --bg-body:    #f5f7fa;
+  --bg-surface: #ffffff;
   --bg-hover:   #f8fafc;
+  --bg-glass:   rgba(255, 255, 255, 0.8);
+  --backdrop-blur: blur(12px);
 
-  // --- TEXTOS (Legibilidad Apple) ---
-  --text-main:      #1d1d1f; // "Apple Black" (Suave a la vista)
-  --text-secondary: #86868b; // Gris metálico
-  --text-muted:     #d2d2d7; // Deshabilitado
+  // --- TEXTOS ---
+  --text-main:      #1d1d1f;
+  --text-secondary: #86868b;
+  --text-muted:     #d2d2d7;
   --text-inverse:   #ffffff;
 
   // --- BORDES ---
-  --border-color:   #e5e7eb;
-  --border-subtle:  rgba(0, 0, 0, 0.05);
-  
+  --border-color:  #e5e7eb;
+  --border-subtle: rgba(0, 0, 0, 0.05);
+
+  // --- RADIOS ---
   --radius-sm: #{$radius-sm};
   --radius-md: #{$radius-md};
   --radius-lg: #{$radius-lg};
-  
-  // --- SOMBRAS (Diffuse Shadows: El secreto del diseño premium) ---
-  // Sombra sutil (elementos en reposo)
+
+  // --- SOMBRAS ---
   --shadow-sm:    0 2px 8px rgba(0, 0, 0, 0.04);
-  
-  // Sombra media (hovers, dropdowns)
   --shadow-md:    0 12px 24px -6px rgba(0, 0, 0, 0.08);
-  
-  // Sombra flotante (modales, sidebar móvil)
   --shadow-float: 0 24px 48px -12px rgba(0, 0, 0, 0.12);
 
-  // --- TIPOGRAFÍA (Poppins como principal, San Francisco como fallback nativo) ---
+  // --- TIPOGRAFÍA ---
   --font-main: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  
-  // Escala Tipográfica Base (Desktop)
 
---text-xs:   0.625rem;  /* 10px */
---text-sm:   0.75rem;   /* 12px */
---text-base: 0.875rem;  /* 14px */
---text-lg:   1rem;      /* 16px */
---text-xl:   1.125rem;  /* 18px */
---text-2xl:  1.625rem;  /* 26px */
---text-3xl:  2.375rem;  /* 38px */
+  --text-xs:   0.625rem;  /* 10px @ 16px base */
+  --text-sm:   0.75rem;   /* 12px */
+  --text-base: 0.875rem;  /* 14px */
+  --text-lg:   1rem;      /* 16px */
+  --text-xl:   1.125rem;  /* 18px */
+  --text-2xl:  1.625rem;  /* 26px */
+  --text-3xl:  2.375rem;  /* 38px */
 
+  // --- LAYOUT ---
+  --header-height: #{$header-height};
 
-  // Fondo translúcido con desenfoque (Apple Style)
-  --bg-glass: rgba(255, 255, 255, 0.8);
-  --backdrop-blur: blur(12px);
-  
-  // Altura del header (para calcular espacios)
-  --header-height: 64px;
+  // --- ESPACIADO (Base 4px) ---
+  --space-1:  0.25rem;   /*  4px */
+  --space-2:  0.5rem;    /*  8px */
+  --space-3:  0.75rem;   /* 12px */
+  --space-4:  1rem;      /* 16px */
+  --space-5:  1.25rem;   /* 20px */
+  --space-6:  1.5rem;    /* 24px */
+  --space-8:  2rem;      /* 32px */
+  --space-10: 2.5rem;    /* 40px */
+  --space-12: 3rem;      /* 48px */
+  --space-16: 4rem;      /* 64px */
 
+  // --- TRANSICIONES ---
+  --transition-fast:   150ms cubic-bezier(0.25, 0.8, 0.25, 1);
+  --transition-base:   250ms cubic-bezier(0.25, 0.8, 0.25, 1);
+  --transition-slow:   400ms cubic-bezier(0.25, 0.8, 0.25, 1);
+  --transition-spring: 500ms cubic-bezier(0.16, 1, 0.3, 1);
 
+  // --- LINE HEIGHTS ---
+  --leading-tight:   1.2;
+  --leading-snug:    1.35;
+  --leading-normal:  1.5;
+  --leading-relaxed: 1.65;
 
-  // --- SEMÁNTICA DE ESTADOS ---
-  --color-danger: #ef4444;       // Rojo vibrante (Apple style)
-  --color-danger-soft: #fef2f2;  // Fondo rojo muy pálido para hover
-  
-  // Asegúrate de tener estas si no las tenías
-  --radius-sm: 8px;
-  --text-sm: 0.75rem;
+  // --- FONT WEIGHTS ---
+  --font-normal:    400;
+  --font-medium:    500;
+  --font-semibold:  600;
+  --font-bold:      700;
+  --font-extrabold: 800;
+
+  // --- OPACIDADES ---
+  --opacity-subtle:   0.05;
+  --opacity-muted:    0.25;
+  --opacity-disabled: 0.6;
 }

@@ -1,46 +1,48 @@
 <div class="dashboard-container">
-  
+
   <header class="welcome-header">
     <div class="text-content">
-      <h1>Hola, {{ currentUser()?.firstName }} 👋</h1>
+      <h1>Hola, {{ currentUser()?.firstName }}</h1>
       <p>Aquí tienes el resumen de lo que pasa hoy en tu organización.</p>
     </div>
     <div class="actions">
       <app-primary-btn>
-        <span class="material-icons-round" style="font-size: 18px">add</span>
+        <span class="material-icons-round btn-icon-sm">add</span>
         Nueva Solicitud
       </app-primary-btn>
     </div>
   </header>
 
   <section class="stats-grid">
-    <app-stat-card 
-      *ngFor="let stat of stats"
-      [label]="stat.label"
-      [value]="stat.value"
-      [icon]="stat.icon"
-      [variant]="stat.variant"> </app-stat-card>
+    @for (stat of stats; track stat.label) {
+      <app-stat-card
+        [label]="stat.label"
+        [value]="stat.value"
+        [icon]="stat.icon"
+        [variant]="stat.variant">
+      </app-stat-card>
+    }
   </section>
 
   <div class="content-grid">
-    
+
     <div class="card recent-activity">
       <div class="card-header">
         <h3>Actividad Reciente</h3>
         <button class="link-btn">Ver todo</button>
       </div>
-      
+
       <div class="activity-list">
-        <div class="activity-item" *ngFor="let act of activities">
-          <div class="icon-circle">
-            <span class="material-icons-round">{{ act.icon }}</span>
+        @for (act of activities; track act.user) {
+          <div class="activity-item">
+            <app-avatar [name]="act.user" size="sm"></app-avatar>
+            <div class="details">
+              <span class="user-name">{{ act.user }}</span>
+              <span class="action-text">{{ act.action }}</span>
+            </div>
+            <span class="time">{{ act.time }}</span>
           </div>
-          <div class="details">
-            <span class="user-name">{{ act.user }}</span>
-            <span class="action-text">{{ act.action }}</span>
-          </div>
-          <span class="time">{{ act.time }}</span>
-        </div>
+        }
       </div>
     </div>
 
@@ -49,7 +51,7 @@
         <h3>Resumen Semanal</h3>
       </div>
       <div class="chart-area">
-        <span class="material-icons-round" style="font-size: 48px; color: var(--border-color)">bar_chart</span>
+        <span class="material-icons-round chart-placeholder-icon">bar_chart</span>
         <p>Próximamente: Gráficos de Asistencia</p>
       </div>
     </div>

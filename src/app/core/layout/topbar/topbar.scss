@@ -1,11 +1,12 @@
+@use 'sass:map';
 @use 'abstracts/variables' as v;
 @use 'abstracts/mixins' as m;
 
 :host {
   display: block;
-  position: sticky; // Se pega arriba
+  position: sticky;
   top: 0;
-  z-index: map-get(v.$z-layers, 'sticky'); // Capa 500
+  z-index: map.get(v.$z-layers, 'sticky');
 }
 
 .topbar {

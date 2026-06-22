@@ -1,0 +1,43 @@
+<div class="timeline-item" [class.is-last]="isLast" [class.is-current]="event.isCurrent">
+
+  <!-- Conector vertical + punto -->
+  <div class="tl-track">
+    <div class="tl-dot" [ngClass]="dotClass">
+      <span class="material-icons-round">{{ event.icon }}</span>
+    </div>
+    @if (!isLast) {
+      <div class="tl-line"></div>
+    }
+  </div>
+
+  <!-- Contenido del evento -->
+  <div class="tl-card">
+
+    <div class="tl-meta">
+      <span class="tl-date">
+        <span class="material-icons-round date-icon">event</span>
+        {{ formattedDate }}
+      </span>
+      <span class="tl-badge" [ngClass]="dotClass">{{ typeLabel }}</span>
+    </div>
+
+    <h4 class="tl-title">{{ event.title }}</h4>
+
+    @if (event.description) {
+      <p class="tl-description">{{ event.description }}</p>
+    }
+
+    @if (event.details.length) {
+      <div class="tl-details">
+        @for (detail of event.details; track detail.label) {
+          <div class="detail-chip">
+            <span class="chip-label">{{ detail.label }}</span>
+            <span class="chip-value">{{ detail.value }}</span>
+          </div>
+        }
+      </div>
+    }
+
+  </div>
+
+</div>

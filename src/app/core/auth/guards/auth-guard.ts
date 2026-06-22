@@ -1,18 +1,12 @@
 import { inject } from '@angular/core';
 import { Router, CanActivateFn } from '@angular/router';
+import { AuthService } from '@core/auth/auth';
 
-import { AuthService } from '../auth';
-
-export const authGuard: CanActivateFn = (route, state) => {
-  const authService = inject(AuthService);
+export const authGuard: CanActivateFn = () => {
+  const auth   = inject(AuthService);
   const router = inject(Router);
 
-  // 1. Usamos el signal computed que creamos antes
-  if (authService.isAuthenticated()) {
-    return true; // ✅ Pasa, amigo
-  }
+  if (auth.isAuthenticated()) return true;
 
-  // 2. Si no está logueado, redirigir al login
-  // Guardamos la URL que intentó visitar para redirigirlo allí después (opcional pero buena UX)
-  return router.createUrlTree(['/auth/login']); 
+  return router.createUrlTree(['/auth/login']);
 };

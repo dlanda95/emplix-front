@@ -1,0 +1,56 @@
+<div class="upload-zone-wrapper">
+
+  @if (!selectedFile()) {
+
+    <!-- Zona de drop -->
+    <div class="drop-area"
+         [class.is-dragging]="isDragging()"
+         (dragover)="onDragOver($event)"
+         (dragleave)="onDragLeave()"
+         (drop)="onDrop($event)">
+
+      <span class="material-icons-round drop-icon">cloud_upload</span>
+      <p class="drop-title">Arrastra tu archivo aquí</p>
+      <p class="drop-hint">o haz clic para seleccionar</p>
+      <p class="drop-limit">Máximo {{ MAX_SIZE_MB }} MB · PDF, Word, Excel, imágenes, ZIP</p>
+
+      <label class="select-btn">
+        Seleccionar archivo
+        <input type="file" [accept]="ACCEPT_TYPES" (change)="onFileInput($event)" hidden>
+      </label>
+    </div>
+
+  } @else {
+
+    <!-- Archivo seleccionado -->
+    <div class="file-preview">
+      <div class="preview-info">
+        <span class="material-icons-round file-icon">insert_drive_file</span>
+        <div class="file-meta">
+          <span class="file-name">{{ selectedFile()!.name }}</span>
+          <span class="file-size">{{ fileSize }}</span>
+        </div>
+        <button class="clear-btn" (click)="clearFile()" title="Quitar">
+          <span class="material-icons-round">close</span>
+        </button>
+      </div>
+
+      <!-- Selector de tipo -->
+      <div class="type-selector">
+        <label class="type-label">Tipo de documento</label>
+        <select class="type-select" [(ngModel)]="selectedType">
+          @for (opt of typeOptions; track opt.value) {
+            <option [value]="opt.value">{{ opt.label }}</option>
+          }
+        </select>
+      </div>
+
+      <button class="upload-btn" (click)="confirmUpload()">
+        <span class="material-icons-round">upload</span>
+        Subir documento
+      </button>
+    </div>
+
+  }
+
+</div>

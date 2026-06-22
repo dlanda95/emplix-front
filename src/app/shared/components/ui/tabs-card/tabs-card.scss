@@ -6,7 +6,7 @@
 .tabs-container {
   position: relative;
   width: 100%;
-  margin-bottom: 1.5rem;
+  
   z-index: 5;
 }
 
@@ -15,7 +15,7 @@
   display: flex;
   position: relative;
   z-index: 1;
-  
+
   // 🔥 CAMBIO CLAVE 1: Crear el espacio de "aire"
   background-color: var(--bg-body); // Color de fondo del riel (Gris claro)
   //border-radius:0px 0px 999px 999px; // Riel completamente redondo

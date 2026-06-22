@@ -1,0 +1,73 @@
+@use 'abstracts/variables' as v;
+@use 'abstracts/mixins' as m;
+
+.modal-backdrop {
+  position: fixed;
+  top: 0; left: 0; width: 100vw; height: 100vh;
+  background-color: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px); // Efecto Apple Glass
+  z-index: 9999;
+  
+  display: flex; justify-content: center; align-items: center;
+  padding: 1rem;
+}
+
+.modal-container {
+  background-color: var(--bg-surface);
+  width: 100%;
+  max-width: 550px; // Tamaño ideal para formularios
+  border-radius: var(--radius-md); // Ej. 16px
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  
+  display: flex; flex-direction: column;
+  max-height: 90vh; // Para que no se salga de la pantalla
+}
+
+.modal-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+
+  .modal-title { margin: 0; font-size: var(--text-lg); font-weight: 700; color: var(--text-main); }
+  
+  .close-btn {
+    background: transparent; border: none; cursor: pointer;
+    color: var(--text-secondary);
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 50%; padding: 0.25rem;
+    transition: all 0.2s ease;
+    
+    &:hover { background-color: var(--bg-body); color: var(--text-main); }
+  }
+}
+
+.modal-body {
+  padding: 1.5rem;
+  overflow-y: auto; // Scroll si el form es muy largo
+  @include m.hide-scrollbar;
+}
+
+.modal-footer {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid var(--border-color);
+  background-color: var(--bg-body); // Fondo sutil para separar botones
+  border-radius: 0 0 var(--radius-md) var(--radius-md);
+  
+  display: flex; justify-content: flex-end; gap: 0.75rem;
+}
+
+// ANIMACIONES (Suaves)
+.fade-in { animation: fadeIn 0.2s ease-out; }
+.slide-up { animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slideUp { from { opacity: 0; transform: translateY(20px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+
+// MÓVIL: En pantallas pequeñas, el modal se pega abajo estilo "Bottom Sheet"
+@include m.respond-to('mobile') {
+  .modal-backdrop { align-items: flex-end; padding: 0; }
+  .modal-container {
+    max-width: 100%; max-height: 85vh;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0; // Solo bordes arriba
+  }
+}

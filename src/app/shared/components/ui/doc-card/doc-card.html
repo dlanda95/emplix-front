@@ -1,0 +1,31 @@
+<div class="doc-card">
+
+  <!-- Área del ícono -->
+  <div class="doc-icon-area" [style.background]="fileIcon.bg">
+    <span class="material-icons-round doc-icon" [style.color]="fileIcon.color">
+      {{ fileIcon.icon }}
+    </span>
+
+    <!-- Acciones al hover -->
+    <div class="doc-actions-overlay">
+      <button class="action-btn download-btn" (click)="download.emit(doc)" title="Descargar">
+        <span class="material-icons-round">download</span>
+      </button>
+      <button class="action-btn delete-btn" (click)="delete.emit(doc)" title="Eliminar">
+        <span class="material-icons-round">delete_outline</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Metadatos -->
+  <div class="doc-info">
+    <p class="doc-name" [title]="displayName">{{ displayName }}</p>
+    <div class="doc-meta">
+      <span class="doc-size">{{ fileSize }}</span>
+      <span class="dot">·</span>
+      <span class="doc-date">{{ uploadDate }}</span>
+    </div>
+    <span class="doc-type-badge">{{ typeLabel }}</span>
+  </div>
+
+</div>

@@ -1,21 +1,31 @@
 <div class="app-card">
-      <header class="card-header" [ngClass]="config.variant || 'primary'">
-        <div class="header-icon" *ngIf="config.icon">
-          <span class="material-icons-round">{{ config.icon }}</span>
-        </div>
-        <div class="header-info">
-          <div class="top-row" *ngIf="config.subtitle || config.version">
-            <span class="subtitle">{{ config.subtitle }}</span>
-            <span class="badge" *ngIf="config.version">{{ config.version }}</span>
-          </div>
-          <h1 class="title">{{ config.title }}</h1>
-        </div>
-        <div class="header-actions">
-          <ng-content select="[actions]"></ng-content>
-        </div>
-      </header>
+  <header class="card-header" [ngClass]="config.variant || 'primary'">
 
-      <div class="card-body">
-        <ng-content></ng-content>
+    @if (config.icon) {
+      <div class="header-icon">
+        <span class="material-icons-round">{{ config.icon }}</span>
       </div>
+    }
+
+    <div class="header-info">
+      @if (config.subtitle || config.version) {
+        <div class="top-row">
+          <span class="subtitle">{{ config.subtitle }}</span>
+          @if (config.version) {
+            <span class="badge">{{ config.version }}</span>
+          }
+        </div>
+      }
+      <h1 class="title">{{ config.title }}</h1>
     </div>
+
+    <div class="header-actions">
+      <ng-content select="[actions]"></ng-content>
+    </div>
+
+  </header>
+
+  <div class="card-body">
+    <ng-content></ng-content>
+  </div>
+</div>

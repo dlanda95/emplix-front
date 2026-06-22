@@ -1,13 +1,10 @@
 import { Component } from '@angular/core';
-import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
-import { CommonModule } from '@angular/common';
+import { RouterOutlet } from '@angular/router';
+
 @Component({
   selector: 'app-portal-layout',
-  imports: [CommonModule, RouterOutlet],
+  imports: [RouterOutlet],
   templateUrl: './portal-layout.html',
   styleUrl: './portal-layout.scss',
 })
-export class PortalLayout {
-
-
-}
+export class PortalLayout {}

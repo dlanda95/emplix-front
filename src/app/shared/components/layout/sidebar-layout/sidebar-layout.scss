@@ -16,7 +16,7 @@
 }
 
 .layout-sidebar {
-  background-color: #fafafa;
+  background-color: var(--bg-body);
   border-right: 1px solid var(--border-color);
   padding: 1.5rem 1rem;
   overflow-y: auto;
@@ -55,7 +55,7 @@
   &:hover { background: rgba(0,0,0,0.03); color: var(--text-main); }
 
   &.active {
-    background: white; color: var(--color-primary); font-weight: 600;
+    background: var(--bg-surface); color: var(--color-primary); font-weight: 600;
     box-shadow: 0 2px 8px rgba(0,0,0,0.05);
     .indicator { opacity: 1; }
     .icon { color: var(--color-primary); }
@@ -69,7 +69,7 @@
 }
 
 .layout-content {
-  background: white;
+  background: var(--bg-surface);
   overflow-y: auto; // El scroll ocurre aquí
   @include m.custom-scrollbar;
 }

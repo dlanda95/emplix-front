@@ -1,9 +1,8 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
-import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-primary-btn',
-  imports: [CommonModule],
+  imports: [],
   templateUrl: './primary-btn.html',
   styleUrl: './primary-btn.scss',
 })

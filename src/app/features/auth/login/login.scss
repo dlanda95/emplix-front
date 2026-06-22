@@ -33,7 +33,7 @@
   // MÓVIL: Panel superior
   width: 100%;
   padding: 3rem 1.5rem;
-  background: linear-gradient(135deg, var(--color-primary) 0%, darken(#800020, 15%) 100%);
+  background: linear-gradient(135deg, var(--color-primary) 0%, #4a0013 100%);
   color: white;
   display: flex;
   flex-direction: column;
@@ -100,12 +100,6 @@
     @media (max-width: map.get(v.$breakpoints, 'tablet')) { display: none; } 
   }
 
-  // Decoración de fondo
-  .circle-decoration {
-    position: absolute; border-radius: 50%; filter: blur(60px); opacity: 0.4; pointer-events: none;
-  }
-  .top { top: -20%; right: -20%; width: 300px; height: 300px; background: #ff4d6d; }
-  .bottom { bottom: -20%; left: -20%; width: 300px; height: 300px; background: #4cc9f0; }
 }
 
 // --- 3. DERECHA (FORMULARIO) ---
@@ -217,23 +211,6 @@
   }
 }
 
-.divider {
-  display: flex; align-items: center; text-align: center; margin: 2rem 0;
-  &::before, &::after { content: ''; flex: 1; border-bottom: 1px solid var(--border-color); }
-  span { padding: 0 10px; color: var(--text-muted); font-size: 0.8rem; font-weight: 500; text-transform: uppercase; }
-}
-
-.social-btn {
-  width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.75rem;
-  padding: 0.8rem; background-color: white; border: 1px solid var(--border-color);
-  border-radius: var(--radius-sm); font-size: 0.95rem; font-weight: 500; color: var(--text-main);
-  cursor: pointer; transition: all 0.2s ease;
-  
-  img { width: 20px; height: 20px; }
-
-  &:hover { background-color: #f9fafb; border-color: #d1d5db; transform: translateY(-1px); }
-  &:active { transform: translateY(0); }
-}
 
 .form-footer {
   margin-top: 2rem; text-align: center; font-size: 0.9rem; color: var(--text-secondary);
@@ -246,10 +223,96 @@
 }
 
 .error-banner {
-  background-color: #fef2f2; color: #ef4444; padding: 0.75rem; border-radius: 8px;
-  display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; margin-bottom: 1.5rem;
+  background-color: var(--color-danger-soft);
+  color: var(--color-danger);
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: var(--text-sm);
+  margin-bottom: 1.5rem;
   animation: shake 0.4s ease-in-out;
+  line-height: var(--leading-snug, 1.35);
+
+  span { flex-shrink: 0; font-size: 1.1rem; }
 }
+
+// ─── Microsoft Login ─────────────────────────────────────────────────────────
+.ms-section {
+  margin-bottom: 0.25rem;
+}
+
+.ms-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.875rem;
+  padding: 0.75rem 1.25rem;
+  border: 1.5px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  background: var(--bg-surface);
+  color: var(--text-main);
+  font-family: inherit;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-base, 0.25s ease);
+  position: relative;
+
+  .ms-logo {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+  }
+
+  .ms-spinner {
+    font-size: 1.1rem;
+    animation: spin 1s linear infinite;
+    color: var(--text-secondary);
+  }
+
+  &:hover:not(:disabled) {
+    background: var(--bg-hover);
+    border-color: var(--text-secondary);
+    box-shadow: var(--shadow-sm);
+    transform: translateY(-1px);
+  }
+
+  &:active:not(:disabled) {
+    transform: scale(0.98);
+  }
+
+  &:disabled {
+    opacity: var(--opacity-disabled, 0.6);
+    cursor: not-allowed;
+  }
+}
+
+// ─── Divisor "o usa tu correo" ────────────────────────────────────────────────
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 1.5rem 0;
+
+  .divider-line {
+    flex: 1;
+    height: 1px;
+    background: var(--border-color);
+  }
+
+  .divider-label {
+    font-size: var(--text-xs);
+    color: var(--text-secondary);
+    white-space: nowrap;
+    font-weight: 500;
+  }
+}
+
+@keyframes spin { 100% { transform: rotate(360deg); } }
 
 // Animaciones
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }

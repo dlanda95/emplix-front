@@ -12,7 +12,7 @@
   padding: 2rem 1.5rem 1.5rem;
   margin-top: 1rem;
   
-  background-color: white;
+  background-color: var(--bg-surface);
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
 
   // Interacción (Hover en el grupo)
@@ -38,7 +38,7 @@
   position: absolute;
   top: -12px; left: 1.25rem;
   
-  background-color: white;
+  background-color: var(--bg-surface);
   padding: 0 0.5rem;
   margin: 0;
   

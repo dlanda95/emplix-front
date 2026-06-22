@@ -1,5 +1,6 @@
 <div class="login-split-layout">
-  
+
+  <!-- ── Panel de marca (izquierda) ──────────────────────────────────────── -->
   <div class="brand-panel">
     <div class="brand-content">
       <div class="logo-circle">
@@ -8,12 +9,13 @@
       <h1 class="brand-title">Emplix</h1>
       <p class="brand-subtitle">Gestión inteligente de RRHH</p>
     </div>
-    <div class="glass-card"></div>
   </div>
 
+  <!-- ── Panel del formulario (derecha) ──────────────────────────────────── -->
   <div class="form-panel">
     <div class="form-container">
-      
+
+      <!-- Header dinámico por paso -->
       <div class="form-header">
         @if (step() === 1) {
           <h2 class="welcome-title">Bienvenido</h2>
@@ -25,11 +27,12 @@
               <span>Cambiar de empresa</span>
             </button>
             <h2 class="welcome-title">{{ tenantForm.value.slug }}</h2>
-            <p class="welcome-subtitle">Ingresa tus credenciales</p>
+            <p class="welcome-subtitle">Elige cómo iniciar sesión</p>
           </div>
         }
       </div>
 
+      <!-- Banner de error global -->
       @if (errorMessage()) {
         <div class="error-banner">
           <span class="material-icons-round">error</span>
@@ -37,38 +40,73 @@
         </div>
       }
 
+      <!-- ── PASO 1: Empresa ──────────────────────────────────────────── -->
       @if (step() === 1) {
         <form [formGroup]="tenantForm" (ngSubmit)="onVerifyTenant()" class="login-form fade-in">
-          
-          <app-input-field 
-            label="Empresa" 
-            placeholder="ej. mi-empresa" 
+
+          <app-input-field
+            label="Empresa"
+            placeholder="ej. mi-empresa"
             icon="domain"
             [control]="getControl(tenantForm, 'slug')"
             hint="Es el identificador único de tu organización">
           </app-input-field>
 
-          <app-primary-btn [fullWidth]="true" [loading]="isLoading()"> 
+          <app-primary-btn [fullWidth]="true" [loading]="isLoading()">
             Continuar
           </app-primary-btn>
 
         </form>
       }
 
+      <!-- ── PASO 2: Credenciales ────────────────────────────────────── -->
       @if (step() === 2) {
+
+        <!-- Botón Microsoft — solo si la empresa tiene SSO configurado -->
+        @if (hasMicrosoftSSO()) {
+          <div class="ms-section fade-in">
+            <button
+              class="ms-btn"
+              type="button"
+              [disabled]="isMsalLoading() || isLoading()"
+              (click)="onMicrosoftLogin()">
+
+              @if (isMsalLoading()) {
+                <span class="material-icons-round ms-spinner">autorenew</span>
+                <span>Conectando con Microsoft…</span>
+              } @else {
+                <svg class="ms-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 21 21">
+                  <rect x="1"  y="1"  width="9" height="9" fill="#f25022"/>
+                  <rect x="11" y="1"  width="9" height="9" fill="#7fba00"/>
+                  <rect x="1"  y="11" width="9" height="9" fill="#00a4ef"/>
+                  <rect x="11" y="11" width="9" height="9" fill="#ffb900"/>
+                </svg>
+                <span>Continuar con Microsoft</span>
+              }
+            </button>
+          </div>
+
+          <div class="auth-divider">
+            <span class="divider-line"></span>
+            <span class="divider-label">o usa tu correo</span>
+            <span class="divider-line"></span>
+          </div>
+        }
+
+        <!-- Formulario email + contraseña -->
         <form [formGroup]="loginForm" (ngSubmit)="onLogin()" class="login-form fade-in">
-          
-          <app-input-field 
-            label="Correo Corporativo" 
-            placeholder="nombre@empresa.com" 
+
+          <app-input-field
+            label="Correo Corporativo"
+            placeholder="nombre@empresa.com"
             type="email"
             icon="email"
             [control]="getControl(loginForm, 'email')">
           </app-input-field>
 
-          <app-input-field 
-            label="Contraseña" 
-            placeholder="••••••" 
+          <app-input-field
+            label="Contraseña"
+            placeholder="••••••"
             type="password"
             icon="lock"
             [control]="getControl(loginForm, 'password')">
@@ -78,18 +116,17 @@
             <a routerLink="/auth/forgot-password" class="forgot-link">¿Olvidaste tu contraseña?</a>
           </div>
 
-          <app-primary-btn [fullWidth]="true" [loading]="isLoading()"> 
+          <app-primary-btn [fullWidth]="true" [loading]="isLoading()">
             Iniciar Sesión
           </app-primary-btn>
 
         </form>
 
-         <div class="form-footer fade-in">
-        <p>¿No tienes cuenta? <a routerLink="/auth/register" class="register-link">Regístrate</a></p>
-      </div>
-      }
+        <div class="form-footer fade-in">
+          <p>¿No tienes cuenta? <a routerLink="/auth/register" class="register-link">Regístrate</a></p>
+        </div>
 
-     
+      }
 
     </div>
   </div>

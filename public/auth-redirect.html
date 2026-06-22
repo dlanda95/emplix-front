@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Autenticando...</title>
+</head>
+<body>
+  <script src="/msal-redirect-bridge.min.js"></script>
+  <script>
+    // MSAL v5: broadcast el resultado al popup padre y cierra esta ventana.
+    msalRedirectBridge.broadcastResponseToMainFrame().catch(console.error);
+  </script>
+</body>
+</html>

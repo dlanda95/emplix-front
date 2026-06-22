@@ -1,24 +1,19 @@
-import { Component,inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, inject } from '@angular/core';
 import { LayoutService } from '../services/layout';
 
 @Component({
   selector: 'app-topbar',
-  imports: [CommonModule],
+  imports: [],
   templateUrl: './topbar.html',
   styleUrl: './topbar.scss',
 })
 export class Topbar {
- layoutService = inject(LayoutService);
+  readonly layoutService = inject(LayoutService);
 
-  onToggleMenu() {
-    // 🔥 LÓGICA INTELIGENTE
-    // Si la pantalla es menor a 1024px (nuestro breakpoint de Laptop/Tablet)
+  onToggleMenu(): void {
     if (window.innerWidth < 1024) {
-      // Estamos en MÓVIL: Abrimos el menú lateral (Overlay)
       this.layoutService.toggleMobileMenu();
     } else {
-      // Estamos en DESKTOP: Colapsamos/Expandimos el menú (Mini)
       this.layoutService.toggleSidebar();
     }
   }

@@ -1,49 +1,29 @@
 @use '../abstracts/variables' as v;
 @use '../abstracts/mixins' as m;
 
-// 1. RESET BÁSICO (Box Sizing es vital)
+// 1. BOX SIZING
 *, *::before, *::after {
   box-sizing: border-box;
-  -webkit-font-smoothing: antialiased; // Texto nítido estilo Mac
+  -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-// 2. SISTEMA FLUIDO (Escala Tipográfica Automática)
+// 2. TIPOGRAFÍA FLUIDA (escala automática por breakpoint)
 html {
-  // --- DESKTOP XL / MONITORES (Base) ---
-  // 1rem = 16px
-  font-size: 16px; 
- height: auto; 
+  font-size: 16px;
+  height: auto;
   min-height: 100%;
-  
-  // Transición suave al cambiar tamaño de ventana
   transition: font-size 0.25s ease-out;
 
-  // --- LAPTOPS PEQUEÑAS / IPAD HORIZONTAL (< 1024px) ---
-  // Bajamos 1px. Todo se vuelve ligeramente más compacto.
-  @include m.respond-to('laptop') {
-    font-size: 15px; 
-  }
-
-  // --- TABLETS VERTICALES (< 768px) ---
-  // Bajamos otro píxel.
-  @include m.respond-to('tablet') {
-    font-size: 14.5px; 
-  }
-
-  // --- MÓVILES (< 480px) ---
-  // Bajamos drásticamente para que quepa más contenido.
-  // 1rem ahora será 13px. 
-  // (Un botón de 3rem pasará de 48px en PC a 39px en Móvil automáticamente)
-  @include m.respond-to('mobile') {
-    font-size: 13px; 
-  }
+  @include m.respond-to('laptop') { font-size: 15px; }
+  @include m.respond-to('tablet') { font-size: 14.5px; }
+  @include m.respond-to('mobile') { font-size: 13px; }
 }
 
 body {
   margin: 0;
- min-height: 100vh;      
-  min-height: 100dvh; // Para móviles modernos (ignora la barra del navegador)
+  min-height: 100vh;
+  min-height: 100dvh;
   height: auto;
   font-family: var(--font-main);
   background-color: var(--bg-body);
@@ -51,26 +31,21 @@ body {
   line-height: 1.5;
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
-  overflow-x: hidden; // Previene scroll horizontal accidental
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
 
--webkit-overflow-scrolling: touch;
-
-}
-
-// 3. ELEMENTOS DE FORMULARIO (Heredar fuente Apple)
-input, button, textarea, select {
-  font-family: inherit;
-  font-size: inherit; // Hereda el tamaño fluido
-}
-
-// 4. APLICAR SCROLLBAR GLOBAL
-body {
   @include m.custom-scrollbar;
 }
 
+// 3. FORMULARIOS (heredan fuente del sistema fluido)
+input, button, textarea, select {
+  font-family: inherit;
+  font-size: inherit;
+}
+
+// 4. ROOT COMPONENT
 app-root {
-  display: block; // O flex column
+  display: block;
   width: 100%;
-  min-height: 100vh; // Crece con el contenido
+  min-height: 100vh;
 }

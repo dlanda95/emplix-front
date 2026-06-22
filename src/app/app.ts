@@ -1,18 +1,10 @@
-
+import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-
-import { Component, OnInit, inject,signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
-
-import { MsalService } from '@azure/msal-angular'; // Importar MSAL
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet,CommonModule,],
+  imports: [RouterOutlet],
   templateUrl: './app.html',
-  styleUrl: './app.scss'
+  styleUrl: './app.scss',
 })
-export class App {
-protected readonly title = signal('emplix');
-
-}
+export class App {}

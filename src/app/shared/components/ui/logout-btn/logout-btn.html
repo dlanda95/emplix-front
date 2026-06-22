@@ -1,12 +1,14 @@
-<button 
-  class="logout-btn" 
+<button
+  class="logout-btn"
   [class.collapsed]="collapsed"
   [class.ghost]="variant === 'ghost'"
   (click)="onLogout()"
   title="Cerrar Sesión">
-  
+
   <span class="material-icons-round icon">logout</span>
-  
-  <span class="label" *ngIf="!collapsed">Cerrar Sesión</span>
+
+  @if (!collapsed) {
+    <span class="label">Cerrar Sesión</span>
+  }
 
 </button>

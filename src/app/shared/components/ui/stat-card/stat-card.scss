@@ -1,20 +1,16 @@
-@use 'abstracts/variables' as v;
 @use 'abstracts/mixins' as m;
 
 .stat-card {
   position: relative;
   background: var(--bg-surface);
-  border-radius: var(--radius-md); // 16px
+  border-radius: var(--radius-md);
   padding: 1.5rem;
   display: flex;
   align-items: center;
   gap: 1.25rem;
   overflow: hidden;
-  
-  // Sombra suave y borde sutil
   box-shadow: var(--shadow-sm);
   border: 1px solid var(--border-color);
-  
   transition: transform 0.2s, box-shadow 0.2s;
 
   &:hover {
@@ -22,22 +18,20 @@
     box-shadow: var(--shadow-md);
   }
 
-  // --- VARIANTE DE COLORES ---
+  // --- VARIANTES (usando tokens CSS) ---
   &.primary .icon-box { background: var(--color-primary-soft); color: var(--color-primary); }
-  &.success .icon-box { background: #ecfdf5; color: #10b981; } // Esmeralda
-  &.warning .icon-box { background: #fffbeb; color: #f59e0b; } // Ámbar
-  &.info    .icon-box { background: #eff6ff; color: #3b82f6; } // Azul
+  &.success .icon-box { background: var(--color-success-soft); color: var(--color-success); }
+  &.warning .icon-box { background: var(--color-warning-soft); color: var(--color-warning); }
+  &.info    .icon-box { background: var(--color-info-soft);    color: var(--color-info); }
 
-  // ICONO PRINCIPAL
   .icon-box {
     width: 56px;
     height: 56px;
-    border-radius: 14px; // Squircle
+    border-radius: 14px;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    
     span { font-size: 28px; }
   }
 
@@ -47,7 +41,7 @@
     z-index: 2;
 
     .label {
-      font-size: var(--text-xs); // 12px (o 10px según tus cambios)
+      font-size: var(--text-xs);
       color: var(--text-secondary);
       font-weight: 600;
       text-transform: uppercase;
@@ -56,7 +50,7 @@
     }
 
     .value {
-      font-size: var(--text-2xl); // Grande
+      font-size: var(--text-2xl);
       font-weight: 700;
       color: var(--text-main);
       margin: 0;
@@ -64,7 +58,6 @@
     }
   }
 
-  // DECORACIÓN DE FONDO (Icono gigante transparente)
   .bg-icon {
     position: absolute;
     right: -10px;
@@ -72,10 +65,13 @@
     opacity: 0.05;
     pointer-events: none;
     z-index: 1;
-    
-    span {
-      font-size: 100px;
-      color: var(--text-main);
-    }
+    span { font-size: 100px; color: var(--text-main); }
+  }
+
+  @include m.respond-to('mobile') {
+    padding: 1.25rem;
+    gap: 1rem;
+    .icon-box { width: 48px; height: 48px; span { font-size: 24px; } }
+    .content .value { font-size: var(--text-xl); }
   }
 }

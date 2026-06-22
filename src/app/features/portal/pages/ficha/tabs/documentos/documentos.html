@@ -1,0 +1,113 @@
+<div class="docs-layout">
+
+  <!-- ── Sidebar de categorías ──────────────────────────────────────────── -->
+  <aside class="docs-sidebar">
+    <p class="sidebar-title">Categorías</p>
+
+    <nav class="category-list">
+      @for (cat of categories; track cat.type) {
+        <button
+          class="category-item"
+          [class.active]="activeCategory() === cat.type"
+          (click)="selectCategory(cat.type)">
+          <span class="material-icons-round cat-icon">{{ cat.icon }}</span>
+          <span class="cat-label">{{ cat.label }}</span>
+          @if (countFor()[cat.type]) {
+            <span class="cat-count">{{ countFor()[cat.type] }}</span>
+          }
+        </button>
+      }
+    </nav>
+
+    <button class="upload-trigger" (click)="showUploadModal.set(true)">
+      <span class="material-icons-round">add</span>
+      Subir documento
+    </button>
+  </aside>
+
+  <!-- ── Contenido principal ────────────────────────────────────────────── -->
+  <main class="docs-content">
+
+    <div class="content-header">
+      <h3 class="content-title">{{ activeCategoryLabel() }}</h3>
+      @if ((allDocs()?.length ?? 0) > 0) {
+        <span class="doc-count">{{ filteredDocs()?.length }} archivo(s)</span>
+      }
+    </div>
+
+    @if (uploadError()) {
+      <div class="action-error">
+        <span class="material-icons-round">error_outline</span>
+        {{ uploadError() }}
+        <button class="action-error-close" (click)="uploadError.set('')">
+          <span class="material-icons-round">close</span>
+        </button>
+      </div>
+    }
+
+    <!-- Loading -->
+    @if (filteredDocs() === undefined) {
+      <div class="skeleton-grid">
+        @for (i of [1,2,3,4,5,6]; track i) {
+          <app-loading-skeleton variant="card"></app-loading-skeleton>
+        }
+      </div>
+    }
+
+    <!-- Sin documentos -->
+    @else if (filteredDocs()!.length === 0) {
+      <app-empty-state
+        icon="folder_open"
+        title="Sin documentos"
+        description="No hay archivos en esta categoría. Usa el botón para subir uno.">
+      </app-empty-state>
+    }
+
+    <!-- Grid de documentos -->
+    @else {
+      <div class="docs-grid">
+        @for (doc of filteredDocs()!; track doc.id) {
+          <app-doc-card
+            [doc]="doc"
+            (download)="onDownload($event)"
+            (delete)="onDeleteRequest($event)">
+          </app-doc-card>
+        }
+      </div>
+    }
+
+  </main>
+
+</div>
+
+<!-- ── Modal de subida ──────────────────────────────────────────────────────── -->
+<app-modal
+  title="Subir documento"
+  [isOpen]="showUploadModal()"
+  (close)="showUploadModal.set(false)">
+
+  @if (uploadError()) {
+    <div class="upload-error">
+      <span class="material-icons-round">error_outline</span>
+      {{ uploadError() }}
+    </div>
+  }
+
+  <app-doc-upload-zone
+    [class.is-uploading]="isUploading()"
+    (fileSelected)="onFileSelected($event)">
+  </app-doc-upload-zone>
+
+</app-modal>
+
+<!-- ── Confirmación de eliminación ────────────────────────────────────────── -->
+<app-confirm-modal
+  [isOpen]="showConfirmDelete()"
+  icon="delete_outline"
+  title="Eliminar documento"
+  [message]="'¿Seguro que deseas eliminar ' + (docToDelete()?.originalName || docToDelete()?.name || 'este archivo') + '? Esta acción no se puede deshacer.'"
+  confirmLabel="Eliminar"
+  confirmVariant="danger"
+  (confirmed)="onDeleteConfirmed()"
+  (cancelled)="onDeleteCancelled()">
+</app-confirm-modal>

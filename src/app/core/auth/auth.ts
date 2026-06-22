@@ -1,132 +1,110 @@
-import { Injectable, inject, signal,computed } from '@angular/core';
-import { HttpClient,HttpHeaders } from '@angular/common/http';
+import { Injectable, inject, signal, computed } from '@angular/core';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { Observable, tap, of, delay } from 'rxjs';
-import { API_ENDPOINTS } from '../config/api.config';
-
+import { Observable, tap } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { throwError } from 'rxjs';
+import { API_ENDPOINTS } from '@core/config/api.config';
+import { User, AuthResponse } from './models/user.model';
 
+export type AuthMethod = 'EMAIL' | 'MICROSOFT' | 'GOOGLE';
 
-export interface User {
-  id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  role?: string;
-  // ... otros campos
-}
-
-
-export interface LoginResponse {
-  user: any;
-  token: string;
+export interface TenantInfo {
+  exists: boolean;
+  name: string;
+  slug: string;
+  authMethods: AuthMethod[];
+  hasMicrosoftSSO: boolean;
 }
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private http = inject(HttpClient);
-  private router = inject(Router);
-  
-// ✅ 1. ESTADO DEL TENANT (Empresa)
-  // Lo guardamos en señal para usarlo reactivamente
-  private _currentTenant = signal<string | null>(localStorage.getItem('saved_tenant'));
-  currentTenant = this._currentTenant.asReadonly();
+  private readonly http   = inject(HttpClient);
+  private readonly router = inject(Router);
 
-  // Estado del usuario
-  private _currentUser = signal<User | null>(this.getUserFromStorage());
-  currentUser = this._currentUser.asReadonly();
-  isAuthenticated = computed(() => !!this._currentUser());
+  private readonly _currentUser       = signal<User | null>(this.loadUserFromStorage());
+  private readonly _currentTenant     = signal<string | null>(localStorage.getItem('saved_tenant'));
+  private readonly _tenantAuthMethods = signal<AuthMethod[]>(['EMAIL']);
 
-  // ✅ 2. VERIFICAR EXISTENCIA DEL TENANT (REAL)
-  checkTenantAvailability(slug: string): Observable<any> {
-    // Headers manuales porque el Interceptor lee del TenantService, 
-    // y en este punto (Paso 1) el TenantService AÚN no tiene el valor guardado
-    // o queremos validar uno nuevo distinto al guardado.
+  readonly currentUser       = this._currentUser.asReadonly();
+  readonly currentTenant     = this._currentTenant.asReadonly();
+  readonly tenantAuthMethods = this._tenantAuthMethods.asReadonly();
+  readonly isAuthenticated   = computed(() => !!this._currentUser());
+  readonly hasMicrosoftSSO   = computed(() => this._tenantAuthMethods().includes('MICROSOFT'));
+
+  checkTenantAvailability(slug: string): Observable<TenantInfo> {
     const headers = new HttpHeaders().set('x-tenant-slug', slug);
-
-    return this.http.get(API_ENDPOINTS.auth.verifytenant, { headers }).pipe(
-      map((response: any) => {
-        // Retornamos la info real de la empresa
-        return { 
-          exists: true, 
-          name: response.name, 
-          slug: response.slug 
+    return this.http.get<any>(API_ENDPOINTS.auth.verifytenant, { headers }).pipe(
+      map(res => {
+        const d = res?.data ?? res;
+        const info: TenantInfo = {
+          exists: true,
+          name: d.name,
+          slug: d.slug,
+          authMethods: d.authMethods ?? ['EMAIL'],
+          hasMicrosoftSSO: d.hasMicrosoftSSO ?? false,
         };
+        // Guardar los métodos para el paso 2
+        this._tenantAuthMethods.set(info.authMethods);
+        return info;
       }),
-      catchError((error) => {
-        // Si el backend (TenantMiddleware) devuelve 404, es que no existe.
-        if (error.status === 404) {
-          return throwError(() => new Error('La empresa no existe.'));
-        }
-        if (error.status === 402) { // Código especial que vimos en tu middleware
-          return throwError(() => new Error('Empresa suspendida. Contacte soporte.'));
-        }
-        return throwError(() => error);
-      })
+      catchError(err => {
+        if (err.status === 404) return throwError(() => new Error('La empresa no existe. Verifica el ID de tu organización.'));
+        if (err.status === 402) return throwError(() => new Error('Empresa suspendida. Contacta al soporte.'));
+        return throwError(() => new Error('Error de conexión. Intenta nuevamente.'));
+      }),
     );
   }
 
-
-
-// ✅ 3. LOGIN CONVENCIONAL (Paso 2)
- // LOGIN NORMAL
-  login(credentials: { email: string; password: string }): Observable<any> {
-    // 🔥 ELIMINADO: La lógica manual de headers.
-    // El TenantInterceptor ya inyectará 'x-tenant-slug' automáticamente.
-    
-    return this.http.post(API_ENDPOINTS.auth.login, credentials).pipe(
-      tap((response: any) => this.saveSession(response))
+  login(credentials: { email: string; password: string }): Observable<AuthResponse> {
+    return this.http.post<any>(API_ENDPOINTS.auth.login, credentials).pipe(
+      map(res => (res?.data ?? res) as AuthResponse),
+      tap(data => this.saveSession(data)),
     );
   }
-// Setters públicos
-  setTenant(slug: string) {
+
+  loginWithMicrosoft(idToken: string): Observable<AuthResponse> {
+    return this.http.post<any>(API_ENDPOINTS.auth.microsoft, { token: idToken }).pipe(
+      map(res => (res?.data ?? res) as AuthResponse),
+      tap(data => this.saveSession(data)),
+    );
+  }
+
+  register(userData: any): Observable<any> {
+    return this.http.post<any>(API_ENDPOINTS.auth.register, userData).pipe(
+      map(res => res?.data ?? res),
+      tap(data => this.saveSession(data)),
+    );
+  }
+
+  checkEmailAvailability(email: string): Observable<boolean> {
+    return this.http.post<any>(API_ENDPOINTS.auth.checkEmail, { email }).pipe(
+      map(res => !!(res?.data ?? res).exists),
+    );
+  }
+
+  setTenant(slug: string): void {
     this._currentTenant.set(slug);
-    localStorage.setItem('saved_tenant', slug); // Recordar para la próxima
+    localStorage.setItem('saved_tenant', slug);
   }
 
-  // ... (saveSession, getUserFromStorage, logout - se mantienen igual)
-  private saveSession(data: any) {
-    if (data.token) {
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
-      this._currentUser.set(data.user);
-    }
-  }
-
-  private getUserFromStorage(): User | null {
-    const userStr = localStorage.getItem('user');
-    return userStr ? JSON.parse(userStr) : null;
-  }
-  
-  logout() {
+  logout(): void {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    // NO borramos 'saved_tenant' para que sea cómodo volver a entrar
     this._currentUser.set(null);
+    this._tenantAuthMethods.set(['EMAIL']);
     this.router.navigate(['/auth/login']);
   }
 
-
-
-
-
-
-  // ✅ Validar si el correo ya está registrado en la empresa actual
-  checkEmailAvailability(email: string): Observable<boolean> {
-    // El TenantInterceptor inyectará el header 'x-tenant-slug' automáticamente
-    // usando el valor que ya guardamos en el TenantService.
-    return this.http.post<{ exists: boolean }>(API_ENDPOINTS.auth.checkEmail, { email }).pipe(
-      map(response => response.exists)
-    );
+  private saveSession(data: AuthResponse): void {
+    if (!data?.token) return;
+    localStorage.setItem('token', data.token);
+    localStorage.setItem('user', JSON.stringify(data.user));
+    this._currentUser.set(data.user);
   }
 
-  // ✅ Registro de usuario (Ahora incluye nombre, apellido, etc)
-  register(userData: any): Observable<any> {
-    return this.http.post(API_ENDPOINTS.auth.register, userData).pipe(
-      tap((response: any) => this.saveSession(response))
-    );
+  private loadUserFromStorage(): User | null {
+    const raw = localStorage.getItem('user');
+    return raw ? JSON.parse(raw) : null;
   }
 }
-
-

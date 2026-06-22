@@ -1,0 +1,10 @@
+<div class="empty-state">
+  <div class="icon-wrap">
+    <span class="material-icons-round">{{ icon }}</span>
+  </div>
+  <p class="title">{{ title }}</p>
+  @if (description) {
+    <p class="description">{{ description }}</p>
+  }
+  <ng-content></ng-content>
+</div>

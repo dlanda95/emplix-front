@@ -1,10 +1,9 @@
 import { Component, Input, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../../core/auth/auth';
 
 @Component({
   selector: 'app-logout-btn',
-  imports: [CommonModule],
+  imports: [],
   templateUrl: './logout-btn.html',
   styleUrl: './logout-btn.scss',
 })

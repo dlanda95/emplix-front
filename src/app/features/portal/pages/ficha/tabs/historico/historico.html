@@ -1,0 +1,39 @@
+<div class="historico-container">
+
+  <div class="historico-header">
+    <div class="header-icon">
+      <span class="material-icons-round">timeline</span>
+    </div>
+    <div class="header-text">
+      <h3 class="header-title">Trayectoria Laboral</h3>
+      <p class="header-subtitle">Historial de eventos desde tu incorporación a la empresa</p>
+    </div>
+  </div>
+
+  @if (history() === undefined) {
+    <!-- Skeleton de carga -->
+    <div class="skeleton-list">
+      @for (i of [1,2,3]; track i) {
+        <app-loading-skeleton variant="card"></app-loading-skeleton>
+      }
+    </div>
+  } @else if (history()!.length === 0) {
+    <!-- Sin datos -->
+    <app-empty-state
+      icon="timeline"
+      title="Sin historial disponible"
+      description="Aún no hay eventos registrados en tu trayectoria.">
+    </app-empty-state>
+  } @else {
+    <!-- Línea de tiempo -->
+    <div class="timeline">
+      @for (event of history()!; track event.id; let last = $last) {
+        <app-timeline-item
+          [event]="event"
+          [isLast]="last">
+        </app-timeline-item>
+      }
+    </div>
+  }
+
+</div>
