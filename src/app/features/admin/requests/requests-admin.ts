@@ -8,39 +8,82 @@ import {
 import type { FilterChipItem } from '@shared/ui';
 import { RequestsAdminService, ChangeRequest, RequestStatus } from '../services/requests-admin.service';
 
-const SECTION_FIELDS: Record<string, string[]> = {
-  address:   ['address', 'district', 'province', 'departmentdirec', 'addressRef'],
-  financial: ['bankAccount', 'bankEntity', 'bankCci', 'afpType', 'afpEntity', 'afpCommission'],
+// Campos por sección (para detectar de qué sección es cada solicitud)
+const ADDRESS_FIELDS  = new Set(['address', 'district', 'province', 'departmentdirec', 'addressRef']);
+const FINANCIAL_FIELDS = new Set(['bankAccount', 'bankEntity', 'bankCci', 'afpType', 'afpEntity', 'afpCommission']);
+
+// Etiquetas legibles para TODOS los campos editables del perfil
+const FIELD_LABELS: Record<string, string> = {
+  // Información personal
+  firstName:      'Primer Nombre',
+  middleName:     'Segundo Nombre',
+  lastName:       'Apellido Paterno',
+  secondLastName: 'Apellido Materno',
+  birthDate:      'Fecha de Nacimiento',
+  gender:         'Género',
+  maritalStatus:  'Estado Civil',
+  nationality:    'Nacionalidad',
+  academicLevel:  'Grado Académico',
+  // Lugar de nacimiento
+  birthCountry:   'País de Nacimiento',
+  birthRegion:    'Departamento de Nacimiento',
+  birthDistrict:  'Distrito de Nacimiento',
+  // Documentos
+  documentType:   'Tipo de Documento',
+  documentId:     'N° Documento',
+  licenseNumber:  'Brevete',
+  docAddress:     'Dirección (Doc. Identidad)',
+  docDistrict:    'Distrito (Doc. Identidad)',
+  docDepartment:  'Departamento (Doc. Id.)',
+  docAddressRef:  'Referencia (Doc. Id.)',
+  // Domicilio actual
+  address:         'Dirección',
+  district:        'Distrito',
+  province:        'Provincia',
+  departmentdirec: 'Departamento',
+  addressRef:      'Referencia',
+  // Financiero
+  afpType:       'Sistema AFP',
+  afpEntity:     'Entidad AFP',
+  afpCommission: 'Tipo de Comisión',
+  bankEntity:    'Entidad Bancaria',
+  bankAccount:   'N° Cuenta',
+  bankCci:       'CCI',
 };
 
-const FIELD_LABELS: Record<string, string> = {
-  address: 'Dirección', district: 'Distrito', province: 'Provincia',
-  departmentdirec: 'Departamento', addressRef: 'Referencia',
-  bankEntity: 'Banco', bankAccount: 'N° Cuenta', bankCci: 'CCI',
-  afpType: 'Sistema AFP', afpEntity: 'Entidad AFP', afpCommission: 'Comisión',
-  firstName: 'Nombre', lastName: 'Apellido', maritalStatus: 'Estado Civil',
-  birthDate: 'Fecha Nacimiento', documentId: 'N° Documento',
-};
+/** Normaliza un valor para comparación: null / undefined / '' → null */
+function norm(val: unknown): string | null {
+  if (val === null || val === undefined || val === '') return null;
+  return String(val);
+}
+
+/** Etiqueta de visualización para un valor (null → guión) */
+function display(val: unknown): string {
+  const n = norm(val);
+  return n ?? '—';
+}
 
 function detectSection(data: Record<string, unknown> | null | undefined): { label: string; icon: string } {
   if (!data) return { label: 'Datos', icon: 'edit_note' };
-  if (SECTION_FIELDS['address'].some(f => f in data))   return { label: 'Domicilio',   icon: 'home' };
-  if (SECTION_FIELDS['financial'].some(f => f in data)) return { label: 'Financiero',  icon: 'account_balance' };
-  return { label: 'Datos Personales', icon: 'badge' };
+  const keys = new Set(Object.keys(data).filter(k => k !== '_previous'));
+  if ([...keys].some(k => ADDRESS_FIELDS.has(k)))   return { label: 'Domicilio',       icon: 'home'            };
+  if ([...keys].some(k => FINANCIAL_FIELDS.has(k))) return { label: 'Financiero',      icon: 'account_balance' };
+  return                                                     { label: 'Datos Personales', icon: 'badge'           };
 }
 
 function buildDiff(data: Record<string, unknown> | null | undefined): Array<{ field: string; label: string; old: string; new: string }> {
   if (!data) return [];
   const previous = (data['_previous'] as Record<string, unknown>) ?? {};
+
   return Object.keys(data)
-    .filter(k => k !== '_previous' && FIELD_LABELS[k])
+    .filter(k => k !== '_previous' && FIELD_LABELS[k])           // solo campos conocidos
+    .filter(k => norm(previous[k]) !== norm(data[k]))            // solo los que realmente cambiaron
     .map(k => ({
       field: k,
-      label: FIELD_LABELS[k] ?? k,
-      old:   String(previous[k] ?? '—'),
-      new:   String(data[k]    ?? '—'),
-    }))
-    .filter(d => d.old !== d.new);
+      label: FIELD_LABELS[k],
+      old:   display(previous[k]),
+      new:   display(data[k]),
+    }));
 }
 
 const STATUS_FILTER_CHIPS: FilterChipItem[] = [
