@@ -10,6 +10,9 @@ import {
   catalogLabel,
 } from '@features/portal/models/catalog.model';
 
+const norm = (v: unknown): string | null =>
+  (v === null || v === undefined || v === '') ? null : String(v);
+
 @Component({
   selector: 'app-mis-datos',
   imports: [AppInput, AppSelect, ChangeRequestBar, CommonModule, Field, ReactiveFormsModule, SectionCard],
@@ -71,10 +74,26 @@ export class MisDatos {
     if (this.editForm.invalid) return;
     this.isSubmitting.set(true);
 
-    const current = this.profile();
+    const current   = this.profile() as Record<string, unknown> | undefined;
+    const formValue = this.editForm.value as Record<string, unknown>;
+
+    // Solo enviar campos que realmente cambiaron — evita unique constraint en campos como documentId
+    const changed: Record<string, unknown> = {};
+    for (const key of Object.keys(formValue)) {
+      const oldVal = norm(current?.[key]);
+      const newVal = norm(formValue[key]);
+      if (oldVal !== newVal) changed[key] = formValue[key];
+    }
+
+    if (Object.keys(changed).length === 0) {
+      this.isSubmitting.set(false);
+      this.isEditing.set(false);
+      return;
+    }
+
     const payload: ProfileUpdateRequest = {
       type:   'PROFILE_UPDATE',
-      data:   { ...this.editForm.value, _previous: current ?? {} },
+      data:   { ...changed, _previous: current ?? {} } as any,
       reason: 'Actualización de datos personales por el colaborador',
     };
 
