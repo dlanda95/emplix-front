@@ -1,36 +1,23 @@
 @if (profile(); as data) {
 
-  @if (hasPendingRequest()) {
-    <app-banner variant="warning" icon="pending_actions" title="Solicitud en Revisión">
-      <p>Tus correcciones están siendo evaluadas por Recursos Humanos.</p>
-    </app-banner>
-  }
-
-  @if (isEditing()) {
-    <app-edit-bar
-      submitLabel="Enviar solicitud"
-      loadingLabel="Enviando..."
-      submitIcon="send"
-      [isSubmitting]="isSubmitting()"
-      [canSubmit]="editForm.valid"
-      (cancelled)="cancelEdit()"
-      (submitted)="submitRequest()">
-    </app-edit-bar>
-  }
+  <app-change-request-bar
+    section="Mis Datos Personales"
+    sectionIcon="badge"
+    description="Nombre, documento de identidad, estado civil y más."
+    [isPending]="isPending()"
+    [isEditing]="isEditing()"
+    [isSubmitting]="isSubmitting()"
+    [canSubmit]="editForm.valid"
+    [requiresApproval]="true"
+    (editRequested)="isEditing.set(true)"
+    (submitted)="submitRequest()"
+    (cancelled)="cancelEdit()">
+  </app-change-request-bar>
 
   <form [formGroup]="editForm">
 
-    <!-- ── Sección 1: Información Personal ─────────────────────────────── -->
+    <!-- Información Personal -->
     <app-section-card title="Información Personal" [columns]="3">
-
-      @if (!isEditing() && !hasPendingRequest()) {
-        <ng-container section-actions>
-          <app-button variant="ghost" size="sm" icon="edit" (clicked)="toggleEditMode()">
-            Solicitar corrección
-          </app-button>
-        </ng-container>
-      }
-
       @if (!isEditing()) {
         <app-field label="Primer Nombre"       [value]="data.firstName"></app-field>
         <app-field label="Segundo Nombre"      [value]="data.middleName"></app-field>
@@ -44,29 +31,25 @@
         <app-input label="Apellido Paterno"    formControlName="lastName"></app-input>
         <app-input label="Apellido Materno"    formControlName="secondLastName"></app-input>
         <app-input label="Fecha de Nacimiento" type="date" formControlName="birthDate"></app-input>
-        <app-select label="Género" formControlName="gender" [options]="genderOptions"></app-select>
+        <app-select label="Género"             formControlName="gender" [options]="genderOptions"></app-select>
       }
-
     </app-section-card>
 
-    <!-- ── Sección 2: Lugar de Nacimiento ──────────────────────────────── -->
+    <!-- Lugar de Nacimiento -->
     <app-section-card title="Lugar de Nacimiento" [columns]="3">
-
       @if (!isEditing()) {
-        <app-field label="País"              [value]="data.birthCountry"></app-field>
-        <app-field label="Departamento"      [value]="data.birthRegion"></app-field>
-        <app-field label="Distrito"          [value]="data.birthDistrict"></app-field>
+        <app-field label="País"         [value]="data.birthCountry"></app-field>
+        <app-field label="Departamento" [value]="data.birthRegion"></app-field>
+        <app-field label="Distrito"     [value]="data.birthDistrict"></app-field>
       } @else {
-        <app-input label="País"          formControlName="birthCountry"  placeholder="Ej. Perú"></app-input>
-        <app-input label="Departamento"  formControlName="birthRegion"   placeholder="Ej. Lima"></app-input>
-        <app-input label="Distrito"      formControlName="birthDistrict" placeholder="Ej. Miraflores"></app-input>
+        <app-input label="País"         formControlName="birthCountry"  placeholder="Ej. Perú"></app-input>
+        <app-input label="Departamento" formControlName="birthRegion"   placeholder="Ej. Lima"></app-input>
+        <app-input label="Distrito"     formControlName="birthDistrict" placeholder="Ej. Miraflores"></app-input>
       }
-
     </app-section-card>
 
-    <!-- ── Sección 3: Documentos de Identidad ──────────────────────────── -->
+    <!-- Documentos de Identidad -->
     <app-section-card title="Documentos de Identidad" [columns]="2">
-
       @if (!isEditing()) {
         <app-field label="Tipo de Documento"          [value]="documentTypeLabel(data.documentType)"></app-field>
         <app-field label="Nro. Documento"             [value]="data.documentId"></app-field>
@@ -84,25 +67,19 @@
         <app-input  label="Departamento (Doc. Id.)"    formControlName="docDepartment"  placeholder="Ej. Lima"></app-input>
         <app-input  label="Referencia (Doc. Id.)"      formControlName="docAddressRef"  placeholder="Ej. Frente al parque"></app-input>
       }
-
     </app-section-card>
 
-    <!-- ── Sección 4: Datos Adicionales ────────────────────────────────── -->
+    <!-- Datos Adicionales -->
     <app-section-card title="Datos Adicionales" [columns]="3">
-
       @if (!isEditing()) {
         <app-field label="Estado Civil"    [value]="maritalStatusLabel(data.maritalStatus)"></app-field>
         <app-field label="Nacionalidad"    [value]="data.nationality"></app-field>
         <app-field label="Grado Académico" [value]="academicLevelLabel(data.academicLevel)"></app-field>
       } @else {
-        <app-select label="Estado Civil"
-                    formControlName="maritalStatus"
-                    [options]="maritalStatusOptions">
-        </app-select>
-        <app-input  label="Nacionalidad"    formControlName="nationality"    placeholder="Ej. Peruana"></app-input>
-        <app-select label="Grado Académico" formControlName="academicLevel"  [options]="academicLevelOptions"></app-select>
+        <app-select label="Estado Civil"    formControlName="maritalStatus" [options]="maritalStatusOptions"></app-select>
+        <app-input  label="Nacionalidad"    formControlName="nationality"   placeholder="Ej. Peruana"></app-input>
+        <app-select label="Grado Académico" formControlName="academicLevel" [options]="academicLevelOptions"></app-select>
       }
-
     </app-section-card>
 
   </form>

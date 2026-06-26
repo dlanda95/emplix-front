@@ -1,8 +1,7 @@
 import { Component, inject, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { AppInput, Banner, Button, Field, MapWidget, Modal, PageHeader, SectionCard, SplitLayout } from '@shared/ui';
-import { ToolbarLayout } from '@shared/layout';
+import { AppInput, Banner, Button, ChangeRequestBar, Field, MapWidget, Modal, SectionCard, SplitLayout } from '@shared/ui';
 import { CollaboratorService } from '@features/portal/services/collaborator.service';
 import { CollaboratorProfile } from '@features/portal/models/collaborator.model';
 
@@ -10,7 +9,7 @@ import { CollaboratorProfile } from '@features/portal/models/collaborator.model'
   selector: 'app-direccion',
   imports: [
     ReactiveFormsModule, CommonModule,
-    AppInput, Banner, Button, Field, MapWidget, Modal, PageHeader, SectionCard, SplitLayout, ToolbarLayout,
+    AppInput, Banner, Button, ChangeRequestBar, Field, MapWidget, Modal, SectionCard, SplitLayout,
   ],
   templateUrl: './direccion.html',
   styleUrl: './direccion.scss',
@@ -36,7 +35,6 @@ export class Direccion {
 
   constructor() {
     this.loadProfile();
-
     effect(() => {
       const data = this.profile();
       if (!data) return;
@@ -71,7 +69,6 @@ export class Direccion {
   toggleSameAsDoc(event: Event): void {
     const checked = (event.target as HTMLInputElement).checked;
     this.sameAsDoc.set(checked);
-
     const hasDocAddress = !!(this.profile()?.docAddress);
     if (checked && hasDocAddress) {
       const p = this.profile()!;
@@ -96,7 +93,6 @@ export class Direccion {
         });
       }
     }
-    // Si checked pero sin docAddress: muestra el banner, form queda intacto
   }
 
   submitAddressUpdate(): void {

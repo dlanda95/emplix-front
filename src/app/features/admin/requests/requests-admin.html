@@ -40,6 +40,9 @@
                 <div class="colabs-cell__info">
                   <span class="colabs-cell__name">{{ employeeName(req) }}</span>
                   <span class="colabs-cell__email">{{ req.user?.email }}</span>
+                  @if (req.user?.employee?.position; as pos) {
+                    <span class="sreq-position">{{ pos.name }}</span>
+                  }
                 </div>
               </div>
 
@@ -48,13 +51,13 @@
                   <span class="material-icons-round sreq-section__icon">{{ detectSection(req.data).icon }}</span>
                   {{ detectSection(req.data).label }}
                 </span>
-                <span class="sreq-date">{{ req.createdAt | date:'dd/MM/yyyy HH:mm' }}</span>
+                <span class="sreq-date">{{ req.createdAt | date:'dd/MM/yyyy, HH:mm' }}</span>
                 @if (req.status === 'PENDING') {
-                  <app-badge variant="warning" label="Pendiente"></app-badge>
+                  <app-badge variant="warning">Pendiente</app-badge>
                 } @else if (req.status === 'APPROVED') {
-                  <app-badge variant="success" label="Aprobado"></app-badge>
+                  <app-badge variant="success">Aprobado</app-badge>
                 } @else {
-                  <app-badge variant="danger" label="Rechazado"></app-badge>
+                  <app-badge variant="error">Rechazado</app-badge>
                 }
               </div>
             </div>
@@ -73,32 +76,37 @@
                   }
                 </div>
               </div>
+            } @else {
+              <div class="sreq-diff sreq-diff--empty">
+                <span class="material-icons-round">info_outline</span>
+                No se detectaron diferencias con los datos actuales.
+              </div>
             }
 
             @if (req.status === 'REJECTED' && req.reason) {
               <div class="sreq-reject-reason">
-                <span class="material-icons-round">info</span>
-                Motivo de rechazo: {{ req.reason }}
+                <span class="material-icons-round">block</span>
+                <span><strong>Motivo del rechazo:</strong> {{ req.reason }}</span>
               </div>
             }
 
             @if (req.status === 'PENDING') {
               <div class="sreq-actions">
                 <app-button
-                  variant="primary"
-                  icon="check"
-                  size="sm"
-                  [disabled]="isProcessing()"
-                  (clicked)="approve(req.id)">
-                  Aprobar
-                </app-button>
-                <app-button
-                  variant="danger"
+                  variant="ghost"
                   icon="close"
                   size="sm"
                   [disabled]="isProcessing()"
                   (clicked)="openRejectModal(req.id)">
                   Rechazar
+                </app-button>
+                <app-button
+                  variant="primary"
+                  icon="check"
+                  size="sm"
+                  [disabled]="isProcessing()"
+                  (clicked)="approve(req.id)">
+                  Aprobar cambio
                 </app-button>
               </div>
             }
@@ -121,8 +129,8 @@
   (close)="rejectModal.set(false)">
 
   <div style="display:flex;flex-direction:column;gap:1rem;">
-    <app-banner variant="warning" icon="warning" title="Esta acción notificará al colaborador">
-      <p>Explica brevemente el motivo del rechazo para que el colaborador pueda corregir su solicitud.</p>
+    <app-banner variant="warning" icon="warning" title="Explica el motivo al colaborador">
+      <p>El colaborador verá este mensaje y podrá corregir su solicitud.</p>
     </app-banner>
     <app-input
       label="Motivo del rechazo"

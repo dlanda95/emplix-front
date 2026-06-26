@@ -1,8 +1,7 @@
 import { Component, inject, signal, computed, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { AppInput, AppSelect, Banner, Button, Field, FormRow, FormSection, Modal, PageHeader, SectionCard } from '@shared/ui';
-import { ToolbarLayout } from '@shared/layout';
+import { AppInput, AppSelect, Banner, Button, ChangeRequestBar, Field, FormRow, FormSection, Modal, SectionCard } from '@shared/ui';
 import { CollaboratorService } from '@features/portal/services/collaborator.service';
 import { CollaboratorProfile } from '@features/portal/models/collaborator.model';
 import {
@@ -13,7 +12,7 @@ import {
   selector: 'app-financiero',
   imports: [
     CommonModule, ReactiveFormsModule,
-    AppInput, AppSelect, Banner, Button, Field, FormRow, FormSection, Modal, PageHeader, SectionCard, ToolbarLayout,
+    AppInput, AppSelect, Banner, Button, ChangeRequestBar, Field, FormRow, FormSection, Modal, SectionCard,
   ],
   templateUrl: './financiero.html',
   styleUrl: './financiero.scss',
@@ -45,7 +44,6 @@ export class Financiero {
 
   constructor() {
     this.loadProfile();
-
     effect(() => {
       const data = this.profile();
       if (data) {
@@ -111,17 +109,9 @@ export class Financiero {
     });
   }
 
-  afpTypeLabel(val: string | null | undefined): string {
-    return catalogLabel(AFP_TYPE_OPTIONS, val);
-  }
-
-  afpEntityLabel(val: string | null | undefined): string {
-    return catalogLabel(AFP_ENTITY_OPTIONS, val);
-  }
-
-  afpCommissionLabel(val: string | null | undefined): string {
-    return catalogLabel(AFP_COMMISSION_OPTIONS, val);
-  }
+  afpTypeLabel(val: string | null | undefined): string { return catalogLabel(AFP_TYPE_OPTIONS, val); }
+  afpEntityLabel(val: string | null | undefined): string { return catalogLabel(AFP_ENTITY_OPTIONS, val); }
+  afpCommissionLabel(val: string | null | undefined): string { return catalogLabel(AFP_COMMISSION_OPTIONS, val); }
 
   private loadProfile(): void {
     this.collaboratorService.getProfile().subscribe({

@@ -1,34 +1,24 @@
 @if (profile(); as data) {
 
-  <app-toolbar-layout>
-    <ng-container main>
-      <app-page-header title="Domicilio" subtitle="Dirección de residencia del colaborador."></app-page-header>
-    </ng-container>
-    <ng-container actions>
-      @if (submitted()) {
-        <span class="save-notice">
-          <span class="material-icons-round">check_circle</span>
-          Solicitud enviada — RRHH revisará tu cambio
-        </span>
-      }
-      <app-button
-        variant="secondary"
-        icon="edit_location"
-        [disabled]="isPending()"
-        (clicked)="openModal()">
-        {{ isPending() ? 'Cambio pendiente de aprobación' : 'Solicitar cambio de dirección' }}
-      </app-button>
-    </ng-container>
-  </app-toolbar-layout>
+  <app-change-request-bar
+    section="Domicilio"
+    sectionIcon="home"
+    description="Dirección de residencia actual del colaborador."
+    [isPending]="isPending()"
+    actionLabel="Solicitar cambio"
+    actionIcon="edit_location"
+    [requiresApproval]="true"
+    (editRequested)="openModal()">
+  </app-change-request-bar>
 
-  @if (isPending()) {
-    <app-banner variant="warning" icon="schedule" title="Tienes una solicitud de cambio pendiente">
-      <p>Tu solicitud de actualización de domicilio está siendo revisada por RRHH. No puedes enviar otra hasta que sea procesada.</p>
-    </app-banner>
+  @if (submitted()) {
+    <div class="cbar-success-toast">
+      <span class="material-icons-round">check_circle</span>
+      Solicitud enviada — RRHH revisará tu cambio
+    </div>
   }
 
   <app-split-layout class="fade-in">
-
     <ng-container main>
       <app-section-card title="Ubicación Domiciliaria" [columns]="2">
         <app-field label="Dirección"    [value]="data.address"></app-field>
@@ -37,14 +27,9 @@
         <app-field label="Referencia"   [value]="data.addressRef"></app-field>
       </app-section-card>
     </ng-container>
-
     <ng-container side>
-      <app-map-widget
-        [address]="data.address || 'Lima, Perú'"
-        city="Perú">
-      </app-map-widget>
+      <app-map-widget [address]="data.address || 'Lima, Perú'" city="Perú"></app-map-widget>
     </ng-container>
-
   </app-split-layout>
 
   <app-modal
@@ -53,14 +38,13 @@
     (close)="closeModal()">
 
     <div style="display:flex;flex-direction:column;gap:1rem;">
-
       <app-banner variant="info" icon="info" title="Flujo de aprobación">
         <p>Tu solicitud será revisada por RRHH. El cambio se aplicará solo al ser aprobado.</p>
       </app-banner>
 
-      <label style="display:flex;align-items:center;gap:0.625rem;cursor:pointer;padding:0.75rem;background:var(--bg-surface-alt,var(--bg-surface));border:1px solid var(--border-color);border-radius:var(--radius-md);">
+      <label class="cbar-checkbox-row">
         <input type="checkbox" (change)="toggleSameAsDoc($event)" [checked]="sameAsDoc()">
-        <span>Mi domicilio actual es el mismo que figura en mi documento de identidad</span>
+        <span>Mi domicilio actual coincide con el de mi documento de identidad</span>
       </label>
 
       @if (sameAsDoc() && !data.docAddress) {

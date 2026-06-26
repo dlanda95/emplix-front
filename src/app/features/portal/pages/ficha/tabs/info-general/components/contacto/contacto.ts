@@ -1,8 +1,7 @@
 import { Component, inject, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Button, Field, FormRow, FormSection, AppInput, Modal, PageHeader, SectionCard } from '@shared/ui';
-import { ToolbarLayout } from '@shared/layout';
+import { AppInput, Button, ChangeRequestBar, Field, FormRow, FormSection, Modal, SectionCard } from '@shared/ui';
 import { CollaboratorService } from '@features/portal/services/collaborator.service';
 import { CollaboratorProfile } from '@features/portal/models/collaborator.model';
 
@@ -10,7 +9,7 @@ import { CollaboratorProfile } from '@features/portal/models/collaborator.model'
   selector: 'app-contacto',
   imports: [
     CommonModule, ReactiveFormsModule,
-    AppInput, Button, Field, FormRow, FormSection, Modal, PageHeader, SectionCard, ToolbarLayout,
+    AppInput, Button, ChangeRequestBar, Field, FormRow, FormSection, Modal, SectionCard,
   ],
   templateUrl: './contacto.html',
   styleUrl: './contacto.scss',
@@ -21,6 +20,7 @@ export class Contacto {
 
   readonly isModalOpen  = signal(false);
   readonly isSubmitting = signal(false);
+  readonly saved        = signal(false);
   readonly profile      = signal<CollaboratorProfile | undefined>(undefined);
 
   contactForm: FormGroup = this.fb.group({
@@ -34,7 +34,6 @@ export class Contacto {
 
   constructor() {
     this.loadProfile();
-
     effect(() => {
       const data = this.profile();
       if (data) {
@@ -73,7 +72,9 @@ export class Contacto {
       next: updated => {
         this.profile.set(updated);
         this.isSubmitting.set(false);
+        this.saved.set(true);
         this.closeModal();
+        setTimeout(() => this.saved.set(false), 4000);
       },
       error: () => this.isSubmitting.set(false),
     });

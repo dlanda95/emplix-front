@@ -1,18 +1,18 @@
 import { Component, inject, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { AppInput, AppSelect, Banner, Button, EditBar, Field, SectionCard } from '@shared/ui';
+import { AppInput, AppSelect, ChangeRequestBar, Field, SectionCard } from '@shared/ui';
 import { CollaboratorService } from '@features/portal/services/collaborator.service';
 import { CollaboratorProfile } from '@features/portal/models/collaborator.model';
 import { ProfileUpdateRequest } from '@features/portal/models/profile-update.model';
 import {
   GENDER_OPTIONS, MARITAL_STATUS_OPTIONS, ACADEMIC_LEVEL_OPTIONS, DOCUMENT_TYPE_OPTIONS,
-  CatalogOption, catalogLabel,
+  catalogLabel,
 } from '@features/portal/models/catalog.model';
 
 @Component({
   selector: 'app-mis-datos',
-  imports: [AppInput, AppSelect, Banner, Button, CommonModule, EditBar, Field, ReactiveFormsModule, SectionCard],
+  imports: [AppInput, AppSelect, ChangeRequestBar, CommonModule, Field, ReactiveFormsModule, SectionCard],
   templateUrl: './mis-datos.html',
   styleUrl: './mis-datos.scss',
 })
@@ -22,7 +22,7 @@ export class MisDatos {
 
   readonly isEditing         = signal(false);
   readonly isSubmitting      = signal(false);
-  readonly hasPendingRequest = signal(false);
+  readonly isPending         = signal(false);
   readonly profile           = signal<CollaboratorProfile | undefined>(undefined);
 
   readonly genderOptions        = GENDER_OPTIONS;
@@ -55,22 +55,10 @@ export class MisDatos {
 
   constructor() {
     this.loadProfile();
-
     effect(() => {
       const data = this.profile();
       if (data) this.editForm.patchValue(data);
     });
-  }
-
-  requestEditMode(): void {
-    if (!this.hasPendingRequest() && !this.isEditing()) {
-      this.isEditing.set(true);
-    }
-  }
-
-  toggleEditMode(): void {
-    if (this.hasPendingRequest()) return;
-    this.isEditing.update(v => !v);
   }
 
   cancelEdit(): void {
@@ -83,9 +71,10 @@ export class MisDatos {
     if (this.editForm.invalid) return;
     this.isSubmitting.set(true);
 
+    const current = this.profile();
     const payload: ProfileUpdateRequest = {
       type:   'PROFILE_UPDATE',
-      data:   this.editForm.value,
+      data:   { ...this.editForm.value, _previous: current ?? {} },
       reason: 'Actualización de datos personales por el colaborador',
     };
 
@@ -93,13 +82,12 @@ export class MisDatos {
       next: () => {
         this.isSubmitting.set(false);
         this.isEditing.set(false);
-        this.loadProfile();
+        this.isPending.set(true);
       },
       error: () => this.isSubmitting.set(false),
     });
   }
 
-  // Helpers de presentación para valores de catálogo
   documentTypeLabel(val: string | null | undefined): string {
     return catalogLabel(DOCUMENT_TYPE_OPTIONS, val);
   }
@@ -120,9 +108,8 @@ export class MisDatos {
     this.collaboratorService.getProfile().subscribe({
       next: profile => this.profile.set(profile),
     });
-
-    this.collaboratorService.hasPendingProfileUpdate().subscribe({
-      next: hasPending => this.hasPendingRequest.set(hasPending),
+    this.collaboratorService.hasPendingForSection('personal').subscribe({
+      next: pending => this.isPending.set(pending),
     });
   }
 }

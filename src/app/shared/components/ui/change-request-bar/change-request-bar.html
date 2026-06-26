@@ -1,0 +1,77 @@
+<div class="cbar" [ngClass]="{
+  'cbar--pending': isPending,
+  'cbar--editing': isEditing
+}">
+
+  @if (isPending) {
+    <!-- Estado: solicitud pendiente ─────────────────────────────────── -->
+    <div class="cbar__pending-body">
+      <div class="cbar__pending-icon">
+        <span class="material-icons-round">schedule</span>
+      </div>
+      <div class="cbar__pending-info">
+        <span class="cbar__pending-title">Solicitud en revisión</span>
+        <span class="cbar__pending-sub">
+          Tus cambios están siendo evaluados por Recursos Humanos. Podrás enviar una nueva solicitud cuando sea procesada.
+        </span>
+      </div>
+      <span class="cbar__pending-badge">
+        <span class="material-icons-round cbar__pending-badge-icon">hourglass_top</span>
+        Pendiente
+      </span>
+    </div>
+
+  } @else if (isEditing) {
+    <!-- Estado: editando inline ─────────────────────────────────────── -->
+    <div class="cbar__edit-body">
+      <div class="cbar__edit-info">
+        <span class="material-icons-round cbar__edit-icon">edit</span>
+        <span class="cbar__edit-label">Modo edición — tus cambios se enviarán a RRHH para aprobación</span>
+      </div>
+      <div class="cbar__edit-actions">
+        <app-button variant="ghost" size="sm" (clicked)="cancelled.emit()">Cancelar</app-button>
+        <app-button
+          variant="primary"
+          size="sm"
+          icon="send"
+          [loading]="isSubmitting"
+          [disabled]="!canSubmit || isSubmitting"
+          (clicked)="submitted.emit()">
+          Enviar solicitud
+        </app-button>
+      </div>
+    </div>
+
+  } @else {
+    <!-- Estado: reposo ──────────────────────────────────────────────── -->
+    <div class="cbar__idle-body">
+      <div class="cbar__idle-left">
+        <div class="cbar__idle-icon">
+          <span class="material-icons-round">{{ sectionIcon }}</span>
+        </div>
+        <div class="cbar__idle-text">
+          <span class="cbar__idle-title">{{ section }}</span>
+          @if (description) {
+            <span class="cbar__idle-sub">{{ description }}</span>
+          }
+        </div>
+      </div>
+      <div class="cbar__idle-right">
+        @if (requiresApproval) {
+          <span class="cbar__approval-hint">
+            <span class="material-icons-round">info_outline</span>
+            Requiere aprobación de RRHH
+          </span>
+        }
+        <app-button
+          variant="secondary"
+          size="sm"
+          [icon]="actionIcon"
+          (clicked)="editRequested.emit()">
+          {{ actionLabel }}
+        </app-button>
+      </div>
+    </div>
+  }
+
+</div>

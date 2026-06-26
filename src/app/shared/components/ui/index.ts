@@ -26,7 +26,8 @@ export { TabsCard }        from './tabs-card/tabs-card';
 export { TimelineItem }    from './timeline-item/timeline-item';
 export { DocCard }         from './doc-card/doc-card';
 export { DocUploadZone }   from './doc-upload-zone/doc-upload-zone';
-export { FilterChips }     from './filter-chips/filter-chips';
+export { FilterChips }        from './filter-chips/filter-chips';
+export { ChangeRequestBar }   from './change-request-bar/change-request-bar';
 
 export type { AvatarSize }       from './avatar/avatar';
 export type { UploadPayload }    from './doc-upload-zone/doc-upload-zone';
