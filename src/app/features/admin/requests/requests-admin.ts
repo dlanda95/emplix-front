@@ -138,10 +138,4 @@ export class RequestsAdmin {
     const e = r.user?.employee;
     return e ? `${e.firstName} ${e.lastName}` : r.user?.email ?? '—';
   }
-
-  initials(r: ChangeRequest): string {
-    const e = r.user?.employee;
-    if (!e) return '?';
-    return (e.firstName[0] ?? '') + (e.lastName[0] ?? '');
-  }
 }

@@ -13,21 +13,21 @@
 
   <div class="colabs-toolbar">
     <app-filter-chips
-      [chips]="statusChips"
-      [activeId]="statusFilter()"
-      (chipClick)="onFilterChange($event)">
+      [items]="statusChips"
+      [active]="statusFilter()"
+      (activeChange)="onFilterChange($event)">
     </app-filter-chips>
   </div>
 
-  <app-section-card>
+  <app-section-card title="Listado">
 
     @if (isLoading()) {
-      <app-loading-skeleton [rows]="5"></app-loading-skeleton>
+      <app-loading-skeleton variant="card" [lines]="5"></app-loading-skeleton>
     } @else if (filtered().length === 0) {
       <app-empty-state
         icon="check_circle"
         title="Sin solicitudes"
-        subtitle="No hay solicitudes en esta categoría.">
+        description="No hay solicitudes en esta categoría.">
       </app-empty-state>
     } @else {
       <div class="sreq-list">
@@ -36,7 +36,7 @@
 
             <div class="sreq-header">
               <div class="colabs-cell">
-                <app-avatar [initials]="initials(req)" size="md"></app-avatar>
+                <app-avatar [name]="employeeName(req)" size="md"></app-avatar>
                 <div class="colabs-cell__info">
                   <span class="colabs-cell__name">{{ employeeName(req) }}</span>
                   <span class="colabs-cell__email">{{ req.user?.email }}</span>
