@@ -50,9 +50,11 @@
 
     <!-- Documentos de Identidad -->
     <app-section-card title="Documentos de Identidad" [columns]="2">
+      <!-- Nro. Documento siempre es solo lectura — requiere verificación física por RRHH -->
+      <app-field label="Nro. Documento" [value]="data.documentId"></app-field>
+
       @if (!isEditing()) {
         <app-field label="Tipo de Documento"          [value]="documentTypeLabel(data.documentType)"></app-field>
-        <app-field label="Nro. Documento"             [value]="data.documentId"></app-field>
         <app-field label="Brevete"                    [value]="data.licenseNumber"></app-field>
         <app-field label="Dirección (Doc. Identidad)" [value]="data.docAddress"></app-field>
         <app-field label="Distrito (Doc. Identidad)"  [value]="data.docDistrict"></app-field>
@@ -60,7 +62,6 @@
         <app-field label="Referencia (Doc. Id.)"      [value]="data.docAddressRef"></app-field>
       } @else {
         <app-select label="Tipo de Documento"          formControlName="documentType"  [options]="documentTypeOptions"></app-select>
-        <app-input  label="Nro. Documento"             formControlName="documentId"></app-input>
         <app-input  label="Brevete"                    formControlName="licenseNumber"  placeholder="Ej. Q12345678"></app-input>
         <app-input  label="Dirección (Doc. Identidad)" formControlName="docAddress"     placeholder="Ej. Av. Larco 500"></app-input>
         <app-input  label="Distrito (Doc. Identidad)"  formControlName="docDistrict"    placeholder="Ej. Miraflores"></app-input>
