@@ -5,51 +5,75 @@
       <app-page-header title="Financiero" subtitle="AFP o pensión y datos bancarios."></app-page-header>
     </ng-container>
     <ng-container actions>
-      <app-button variant="secondary" icon="edit" (clicked)="openModal()">Actualizar</app-button>
+      @if (submitted()) {
+        <span class="save-notice">
+          <span class="material-icons-round">check_circle</span>
+          Solicitud enviada — RRHH revisará tu cambio
+        </span>
+      }
+      <app-button
+        variant="secondary"
+        icon="account_balance"
+        [disabled]="isPending()"
+        (clicked)="openModal()">
+        {{ isPending() ? 'Cambio pendiente de aprobación' : 'Solicitar actualización' }}
+      </app-button>
     </ng-container>
   </app-toolbar-layout>
 
-  <!-- ── Vista ─────────────────────────────────────────────────────────────── -->
+  @if (isPending()) {
+    <app-banner variant="warning" icon="schedule" title="Tienes una solicitud de cambio pendiente">
+      <p>Tu solicitud de actualización de datos financieros está siendo revisada por RRHH. No puedes enviar otra hasta que sea procesada.</p>
+    </app-banner>
+  }
+
   <app-section-card title="AFP / Pensión" [columns]="3">
-    <app-field label="Sistema"           [value]="afpTypeLabel(data.afpType)"></app-field>
-    <app-field label="Entidad AFP"       [value]="afpEntityLabel(data.afpEntity)"></app-field>
-    <app-field label="Tipo de Comisión"  [value]="afpCommissionLabel(data.afpCommission)"></app-field>
+    <app-field label="Sistema"          [value]="afpTypeLabel(data.afpType)"></app-field>
+    <app-field label="Entidad AFP"      [value]="afpEntityLabel(data.afpEntity)"></app-field>
+    <app-field label="Tipo de Comisión" [value]="afpCommissionLabel(data.afpCommission)"></app-field>
   </app-section-card>
 
   <app-section-card title="Cuenta Bancaria" [columns]="3">
-    <app-field label="Entidad Bancaria"  [value]="data.bankEntity"></app-field>
-    <app-field label="Número de Cuenta"  [value]="data.bankAccount"></app-field>
-    <app-field label="CCI"               [value]="data.bankCci"></app-field>
+    <app-field label="Entidad Bancaria" [value]="data.bankEntity"></app-field>
+    <app-field label="Número de Cuenta" [value]="data.bankAccount"></app-field>
+    <app-field label="CCI"              [value]="data.bankCci"></app-field>
   </app-section-card>
 
-  <!-- ── Modal ─────────────────────────────────────────────────────────────── -->
-  <app-modal [isOpen]="isModalOpen()" title="Actualizar Datos Financieros" (close)="closeModal()">
+  <app-modal [isOpen]="isModalOpen()" title="Solicitar actualización de datos financieros" (close)="closeModal()">
 
-    <form [formGroup]="finForm" style="display:flex; flex-direction:column; gap:0.75rem;">
+    <div style="display:flex;flex-direction:column;gap:0.75rem;">
 
-      <app-form-section title="AFP / Pensión"></app-form-section>
-      <app-form-row [cols]="3">
-        <app-select label="Sistema"          formControlName="afpType"       [options]="afpTypeOptions"></app-select>
-        <app-select label="Entidad AFP"      formControlName="afpEntity"     [options]="afpEntityOptions"></app-select>
-        <app-select label="Tipo de Comisión" formControlName="afpCommission" [options]="afpCommissionOptions"></app-select>
-      </app-form-row>
+      <app-banner variant="info" icon="info" title="Flujo de aprobación">
+        <p>Tu solicitud será revisada por RRHH. Los cambios se aplicarán solo al ser aprobados.</p>
+      </app-banner>
 
-      <app-form-section title="Cuenta Bancaria"></app-form-section>
-      <app-form-row [cols]="3">
-        <app-input label="Entidad Bancaria"  formControlName="bankEntity"  placeholder="Ej. BCP, BBVA, BN"></app-input>
-        <app-input label="Número de Cuenta"  formControlName="bankAccount" placeholder="Ej. 191-123456789-0-01"></app-input>
-        <app-input label="CCI"               formControlName="bankCci"     placeholder="20 dígitos"></app-input>
-      </app-form-row>
+      <form [formGroup]="finForm" style="display:flex;flex-direction:column;gap:0.75rem;">
+        <app-form-section title="AFP / Pensión"></app-form-section>
+        <app-form-row [cols]="3">
+          <app-select label="Sistema"          formControlName="afpType"       [options]="afpTypeOptions"></app-select>
+          <app-select label="Entidad AFP"      formControlName="afpEntity"     [options]="afpEntityOptions"></app-select>
+          <app-select label="Tipo de Comisión" formControlName="afpCommission" [options]="afpCommissionOptions"></app-select>
+        </app-form-row>
 
-    </form>
+        <app-form-section title="Cuenta Bancaria"></app-form-section>
+        <app-form-row [cols]="3">
+          <app-input label="Entidad Bancaria"  formControlName="bankEntity"  placeholder="Ej. BCP, BBVA, BN"></app-input>
+          <app-input label="Número de Cuenta"  formControlName="bankAccount" placeholder="Ej. 191-123456789-0-01"></app-input>
+          <app-input label="CCI"               formControlName="bankCci"     placeholder="20 dígitos"></app-input>
+        </app-form-row>
+      </form>
+
+    </div>
 
     <ng-container modal-actions>
       <app-button variant="ghost"   (clicked)="closeModal()">Cancelar</app-button>
-      <app-button variant="primary"
-                  [loading]="isSubmitting()"
-                  [disabled]="finForm.invalid"
-                  (clicked)="submit()">
-        Guardar
+      <app-button
+        variant="primary"
+        icon="send"
+        [loading]="isSubmitting()"
+        [disabled]="finForm.invalid || isSubmitting()"
+        (clicked)="submit()">
+        Enviar solicitud
       </app-button>
     </ng-container>
 

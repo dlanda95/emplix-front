@@ -14,4 +14,8 @@ export const ADMIN_ROUTES: Routes = [
     path: 'colaboradores',
     loadComponent: () => import('./employees/list/employees-list').then(m => m.EmployeesList),
   },
+  {
+    path: 'solicitudes',
+    loadComponent: () => import('./requests/requests-admin').then(m => m.RequestsAdmin),
+  },
 ];

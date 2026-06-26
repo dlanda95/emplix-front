@@ -164,6 +164,129 @@
   text-align: right;
 }
 
+// ── Solicitudes de cambio (admin/requests) ────────────────────────────────────
+
+.sreq-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.sreq-card {
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md, 0.75rem);
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  transition: box-shadow 0.15s;
+
+  &--pending {
+    border-left: 3px solid var(--color-warning, #f59e0b);
+  }
+}
+
+.sreq-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.sreq-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  flex-wrap: wrap;
+}
+
+.sreq-section {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+
+  &__icon { font-size: 1rem; }
+}
+
+.sreq-date {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.sreq-diff {
+  background: var(--bg-surface-alt, var(--bg-main, #f8fafc));
+  border-radius: var(--radius-sm, 0.5rem);
+  padding: 0.875rem 1rem;
+
+  &__title {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-secondary);
+    margin: 0 0 0.625rem;
+  }
+
+  &__grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  &__row {
+    display: grid;
+    grid-template-columns: 7rem 1fr auto 1fr;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.825rem;
+  }
+
+  &__label {
+    font-weight: 600;
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+  }
+
+  &__old {
+    color: var(--color-danger, #ef4444);
+    text-decoration: line-through;
+    opacity: 0.75;
+  }
+
+  &__new {
+    color: var(--color-success, #16a34a);
+    font-weight: 600;
+  }
+
+  &__arrow {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+  }
+}
+
+.sreq-reject-reason {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--color-danger, #ef4444);
+  background: color-mix(in srgb, var(--color-danger, #ef4444) 8%, transparent);
+  border-radius: var(--radius-sm, 0.5rem);
+  padding: 0.625rem 0.875rem;
+
+  .material-icons-round { font-size: 1rem; }
+}
+
+.sreq-actions {
+  display: flex;
+  gap: 0.625rem;
+  justify-content: flex-end;
+}
+
 // ── Notificación de guardado (compartida entre pasos de onboarding) ───────────
 .save-notice {
   display: inline-flex;

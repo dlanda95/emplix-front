@@ -1,0 +1,146 @@
+<div class="colabs-page">
+
+  <app-page-header
+    title="Solicitudes de cambio"
+    subtitle="Gestiona las solicitudes de actualización de datos enviadas por los colaboradores.">
+  </app-page-header>
+
+  @if (pendingCount() > 0) {
+    <app-banner variant="warning" icon="pending_actions" title="Solicitudes pendientes de revisión">
+      <p>Hay <strong>{{ pendingCount() }}</strong> solicitud{{ pendingCount() !== 1 ? 'es' : '' }} pendiente{{ pendingCount() !== 1 ? 's' : '' }} de aprobación.</p>
+    </app-banner>
+  }
+
+  <div class="colabs-toolbar">
+    <app-filter-chips
+      [chips]="statusChips"
+      [activeId]="statusFilter()"
+      (chipClick)="onFilterChange($event)">
+    </app-filter-chips>
+  </div>
+
+  <app-section-card>
+
+    @if (isLoading()) {
+      <app-loading-skeleton [rows]="5"></app-loading-skeleton>
+    } @else if (filtered().length === 0) {
+      <app-empty-state
+        icon="check_circle"
+        title="Sin solicitudes"
+        subtitle="No hay solicitudes en esta categoría.">
+      </app-empty-state>
+    } @else {
+      <div class="sreq-list">
+        @for (req of filtered(); track req.id) {
+          <div class="sreq-card" [class.sreq-card--pending]="req.status === 'PENDING'">
+
+            <div class="sreq-header">
+              <div class="colabs-cell">
+                <app-avatar [initials]="initials(req)" size="md"></app-avatar>
+                <div class="colabs-cell__info">
+                  <span class="colabs-cell__name">{{ employeeName(req) }}</span>
+                  <span class="colabs-cell__email">{{ req.user?.email }}</span>
+                </div>
+              </div>
+
+              <div class="sreq-meta">
+                <span class="sreq-section">
+                  <span class="material-icons-round sreq-section__icon">{{ detectSection(req.data).icon }}</span>
+                  {{ detectSection(req.data).label }}
+                </span>
+                <span class="sreq-date">{{ req.createdAt | date:'dd/MM/yyyy HH:mm' }}</span>
+                @if (req.status === 'PENDING') {
+                  <app-badge variant="warning" label="Pendiente"></app-badge>
+                } @else if (req.status === 'APPROVED') {
+                  <app-badge variant="success" label="Aprobado"></app-badge>
+                } @else {
+                  <app-badge variant="danger" label="Rechazado"></app-badge>
+                }
+              </div>
+            </div>
+
+            @if (buildDiff(req.data).length > 0) {
+              <div class="sreq-diff">
+                <p class="sreq-diff__title">Cambios solicitados</p>
+                <div class="sreq-diff__grid">
+                  @for (d of buildDiff(req.data); track d.field) {
+                    <div class="sreq-diff__row">
+                      <span class="sreq-diff__label">{{ d.label }}</span>
+                      <span class="sreq-diff__old">{{ d.old }}</span>
+                      <span class="material-icons-round sreq-diff__arrow">arrow_forward</span>
+                      <span class="sreq-diff__new">{{ d.new }}</span>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+
+            @if (req.status === 'REJECTED' && req.reason) {
+              <div class="sreq-reject-reason">
+                <span class="material-icons-round">info</span>
+                Motivo de rechazo: {{ req.reason }}
+              </div>
+            }
+
+            @if (req.status === 'PENDING') {
+              <div class="sreq-actions">
+                <app-button
+                  variant="primary"
+                  icon="check"
+                  size="sm"
+                  [disabled]="isProcessing()"
+                  (clicked)="approve(req.id)">
+                  Aprobar
+                </app-button>
+                <app-button
+                  variant="danger"
+                  icon="close"
+                  size="sm"
+                  [disabled]="isProcessing()"
+                  (clicked)="openRejectModal(req.id)">
+                  Rechazar
+                </app-button>
+              </div>
+            }
+
+          </div>
+        }
+      </div>
+
+      <p class="colabs-count">{{ filtered().length }} solicitud{{ filtered().length !== 1 ? 'es' : '' }}</p>
+    }
+
+  </app-section-card>
+
+</div>
+
+<!-- Modal de rechazo -->
+<app-modal
+  [isOpen]="rejectModal()"
+  title="Rechazar solicitud"
+  (close)="rejectModal.set(false)">
+
+  <div style="display:flex;flex-direction:column;gap:1rem;">
+    <app-banner variant="warning" icon="warning" title="Esta acción notificará al colaborador">
+      <p>Explica brevemente el motivo del rechazo para que el colaborador pueda corregir su solicitud.</p>
+    </app-banner>
+    <app-input
+      label="Motivo del rechazo"
+      placeholder="Ej. Los datos bancarios no coinciden con el formato requerido..."
+      [formControl]="rejectReason">
+    </app-input>
+  </div>
+
+  <ng-container modal-actions>
+    <app-button variant="ghost" (clicked)="rejectModal.set(false)">Cancelar</app-button>
+    <app-button
+      variant="danger"
+      icon="block"
+      [loading]="isProcessing()"
+      [disabled]="!rejectReason.value?.trim() || isProcessing()"
+      (clicked)="confirmReject()">
+      Confirmar rechazo
+    </app-button>
+  </ng-container>
+
+</app-modal>

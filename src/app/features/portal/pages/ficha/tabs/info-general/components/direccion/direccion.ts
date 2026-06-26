@@ -22,6 +22,8 @@ export class Direccion {
   readonly isModalOpen  = signal(false);
   readonly isSubmitting = signal(false);
   readonly sameAsDoc    = signal(false);
+  readonly isPending    = signal(false);
+  readonly submitted    = signal(false);
   readonly profile      = signal<CollaboratorProfile | undefined>(undefined);
 
   addressForm: FormGroup = this.fb.group({
@@ -101,20 +103,30 @@ export class Direccion {
     if (this.addressForm.invalid) return;
     this.isSubmitting.set(true);
 
-    const v = this.addressForm.getRawValue();
-
-    // Si se usó la dirección del DNI, los campos estructurados se limpian intencionalmente
-    this.collaboratorService.updateProfile({
+    const v        = this.addressForm.getRawValue();
+    const current  = this.profile();
+    const newData  = {
       address:         v.address         || null,
       district:        v.district        || null,
       province:        v.province        || null,
       departmentdirec: v.departmentdirec || null,
       addressRef:      v.addressRef      || null,
-    }).subscribe({
-      next: updated => {
-        this.profile.set(updated);
+    };
+    const previous = {
+      address:         current?.address         ?? null,
+      district:        current?.district        ?? null,
+      province:        current?.province        ?? null,
+      departmentdirec: current?.departmentdirec ?? null,
+      addressRef:      current?.addressRef      ?? null,
+    };
+
+    this.collaboratorService.requestChange('address', newData as any, previous as any).subscribe({
+      next: () => {
         this.isSubmitting.set(false);
+        this.isPending.set(true);
+        this.submitted.set(true);
         this.closeModal();
+        setTimeout(() => this.submitted.set(false), 4000);
       },
       error: () => this.isSubmitting.set(false),
     });
@@ -122,7 +134,10 @@ export class Direccion {
 
   private loadProfile(): void {
     this.collaboratorService.getProfile().subscribe({
-      next: profile => this.profile.set(profile),
+      next: profile => {
+        this.profile.set(profile);
+        this.collaboratorService.hasPendingForSection('address').subscribe(p => this.isPending.set(p));
+      },
     });
   }
 }

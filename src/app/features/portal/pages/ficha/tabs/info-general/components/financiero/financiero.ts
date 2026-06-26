@@ -1,7 +1,7 @@
 import { Component, inject, signal, computed, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { AppInput, AppSelect, Button, Field, FormRow, FormSection, Modal, PageHeader, SectionCard } from '@shared/ui';
+import { AppInput, AppSelect, Banner, Button, Field, FormRow, FormSection, Modal, PageHeader, SectionCard } from '@shared/ui';
 import { ToolbarLayout } from '@shared/layout';
 import { CollaboratorService } from '@features/portal/services/collaborator.service';
 import { CollaboratorProfile } from '@features/portal/models/collaborator.model';
@@ -13,7 +13,7 @@ import {
   selector: 'app-financiero',
   imports: [
     CommonModule, ReactiveFormsModule,
-    AppInput, AppSelect, Button, Field, FormRow, FormSection, Modal, PageHeader, SectionCard, ToolbarLayout,
+    AppInput, AppSelect, Banner, Button, Field, FormRow, FormSection, Modal, PageHeader, SectionCard, ToolbarLayout,
   ],
   templateUrl: './financiero.html',
   styleUrl: './financiero.scss',
@@ -24,6 +24,8 @@ export class Financiero {
 
   readonly isModalOpen  = signal(false);
   readonly isSubmitting = signal(false);
+  readonly isPending    = signal(false);
+  readonly submitted    = signal(false);
   readonly profile      = signal<CollaboratorProfile | undefined>(undefined);
 
   readonly afpTypeOptions       = AFP_TYPE_OPTIONS;
@@ -78,11 +80,32 @@ export class Financiero {
     if (this.finForm.invalid) return;
     this.isSubmitting.set(true);
 
-    this.collaboratorService.updateProfile(this.finForm.value).subscribe({
-      next: updated => {
-        this.profile.set(updated);
+    const v       = this.finForm.getRawValue();
+    const current = this.profile();
+    const newData = {
+      afpType:       v.afpType       || null,
+      afpEntity:     v.afpEntity     || null,
+      afpCommission: v.afpCommission || null,
+      bankEntity:    v.bankEntity    || null,
+      bankAccount:   v.bankAccount   || null,
+      bankCci:       v.bankCci       || null,
+    };
+    const previous = {
+      afpType:       current?.afpType       ?? null,
+      afpEntity:     current?.afpEntity     ?? null,
+      afpCommission: current?.afpCommission ?? null,
+      bankEntity:    current?.bankEntity    ?? null,
+      bankAccount:   current?.bankAccount   ?? null,
+      bankCci:       current?.bankCci       ?? null,
+    };
+
+    this.collaboratorService.requestChange('financial', newData as any, previous as any).subscribe({
+      next: () => {
         this.isSubmitting.set(false);
+        this.isPending.set(true);
+        this.submitted.set(true);
         this.closeModal();
+        setTimeout(() => this.submitted.set(false), 4000);
       },
       error: () => this.isSubmitting.set(false),
     });
@@ -102,7 +125,10 @@ export class Financiero {
 
   private loadProfile(): void {
     this.collaboratorService.getProfile().subscribe({
-      next: profile => this.profile.set(profile),
+      next: profile => {
+        this.profile.set(profile);
+        this.collaboratorService.hasPendingForSection('financial').subscribe(p => this.isPending.set(p));
+      },
     });
   }
 }
