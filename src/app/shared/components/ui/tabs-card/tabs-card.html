@@ -1,7 +1,6 @@
 <div class="tabs-container" (window:resize)="onResize()">
-  
   <nav class="tabs-nav" [ngClass]="align">
-    
+
     <div class="sliding-indicator"
          [style.left]="indicatorLeft()"
          [style.width]="indicatorWidth()">
@@ -9,17 +8,17 @@
 
     @for (item of items; track item.id) {
       <button #tabBtn
-              class="tab-btn" 
+              class="tab-btn"
               [class.active]="current === item.id"
               (click)="selectTab(item.id)">
-        
-        @if (item.icon) { 
-          <span class="material-icons-round icon">{{ item.icon }}</span> 
+
+        @if (item.icon) {
+          <span class="material-icons-round icon">{{ item.icon }}</span>
         }
         <span class="label">{{ item.label }}</span>
+
       </button>
     }
 
   </nav>
-
 </div>

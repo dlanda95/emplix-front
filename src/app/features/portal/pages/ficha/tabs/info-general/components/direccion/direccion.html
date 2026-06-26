@@ -1,75 +1,91 @@
 @if (profile(); as data) {
 
   <app-toolbar-layout>
-    
     <ng-container main>
-      <div style="display: flex; flex-direction: column; justify-content: center;">
-        <h3 style="margin: 0; font-size: var(--text-lg); color: var(--text-main); font-weight: 700;">Ubicación</h3>
-        <p style="margin: 0.2rem 0 0; font-size: var(--text-sm); color: var(--text-secondary);">
-          Información domiciliaria y contactos.
-        </p>
-      </div>
+      <app-page-header title="Domicilio" subtitle="Dirección de residencia del colaborador."></app-page-header>
     </ng-container>
-
     <ng-container actions>
       <app-button variant="secondary" icon="edit_location" (clicked)="openModal()">
         Actualizar Dirección
       </app-button>
     </ng-container>
-
   </app-toolbar-layout>
 
   <app-split-layout class="fade-in">
+
     <ng-container main>
-      
-      <app-section-card title="Ubicación Domiciliaria" [columns]="1">
-        <app-field label="Dirección Registrada" [value]="data.address || 'Sin dirección registrada'"></app-field>
+      <app-section-card title="Ubicación Domiciliaria" [columns]="2">
+        <app-field label="Dirección"    [value]="data.address"></app-field>
+        <app-field label="Distrito"     [value]="data.district"></app-field>
+        <app-field label="Departamento" [value]="data.departmentdirec"></app-field>
+        <app-field label="Referencia"   [value]="data.addressRef"></app-field>
       </app-section-card>
-
-      <app-section-card title="En Caso de Emergencia" [columns]="2">
-        <app-field label="Nombre de Contacto" [value]="data.emergencyContactName"></app-field>
-        <app-field label="Teléfono de Contacto" [value]="data.emergencyContactPhone"></app-field>
-      </app-section-card>
-
     </ng-container>
 
     <ng-container side>
-      <app-map-widget 
-        [address]="data.address || 'Lima, Perú'" 
+      <app-map-widget
+        [address]="data.address || 'Lima, Perú'"
         city="Perú">
       </app-map-widget>
     </ng-container>
+
   </app-split-layout>
 
-  <app-modal 
-    [isOpen]="isModalOpen()" 
-    title="Actualizar Dirección" 
+  <app-modal
+    [isOpen]="isModalOpen()"
+    title="Actualizar Dirección"
     (close)="closeModal()">
-    
-   <form [formGroup]="addressForm" style="display: flex; flex-direction: column; gap: 1rem;">
-      
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-        <app-input-field label="País" [control]="$any(addressForm.get('country'))"></app-input-field>
-        <app-input-field label="Departamento" [control]="$any(addressForm.get('department'))" placeholder="Ej. Lima"></app-input-field>
-      </div>
 
-      <app-input-field label="Distrito" [control]="$any(addressForm.get('district'))" placeholder="Ej. Miraflores"></app-input-field>
+    <div style="display:flex;flex-direction:column;gap:1rem;">
 
-      <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1rem;">
-        <app-input-field label="Dirección (Calle/Av/Jr)" [control]="$any(addressForm.get('street'))" placeholder="Ej. Av. Larco"></app-input-field>
-        <app-input-field label="Nro / Dpto" [control]="$any(addressForm.get('number'))" placeholder="Ej. 123"></app-input-field>
-      </div>
+      <!-- Toggle: misma dirección que documento de identidad -->
+      <label style="display:flex;align-items:center;gap:0.625rem;cursor:pointer;padding:0.75rem;background:var(--bg-surface-alt,var(--bg-surface));border:1px solid var(--border-color);border-radius:var(--radius-md);">
+        <input type="checkbox" (change)="toggleSameAsDoc($event)" [checked]="sameAsDoc()">
+        <span>Mi domicilio actual es el mismo que figura en mi documento de identidad</span>
+      </label>
 
-      <app-input-field label="Referencia (Opcional)" [control]="$any(addressForm.get('reference'))" placeholder="Ej. Frente al parque"></app-input-field>
-      
-    </form>
-    
+      @if (sameAsDoc() && !data.docAddress) {
+        <app-banner variant="warning" icon="info" title="Sin dirección del documento registrada">
+          <p>Primero registra tu dirección en <strong>Mis Datos → Documentos de Identidad</strong> y luego vuelve aquí.</p>
+        </app-banner>
+      }
+
+      <form [formGroup]="addressForm" style="display:flex;flex-direction:column;gap:0.75rem;">
+
+        <app-input
+          label="Dirección (Calle / Av. / Jr. + Nro. + Urb.)"
+          formControlName="address"
+          placeholder="Ej. Av. Larco 123, Urb. El Olivar">
+        </app-input>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;">
+          <app-input
+            label="Distrito"
+            formControlName="district"
+            placeholder="Ej. Miraflores">
+          </app-input>
+          <app-input
+            label="Departamento"
+            formControlName="departmentdirec"
+            placeholder="Ej. Lima">
+          </app-input>
+        </div>
+
+        <app-input
+          label="Referencia (opcional)"
+          formControlName="addressRef"
+          placeholder="Ej. Frente al parque central">
+        </app-input>
+
+      </form>
+    </div>
+
     <ng-container modal-actions>
       <app-button variant="ghost" (clicked)="closeModal()">Cancelar</app-button>
-      <app-button 
-        variant="primary" 
+      <app-button
+        variant="primary"
         [loading]="isSubmitting()"
-        [disabled]="addressForm.invalid"
+        [disabled]="addressForm.invalid || isSubmitting()"
         (clicked)="submitAddressUpdate()">
         Guardar Dirección
       </app-button>

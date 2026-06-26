@@ -1,16 +1,18 @@
-<div class="info-general-layout">
-  
-  <app-tabs-card 
-    [items]="tabItems" 
-    [(current)]="activeTab">
+<div style="display:flex; flex-direction:column; min-height:100%;">
+
+  <app-tabs-card
+    [items]="tabItems()"
+    [current]="activeTab()"
+    (currentChange)="activeTab.set($event)"
+    align="fill">
   </app-tabs-card>
 
-  <div class="content-wrapper">
-    
-    @switch (activeTab) {
-      
+  <div style="padding: 1.25rem 1.75rem; flex:1;" class="content-wrapper">
+
+    @switch (activeTab()) {
+
       @case ('mis-datos') {
-        <app-mis-datos></app-mis-datos>
+        <app-mis-datos #misDatos></app-mis-datos>
       }
 
       @case ('direccion') {
@@ -18,9 +20,22 @@
       }
 
       @case ('contacto') {
-        <p>Próximamente...</p>
+        <app-contacto></app-contacto>
+      }
+
+      @case ('financiero') {
+        <app-financiero></app-financiero>
+      }
+
+      @case ('familia') {
+        <app-familia></app-familia>
+      }
+
+      @case ('estudios') {
+        <app-estudios></app-estudios>
       }
 
     }
   </div>
+
 </div>

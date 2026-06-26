@@ -1,0 +1,55 @@
+<form [formGroup]="form" style="display:flex;flex-direction:column;gap:1rem;">
+
+  @if (saveError()) {
+    <app-banner variant="error" icon="error" [title]="saveError()"></app-banner>
+  }
+
+  <app-section-card title="Nombres y Apellidos" [columns]="2">
+    <app-input label="Primer Nombre *"   formControlName="firstName"      placeholder="Ej. Juan"></app-input>
+    <app-input label="Segundo Nombre"    formControlName="middleName"     placeholder="Ej. Carlos"></app-input>
+    <app-input label="Apellido Paterno *"formControlName="lastName"       placeholder="Ej. García"></app-input>
+    <app-input label="Apellido Materno"  formControlName="secondLastName" placeholder="Ej. López"></app-input>
+  </app-section-card>
+
+  <app-section-card title="Documento de Identidad" [columns]="2">
+    <app-select label="Tipo de Documento *" formControlName="documentType" [options]="documentTypes"></app-select>
+    <app-input  label="Número de Documento *" formControlName="documentId" placeholder="Ej. 12345678"></app-input>
+    <app-input  label="Brevete (opcional)"    formControlName="licenseNumber" placeholder="Ej. Q12345678"></app-input>
+  </app-section-card>
+
+  <app-section-card title="Dirección en el Documento de Identidad" [columns]="2">
+    <app-input label="Dirección"     formControlName="docAddress"    placeholder="Ej. Av. Larco 500"></app-input>
+    <app-input label="Distrito"      formControlName="docDistrict"   placeholder="Ej. Miraflores"></app-input>
+    <app-input label="Departamento"  formControlName="docDepartment" placeholder="Ej. Lima"></app-input>
+    <app-input label="Referencia"    formControlName="docAddressRef" placeholder="Ej. Frente al parque"></app-input>
+  </app-section-card>
+
+  <app-section-card title="Información Personal" [columns]="3">
+    <app-input  label="Fecha de Nacimiento" type="date" formControlName="birthDate"></app-input>
+    <app-select label="Género"              formControlName="gender"        [options]="genderOptions"></app-select>
+    <app-select label="Estado Civil"        formControlName="maritalStatus" [options]="maritalOptions"></app-select>
+    <app-input  label="Nacionalidad"        formControlName="nationality"   placeholder="Ej. Peruana"></app-input>
+    <app-select label="Grado Académico"     formControlName="academicLevel" [options]="academicOptions"></app-select>
+  </app-section-card>
+
+  <app-section-card title="Lugar de Nacimiento" [columns]="3">
+    <app-input label="País"          formControlName="birthCountry"  placeholder="Ej. Perú"></app-input>
+    <app-input label="Departamento"  formControlName="birthRegion"   placeholder="Ej. Lima"></app-input>
+    <app-input label="Distrito"      formControlName="birthDistrict" placeholder="Ej. Miraflores"></app-input>
+  </app-section-card>
+
+  <div style="display:flex;justify-content:flex-end;">
+    @if (showSave() && !saved()) {
+      <app-button variant="secondary" icon="save" [loading]="isSaving()" (clicked)="save()">
+        Guardar avance
+      </app-button>
+    }
+    @if (saved()) {
+      <div class="save-notice">
+        <span class="material-icons-round">check_circle</span>
+        ¡Avance guardado!
+      </div>
+    }
+  </div>
+
+</form>

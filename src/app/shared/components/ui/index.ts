@@ -1,5 +1,11 @@
+export { AppSelect }       from './app-select/app-select';
 export { Avatar }          from './avatar/avatar';
 export { Button }          from './button/button';
+export { EditBar }         from './edit-bar/edit-bar';
+export { FormRow }         from './form-row/form-row';
+export { FormSection }     from './form-section/form-section';
+export { ListItem }        from './list-item/list-item';
+export { PageHeader }      from './page-header/page-header';
 export { AppCard }         from './app-card/app-card';
 export { Badge }           from './badge/badge';
 export { Banner }          from './banner/banner';
@@ -20,8 +26,11 @@ export { TabsCard }        from './tabs-card/tabs-card';
 export { TimelineItem }    from './timeline-item/timeline-item';
 export { DocCard }         from './doc-card/doc-card';
 export { DocUploadZone }   from './doc-upload-zone/doc-upload-zone';
+export { FilterChips }     from './filter-chips/filter-chips';
 
 export type { AvatarSize }       from './avatar/avatar';
 export type { UploadPayload }    from './doc-upload-zone/doc-upload-zone';
 export type { CardHeaderConfig } from './app-card/app-card';
 export type { TabItem }          from './tabs-card/tabs-card';
+export type { FilterChipItem }   from './filter-chips/filter-chips';
+export type { SelectOption }     from './app-select/app-select';

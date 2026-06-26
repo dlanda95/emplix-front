@@ -1,0 +1,31 @@
+<form [formGroup]="form" style="display:flex;flex-direction:column;gap:1rem;">
+
+  <app-section-card title="Régimen Pensionario" [columns]="3">
+    <app-select label="Tipo de Sistema"  formControlName="afpType"       [options]="afpTypeOptions"></app-select>
+    @if (isAfp()) {
+      <app-select label="AFP"             formControlName="afpEntity"     [options]="afpEntityOptions"></app-select>
+      <app-select label="Tipo de Comisión"formControlName="afpCommission" [options]="afpCommissionOptions"></app-select>
+    }
+  </app-section-card>
+
+  <app-section-card title="Cuenta Bancaria (Sueldo)" [columns]="3">
+    <app-input label="Entidad Bancaria" formControlName="bankEntity"  placeholder="Ej. BCP, Interbank"></app-input>
+    <app-input label="Nro. de Cuenta"  formControlName="bankAccount" placeholder="Ej. 123-456789-0-12"></app-input>
+    <app-input label="CCI"             formControlName="bankCci"     placeholder="Código de Cuenta Interbancario"></app-input>
+  </app-section-card>
+
+  <div style="display:flex;justify-content:flex-end;">
+    @if (showSave() && !saved()) {
+      <app-button variant="secondary" icon="save" [loading]="isSaving()" (clicked)="save()">
+        Guardar avance
+      </app-button>
+    }
+    @if (saved()) {
+      <div class="save-notice">
+        <span class="material-icons-round">check_circle</span>
+        ¡Avance guardado!
+      </div>
+    }
+  </div>
+
+</form>

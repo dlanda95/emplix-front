@@ -35,15 +35,17 @@
         </button>
       </div>
 
-      <!-- Selector de tipo -->
-      <div class="type-selector">
-        <label class="type-label">Tipo de documento</label>
-        <select class="type-select" [(ngModel)]="selectedType">
-          @for (opt of typeOptions; track opt.value) {
-            <option [value]="opt.value">{{ opt.label }}</option>
-          }
-        </select>
-      </div>
+      <!-- Selector de tipo: solo cuando el tipo no viene fijado externamente -->
+      @if (!docType) {
+        <div class="type-selector">
+          <label class="type-label">Tipo de documento</label>
+          <select class="type-select" [(ngModel)]="selectedType">
+            @for (opt of typeOptions; track opt.value) {
+              <option [value]="opt.value">{{ opt.label }}</option>
+            }
+          </select>
+        </div>
+      }
 
       <button class="upload-btn" (click)="confirmUpload()">
         <span class="material-icons-round">upload</span>

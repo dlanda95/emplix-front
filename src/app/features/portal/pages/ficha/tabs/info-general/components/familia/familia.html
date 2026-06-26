@@ -1,0 +1,187 @@
+@if (isLoading()) {
+
+  <app-loading-skeleton variant="card" [lines]="3"></app-loading-skeleton>
+
+} @else {
+
+  <!-- ── Padres / Tutores ──────────────────────────────────────────────── -->
+  <app-section-card title="Padres / Tutores" [columns]="1">
+    <ng-container section-actions>
+      <app-button variant="ghost" size="sm" icon="add" (clicked)="openAdd('FATHER')">Agregar</app-button>
+    </ng-container>
+
+    @if (padres().length === 0) {
+      <app-empty-state icon="person_search" title="Sin registros" [compact]="true"></app-empty-state>
+    } @else {
+      @for (m of padres(); track m.id) {
+        <app-list-item [name]="m.firstName + ' ' + m.lastName" icon="person">
+          <ng-container item-badges>
+            <app-badge variant="primary">{{ label(m.relationship) }}</app-badge>
+          </ng-container>
+          <ng-container item-meta>
+            @if (m.documentId) { <span>{{ m.documentType }}: {{ m.documentId }}</span> }
+            @if (m.birthDate)  { <span>{{ m.birthDate | date:'dd/MM/yyyy' }}</span> }
+            @if (m.phone)      { <span>{{ m.phone }}</span> }
+          </ng-container>
+          <ng-container item-actions>
+            <app-button variant="ghost" size="sm" icon="edit"   (clicked)="openEdit(m)"></app-button>
+            <app-button variant="ghost" size="sm" icon="delete" (clicked)="requestDelete(m.id)"></app-button>
+          </ng-container>
+        </app-list-item>
+      }
+    }
+  </app-section-card>
+
+  <!-- ── Cónyuge / Pareja ──────────────────────────────────────────────── -->
+  <app-section-card title="Cónyuge / Pareja" [columns]="1">
+    <ng-container section-actions>
+      <app-button variant="ghost" size="sm" icon="add" (clicked)="openAdd('SPOUSE')">Agregar</app-button>
+    </ng-container>
+
+    @if (conyugue().length === 0) {
+      <app-empty-state icon="favorite_border" title="Sin registros" [compact]="true"></app-empty-state>
+    } @else {
+      @for (m of conyugue(); track m.id) {
+        <app-list-item [name]="m.firstName + ' ' + m.lastName" icon="favorite">
+          <ng-container item-badges>
+            <app-badge variant="primary">{{ label(m.relationship) }}</app-badge>
+          </ng-container>
+          <ng-container item-meta>
+            @if (m.documentId) { <span>{{ m.documentType }}: {{ m.documentId }}</span> }
+            @if (m.birthDate)  { <span>{{ m.birthDate | date:'dd/MM/yyyy' }}</span> }
+            @if (m.phone)      { <span>{{ m.phone }}</span> }
+          </ng-container>
+          <ng-container item-actions>
+            <app-button variant="ghost" size="sm" icon="edit"   (clicked)="openEdit(m)"></app-button>
+            <app-button variant="ghost" size="sm" icon="delete" (clicked)="requestDelete(m.id)"></app-button>
+          </ng-container>
+        </app-list-item>
+      }
+    }
+  </app-section-card>
+
+  <!-- ── Hijos ──────────────────────────────────────────────────────────── -->
+  <app-section-card title="Hijos" [columns]="1">
+    <ng-container section-actions>
+      <app-button variant="ghost" size="sm" icon="add" (clicked)="openAdd('SON')">Agregar</app-button>
+    </ng-container>
+
+    @if (hijos().length === 0) {
+      <app-empty-state icon="child_care" title="Sin registros" [compact]="true"></app-empty-state>
+    } @else {
+      @for (m of hijos(); track m.id) {
+        <app-list-item [name]="m.firstName + ' ' + m.lastName" icon="child_care">
+          <ng-container item-badges>
+            <app-badge variant="primary">{{ label(m.relationship) }}</app-badge>
+          </ng-container>
+          <ng-container item-meta>
+            @if (m.documentId) { <span>{{ m.documentType }}: {{ m.documentId }}</span> }
+            @if (m.birthDate)  { <span>{{ m.birthDate | date:'dd/MM/yyyy' }}</span> }
+            @if (m.phone)      { <span>{{ m.phone }}</span> }
+          </ng-container>
+          <ng-container item-actions>
+            <app-button variant="ghost" size="sm" icon="edit"   (clicked)="openEdit(m)"></app-button>
+            <app-button variant="ghost" size="sm" icon="delete" (clicked)="requestDelete(m.id)"></app-button>
+          </ng-container>
+        </app-list-item>
+      }
+    }
+  </app-section-card>
+
+  <!-- ── Otros dependientes / herederos ────────────────────────────────── -->
+  <app-section-card title="Otros (Dependientes / Herederos)" [columns]="1">
+    <ng-container section-actions>
+      <app-button variant="ghost" size="sm" icon="add" (clicked)="openAdd('DEPENDENT')">Agregar</app-button>
+    </ng-container>
+
+    @if (otros().length === 0) {
+      <app-empty-state icon="group" title="Sin registros" [compact]="true"></app-empty-state>
+    } @else {
+      @for (m of otros(); track m.id) {
+        <app-list-item [name]="m.firstName + ' ' + m.lastName" icon="group">
+          <ng-container item-badges>
+            <app-badge variant="primary">{{ label(m.relationship) }}</app-badge>
+            @if (m.isDependent) { <app-badge variant="neutral">Dependiente</app-badge> }
+            @if (m.isHeir)      { <app-badge variant="neutral">Heredero</app-badge> }
+          </ng-container>
+          <ng-container item-meta>
+            @if (m.documentId) { <span>{{ m.documentType }}: {{ m.documentId }}</span> }
+            @if (m.birthDate)  { <span>{{ m.birthDate | date:'dd/MM/yyyy' }}</span> }
+            @if (m.phone)      { <span>{{ m.phone }}</span> }
+          </ng-container>
+          <ng-container item-actions>
+            <app-button variant="ghost" size="sm" icon="edit"   (clicked)="openEdit(m)"></app-button>
+            <app-button variant="ghost" size="sm" icon="delete" (clicked)="requestDelete(m.id)"></app-button>
+          </ng-container>
+        </app-list-item>
+      }
+    }
+  </app-section-card>
+
+}
+
+<!-- ── Modal: Agregar / Editar familiar ─────────────────────────────────── -->
+<app-modal [isOpen]="isModalOpen()" [title]="modalTitle" (close)="closeModal()">
+
+  <form [formGroup]="form" style="display:flex;flex-direction:column;gap:1rem;">
+
+    <app-form-row [cols]="2">
+      <app-input label="Nombre *"   formControlName="firstName"  placeholder="Nombre"></app-input>
+      <app-input label="Apellido *" formControlName="lastName"   placeholder="Apellido"></app-input>
+    </app-form-row>
+
+    <app-select label="Parentesco *"
+                formControlName="relationship"
+                [options]="relationshipOptions"
+                placeholder="Seleccionar parentesco...">
+    </app-select>
+
+    <app-form-row [cols]="2">
+      <app-select label="Tipo de documento"
+                  formControlName="documentType"
+                  [options]="docTypeOptions">
+      </app-select>
+      <app-input label="Nro. documento" formControlName="documentId" placeholder="Ej. 12345678"></app-input>
+    </app-form-row>
+
+    <app-form-row [cols]="2">
+      <app-input label="Fecha de nacimiento" type="date" formControlName="birthDate"></app-input>
+      <app-input label="Teléfono" type="tel" formControlName="phone" placeholder="Ej. 987654321"></app-input>
+    </app-form-row>
+
+    <app-form-row [cols]="2">
+      <label style="display:flex;align-items:center;gap:0.5rem;font-size:var(--text-sm);cursor:pointer;">
+        <input type="checkbox" formControlName="isDependent" style="width:16px;height:16px;accent-color:var(--color-primary);">
+        <span>Es dependiente</span>
+      </label>
+      <label style="display:flex;align-items:center;gap:0.5rem;font-size:var(--text-sm);cursor:pointer;">
+        <input type="checkbox" formControlName="isHeir" style="width:16px;height:16px;accent-color:var(--color-primary);">
+        <span>Es heredero/a</span>
+      </label>
+    </app-form-row>
+
+  </form>
+
+  <ng-container modal-actions>
+    <app-button variant="ghost"   (clicked)="closeModal()">Cancelar</app-button>
+    <app-button variant="primary"
+                [loading]="isSubmitting()"
+                [disabled]="form.invalid"
+                (clicked)="submit()">
+      {{ editingMember() ? 'Guardar cambios' : 'Agregar familiar' }}
+    </app-button>
+  </ng-container>
+
+</app-modal>
+
+<!-- ── Confirmación de eliminación ───────────────────────────────────────── -->
+<app-confirm-modal
+  [isOpen]="isConfirmOpen()"
+  title="Eliminar familiar"
+  message="¿Estás seguro de que deseas eliminar este registro? Esta acción no se puede deshacer."
+  icon="delete_forever"
+  confirmLabel="Eliminar"
+  confirmVariant="danger"
+  (confirmed)="confirmDelete()"
+  (cancelled)="cancelDelete()">
+</app-confirm-modal>

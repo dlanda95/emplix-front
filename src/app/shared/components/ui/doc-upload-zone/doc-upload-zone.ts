@@ -1,4 +1,4 @@
-import { Component, Output, EventEmitter, signal } from '@angular/core';
+import { Component, Input, Output, EventEmitter, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { EmployeeDocumentType, DOC_TYPE_LABELS } from '@features/portal/models/document.model';
 
@@ -14,6 +14,8 @@ export interface UploadPayload {
   styleUrl: './doc-upload-zone.scss',
 })
 export class DocUploadZone {
+  @Input() docType?: EmployeeDocumentType;
+
   @Output() fileSelected = new EventEmitter<UploadPayload>();
 
   readonly isDragging = signal(false);
@@ -62,7 +64,7 @@ export class DocUploadZone {
   confirmUpload(): void {
     const file = this.selectedFile();
     if (!file) return;
-    this.fileSelected.emit({ file, type: this.selectedType });
+    this.fileSelected.emit({ file, type: this.docType ?? this.selectedType });
   }
 
   private validateAndSet(file: File): void {

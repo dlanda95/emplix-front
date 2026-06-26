@@ -1,9 +1,14 @@
 <section class="section-container">
-      <h3 class="section-title">
-        {{ title }}
-      </h3>
-      
-      <div class="section-grid" [ngClass]="'cols-' + columns">
-        <ng-content></ng-content>
-      </div>
-    </section>
+
+  <h3 class="section-title">{{ title }}</h3>
+
+  <!-- Slot opcional para acciones flotantes en el borde superior derecho -->
+  <div class="section-actions">
+    <ng-content select="[section-actions]"></ng-content>
+  </div>
+
+  <div class="section-grid" [ngClass]="'cols-' + columns">
+    <ng-content></ng-content>
+  </div>
+
+</section>

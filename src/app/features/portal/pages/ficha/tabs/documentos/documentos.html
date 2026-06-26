@@ -1,82 +1,67 @@
-<div class="docs-layout">
+<div class="docs-page">
 
-  <!-- ── Sidebar de categorías ──────────────────────────────────────────── -->
-  <aside class="docs-sidebar">
-    <p class="sidebar-title">Categorías</p>
+  <!-- ── Cabecera ──────────────────────────────────────────────────────── -->
+  <app-toolbar-layout>
+    <ng-container main>
+      <app-page-header
+        [title]="activeCategoryLabel()"
+        [subtitle]="(filteredDocs()?.length ?? 0) > 0
+                    ? (filteredDocs()!.length + ' archivo' + (filteredDocs()!.length === 1 ? '' : 's'))
+                    : ''">
+      </app-page-header>
+    </ng-container>
+    <ng-container actions>
+      <app-button variant="secondary" icon="upload" (clicked)="showUploadModal.set(true)">
+        Subir documento
+      </app-button>
+    </ng-container>
+  </app-toolbar-layout>
 
-    <nav class="category-list">
-      @for (cat of categories; track cat.type) {
-        <button
-          class="category-item"
-          [class.active]="activeCategory() === cat.type"
-          (click)="selectCategory(cat.type)">
-          <span class="material-icons-round cat-icon">{{ cat.icon }}</span>
-          <span class="cat-label">{{ cat.label }}</span>
-          @if (countFor()[cat.type]) {
-            <span class="cat-count">{{ countFor()[cat.type] }}</span>
-          }
-        </button>
-      }
-    </nav>
+  <!-- ── Tabs de categoría (mismo estilo corporativo que Info General) ── -->
+  <app-tabs-card
+    [items]="tabItems()"
+    [current]="activeCategory()"
+    (currentChange)="selectCategory($event)">
+  </app-tabs-card>
 
-    <button class="upload-trigger" (click)="showUploadModal.set(true)">
-      <span class="material-icons-round">add</span>
-      Subir documento
-    </button>
-  </aside>
+  <!-- ── Error inline ───────────────────────────────────────────────────── -->
+  @if (uploadError()) {
+    <app-banner variant="error" icon="error_outline" title="Error" [dismissible]="true"
+                (dismissed)="uploadError.set('')">
+      {{ uploadError() }}
+    </app-banner>
+  }
 
-  <!-- ── Contenido principal ────────────────────────────────────────────── -->
-  <main class="docs-content">
-
-    <div class="content-header">
-      <h3 class="content-title">{{ activeCategoryLabel() }}</h3>
-      @if ((allDocs()?.length ?? 0) > 0) {
-        <span class="doc-count">{{ filteredDocs()?.length }} archivo(s)</span>
+  <!-- ── Loading ────────────────────────────────────────────────────────── -->
+  @if (filteredDocs() === undefined) {
+    <div class="docs-grid">
+      @for (i of [1,2,3,4,5,6]; track i) {
+        <app-loading-skeleton variant="card"></app-loading-skeleton>
       }
     </div>
+  }
 
-    @if (uploadError()) {
-      <div class="action-error">
-        <span class="material-icons-round">error_outline</span>
-        {{ uploadError() }}
-        <button class="action-error-close" (click)="uploadError.set('')">
-          <span class="material-icons-round">close</span>
-        </button>
-      </div>
-    }
+  <!-- ── Sin documentos ─────────────────────────────────────────────────── -->
+  @else if (filteredDocs()!.length === 0) {
+    <app-empty-state
+      icon="folder_open"
+      title="Sin documentos"
+      description="No hay archivos en esta categoría. Usa el botón para subir uno.">
+    </app-empty-state>
+  }
 
-    <!-- Loading -->
-    @if (filteredDocs() === undefined) {
-      <div class="skeleton-grid">
-        @for (i of [1,2,3,4,5,6]; track i) {
-          <app-loading-skeleton variant="card"></app-loading-skeleton>
-        }
-      </div>
-    }
-
-    <!-- Sin documentos -->
-    @else if (filteredDocs()!.length === 0) {
-      <app-empty-state
-        icon="folder_open"
-        title="Sin documentos"
-        description="No hay archivos en esta categoría. Usa el botón para subir uno.">
-      </app-empty-state>
-    }
-
-    <!-- Grid de documentos -->
-    @else {
-      <div class="docs-grid">
-        @for (doc of filteredDocs()!; track doc.id) {
-          <app-doc-card
-            [doc]="doc"
-            (download)="onDownload($event)"
-            (delete)="onDeleteRequest($event)">
-          </app-doc-card>
-        }
-      </div>
-    }
-
-  </main>
+  <!-- ── Grid de documentos ─────────────────────────────────────────────── -->
+  @else {
+    <div class="docs-grid">
+      @for (doc of filteredDocs()!; track doc.id) {
+        <app-doc-card
+          [doc]="doc"
+          (download)="onDownload($event)"
+          (delete)="onDeleteRequest($event)">
+        </app-doc-card>
+      }
+    </div>
+  }
 
 </div>
 
@@ -87,10 +72,9 @@
   (close)="showUploadModal.set(false)">
 
   @if (uploadError()) {
-    <div class="upload-error">
-      <span class="material-icons-round">error_outline</span>
+    <app-banner variant="error" icon="error_outline" title="Error al subir">
       {{ uploadError() }}
-    </div>
+    </app-banner>
   }
 
   <app-doc-upload-zone

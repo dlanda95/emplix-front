@@ -1,0 +1,29 @@
+<form [formGroup]="form" style="display:flex;flex-direction:column;gap:1rem;">
+
+  <app-section-card title="Contacto Directo" [columns]="3">
+    <app-input label="Teléfono Fijo"    formControlName="phone"         placeholder="Ej. 01 234 5678"></app-input>
+    <app-input label="Celular"          formControlName="cellPhone"     placeholder="Ej. 999 888 777"></app-input>
+    <app-input label="Correo Personal"  formControlName="personalEmail" placeholder="Ej. juan@gmail.com" type="email"></app-input>
+  </app-section-card>
+
+  <app-section-card title="Contacto de Emergencia" [columns]="3">
+    <app-input label="Nombre Completo"  formControlName="emergencyName"  placeholder="Ej. María García"></app-input>
+    <app-input label="Vínculo"          formControlName="emergencyRel"   placeholder="Ej. Esposa, Madre, Hermano"></app-input>
+    <app-input label="Teléfono / Celular" formControlName="emergencyPhone" placeholder="Ej. 999 777 666"></app-input>
+  </app-section-card>
+
+  <div style="display:flex;justify-content:flex-end;">
+    @if (showSave() && !saved()) {
+      <app-button variant="secondary" icon="save" [loading]="isSaving()" (clicked)="save()">
+        Guardar avance
+      </app-button>
+    }
+    @if (saved()) {
+      <div class="save-notice">
+        <span class="material-icons-round">check_circle</span>
+        ¡Avance guardado!
+      </div>
+    }
+  </div>
+
+</form>

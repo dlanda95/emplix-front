@@ -1,0 +1,22 @@
+<div class="list-item">
+
+  <div class="item-avatar">
+    <span class="material-icons-round">{{ icon() }}</span>
+  </div>
+
+  <div class="item-body">
+    <span class="item-name">{{ name() }}</span>
+    <div class="item-badges">
+      <ng-content select="[item-badges]"></ng-content>
+    </div>
+  </div>
+
+  <div class="item-meta">
+    <ng-content select="[item-meta]"></ng-content>
+  </div>
+
+  <div class="item-actions">
+    <ng-content select="[item-actions]"></ng-content>
+  </div>
+
+</div>

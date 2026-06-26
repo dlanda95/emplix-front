@@ -1,0 +1,108 @@
+<!-- ── Cabecera ──────────────────────────────────────────────────────────────── -->
+<app-toolbar-layout>
+  <ng-container main>
+    <app-page-header
+      title="Estudios"
+      [subtitle]="(records()?.length ?? 0) > 0
+                  ? (records()!.length + ' registro' + (records()!.length === 1 ? '' : 's'))
+                  : 'Historial académico'">
+    </app-page-header>
+  </ng-container>
+  <ng-container actions>
+    <app-button icon="add" (clicked)="openAdd()">Agregar estudio</app-button>
+  </ng-container>
+</app-toolbar-layout>
+
+<!-- ── Lista de estudios ─────────────────────────────────────────────────────── -->
+<app-section-card title="Historial Académico">
+
+  <!-- Loading -->
+  @if (records() === undefined) {
+    @for (i of [1, 2]; track i) {
+      <app-loading-skeleton variant="card"></app-loading-skeleton>
+    }
+  }
+
+  <!-- Sin registros -->
+  @else if (records()!.length === 0) {
+    <app-empty-state
+      [compact]="true"
+      icon="school"
+      title="Sin estudios registrados"
+      description="Agrega tus títulos y certificaciones académicas.">
+    </app-empty-state>
+  }
+
+  <!-- Registros -->
+  @else {
+    @for (rec of records()!; track rec.id) {
+      <app-list-item [name]="rec.institution" icon="school">
+
+        <ng-container item-badges>
+          <app-badge variant="primary">{{ levelLabel(rec.level) }}</app-badge>
+          <app-badge [variant]="statusVariant(rec.status)">{{ statusLabel(rec.status) }}</app-badge>
+        </ng-container>
+
+        <ng-container item-meta>
+          <span>{{ rec.program }}</span>
+          <span>{{ yearRange(rec) }}</span>
+          @if (rec.country) { <span>{{ rec.country }}</span> }
+        </ng-container>
+
+        <ng-container item-actions>
+          <app-button variant="ghost" size="sm" icon="edit"   (clicked)="openEdit(rec)"></app-button>
+          <app-button variant="ghost" size="sm" icon="delete" (clicked)="requestDelete(rec.id)"></app-button>
+        </ng-container>
+
+      </app-list-item>
+    }
+  }
+
+</app-section-card>
+
+<!-- ── Modal agregar / editar ────────────────────────────────────────────────── -->
+<app-modal
+  [title]="modalTitle"
+  [isOpen]="isModalOpen()"
+  (close)="closeModal()">
+
+  <form [formGroup]="form" style="display:flex; flex-direction:column; gap:0.75rem;">
+
+    <app-form-row [cols]="2">
+      <app-select label="Nivel académico"    formControlName="level"       [options]="levelOptions"></app-select>
+      <app-input  label="Institución"        formControlName="institution" placeholder="Ej. PUCP"></app-input>
+    </app-form-row>
+
+    <app-form-row [cols]="2">
+      <app-input label="Carrera / Programa" formControlName="program" placeholder="Ej. Ingeniería de Sistemas"></app-input>
+      <app-input label="País"               formControlName="country" placeholder="Ej. Perú"></app-input>
+    </app-form-row>
+
+    <app-form-row [cols]="3">
+      <app-input label="Año inicio"  formControlName="startYear" type="number" placeholder="2018"></app-input>
+      <app-input label="Año fin"     formControlName="endYear"   type="number" placeholder="2022 (opcional)"></app-input>
+      <app-select label="Estado"     formControlName="status"    [options]="statusOptions"></app-select>
+    </app-form-row>
+
+  </form>
+
+  <ng-container modal-actions>
+    <app-button variant="ghost"   (clicked)="closeModal()">Cancelar</app-button>
+    <app-button variant="primary" [disabled]="form.invalid || isSubmitting()" (clicked)="submit()">
+      {{ isSubmitting() ? 'Guardando...' : 'Guardar' }}
+    </app-button>
+  </ng-container>
+
+</app-modal>
+
+<!-- ── Confirmación eliminar ─────────────────────────────────────────────────── -->
+<app-confirm-modal
+  [isOpen]="isConfirmOpen()"
+  icon="school"
+  title="Eliminar registro"
+  message="¿Seguro que deseas eliminar este registro académico? Esta acción no se puede deshacer."
+  confirmLabel="Eliminar"
+  confirmVariant="danger"
+  (confirmed)="confirmDelete()"
+  (cancelled)="cancelDelete()">
+</app-confirm-modal>

@@ -1,0 +1,22 @@
+<div class="chips-rail" role="tablist" aria-label="Filtrar por categoría">
+  @for (item of items(); track item.id) {
+    <button
+      class="chip"
+      role="tab"
+      [class.active]="active() === item.id"
+      [attr.aria-selected]="active() === item.id"
+      (click)="select(item.id)">
+
+      @if (item.icon) {
+        <span class="material-icons-round chip-icon">{{ item.icon }}</span>
+      }
+
+      <span class="chip-label">{{ item.label }}</span>
+
+      @if ((item.count ?? 0) > 0) {
+        <span class="chip-badge">{{ item.count }}</span>
+      }
+
+    </button>
+  }
+</div>

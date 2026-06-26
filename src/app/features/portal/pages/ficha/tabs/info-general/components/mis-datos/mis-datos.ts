@@ -1,15 +1,18 @@
 import { Component, inject, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { toSignal } from '@angular/core/rxjs-interop';
-import { Button, Field, SectionCard, AppInput, Banner } from '@shared/ui';
-import { ToolbarLayout } from '@shared/layout';
+import { AppInput, AppSelect, Banner, Button, EditBar, Field, SectionCard } from '@shared/ui';
 import { CollaboratorService } from '@features/portal/services/collaborator.service';
+import { CollaboratorProfile } from '@features/portal/models/collaborator.model';
 import { ProfileUpdateRequest } from '@features/portal/models/profile-update.model';
+import {
+  GENDER_OPTIONS, MARITAL_STATUS_OPTIONS, ACADEMIC_LEVEL_OPTIONS, DOCUMENT_TYPE_OPTIONS,
+  CatalogOption, catalogLabel,
+} from '@features/portal/models/catalog.model';
 
 @Component({
   selector: 'app-mis-datos',
-  imports: [Banner, ToolbarLayout, AppInput, Button, CommonModule, ReactiveFormsModule, SectionCard, Field],
+  imports: [AppInput, AppSelect, Banner, Button, CommonModule, EditBar, Field, ReactiveFormsModule, SectionCard],
   templateUrl: './mis-datos.html',
   styleUrl: './mis-datos.scss',
 })
@@ -17,29 +20,52 @@ export class MisDatos {
   private readonly fb                  = inject(FormBuilder);
   private readonly collaboratorService = inject(CollaboratorService);
 
-  readonly isEditing    = signal(false);
-  readonly isSubmitting = signal(false);
+  readonly isEditing         = signal(false);
+  readonly isSubmitting      = signal(false);
+  readonly hasPendingRequest = signal(false);
+  readonly profile           = signal<CollaboratorProfile | undefined>(undefined);
 
-  readonly profile           = toSignal(this.collaboratorService.getProfile());
-  readonly hasPendingRequest = toSignal(this.collaboratorService.hasPendingProfileUpdate(), { initialValue: false });
+  readonly genderOptions        = GENDER_OPTIONS;
+  readonly maritalStatusOptions = MARITAL_STATUS_OPTIONS;
+  readonly academicLevelOptions = ACADEMIC_LEVEL_OPTIONS;
+  readonly documentTypeOptions  = DOCUMENT_TYPE_OPTIONS;
 
   editForm: FormGroup = this.fb.group({
-    firstName:    ['', Validators.required],
-    middleName:   [''],
-    lastName:     ['', Validators.required],
-    secondLastName: [''],
-    documentType: [{ value: 'DNI', disabled: true }],
-    documentId:   [''],
-    birthDate:    [''],
-    personalEmail:['', Validators.email],
-    phone:        [''],
+    firstName:     ['', Validators.required],
+    middleName:    [''],
+    lastName:      ['', Validators.required],
+    secondLastName:[''],
+    documentType:  ['DNI'],
+    documentId:    [''],
+    birthDate:     [''],
+    gender:        [''],
+    maritalStatus: [''],
+    nationality:   [''],
+    academicLevel: [''],
+    birthCountry:  [''],
+    birthRegion:   [''],
+    birthDistrict: [''],
+    licenseNumber: [''],
+    altDocId:      [''],
+    docAddress:    [''],
+    docDistrict:   [''],
+    docDepartment: [''],
+    docAddressRef: [''],
   });
 
   constructor() {
+    this.loadProfile();
+
     effect(() => {
       const data = this.profile();
       if (data) this.editForm.patchValue(data);
     });
+  }
+
+  requestEditMode(): void {
+    if (!this.hasPendingRequest() && !this.isEditing()) {
+      this.isEditing.set(true);
+    }
   }
 
   toggleEditMode(): void {
@@ -67,11 +93,36 @@ export class MisDatos {
       next: () => {
         this.isSubmitting.set(false);
         this.isEditing.set(false);
-        window.location.reload();
+        this.loadProfile();
       },
-      error: () => {
-        this.isSubmitting.set(false);
-      },
+      error: () => this.isSubmitting.set(false),
+    });
+  }
+
+  // Helpers de presentación para valores de catálogo
+  documentTypeLabel(val: string | null | undefined): string {
+    return catalogLabel(DOCUMENT_TYPE_OPTIONS, val);
+  }
+
+  genderLabel(val: string | null | undefined): string {
+    return catalogLabel(GENDER_OPTIONS, val);
+  }
+
+  maritalStatusLabel(val: string | null | undefined): string {
+    return catalogLabel(MARITAL_STATUS_OPTIONS, val);
+  }
+
+  academicLevelLabel(val: string | null | undefined): string {
+    return catalogLabel(ACADEMIC_LEVEL_OPTIONS, val);
+  }
+
+  private loadProfile(): void {
+    this.collaboratorService.getProfile().subscribe({
+      next: profile => this.profile.set(profile),
+    });
+
+    this.collaboratorService.hasPendingProfileUpdate().subscribe({
+      next: hasPending => this.hasPendingRequest.set(hasPending),
     });
   }
 }

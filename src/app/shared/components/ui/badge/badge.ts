@@ -8,7 +8,7 @@ import { CommonModule } from '@angular/common';
 })
 export class Badge {
 
-  @Input() variant: 'success' | 'warning' | 'error' | 'neutral' = 'neutral';
+  @Input() variant: 'success' | 'warning' | 'error' | 'neutral' | 'primary' = 'neutral';
 }
 
 

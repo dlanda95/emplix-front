@@ -1,0 +1,208 @@
+@if (isLoading()) {
+  <app-loading-skeleton variant="card"></app-loading-skeleton>
+}
+
+@if (!isLoading() && candidate(); as c) {
+  <div style="display:flex;flex-direction:column;gap:1.5rem;">
+
+    <!-- ── Header ─────────────────────────────────────────────────────────── -->
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;">
+      <div style="display:flex;align-items:center;gap:0.75rem;">
+        <app-button variant="ghost" icon="arrow_back" size="sm" (clicked)="back()">Volver</app-button>
+        <div>
+          <h2 style="margin:0;font-size:1.25rem;font-weight:600;">{{ c.firstName }} {{ c.lastName }}</h2>
+          <p style="margin:0;color:var(--text-secondary);font-size:0.875rem;">
+            {{ docTypeLabel(c.documentType) }} · {{ c.documentId }}
+          </p>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:0.75rem;">
+        <app-badge [variant]="onboardingStatusVariant(c.onboardingStatus)">
+          {{ onboardingStatusLabel(c.onboardingStatus) }}
+        </app-badge>
+        @if (canActivate) {
+          <app-button variant="primary" icon="person_check" (clicked)="openActivate()">
+            Activar colaborador
+          </app-button>
+        }
+      </div>
+    </div>
+
+    <!-- ── Vista dividida ─────────────────────────────────────────────────── -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;align-items:start;">
+
+      <!-- Columna izquierda: datos del candidato (solo lectura) -->
+      <div style="display:flex;flex-direction:column;gap:1rem;">
+
+        @if (!canActivate) {
+          <app-banner variant="warning" icon="hourglass_empty" title="Esperando documentación">
+            <p>El candidato aún no ha completado y enviado su expediente de onboarding.</p>
+          </app-banner>
+        }
+
+        <app-section-card title="Identidad" [columns]="2">
+          <app-field label="Nombre completo"
+            [value]="c.firstName + ' ' + (c.middleName ?? '') + ' ' + c.lastName + ' ' + (c.secondLastName ?? '')">
+          </app-field>
+          <app-field label="Tipo / Nro. Doc"  [value]="docTypeLabel(c.documentType) + ' · ' + c.documentId"></app-field>
+          <app-field label="Fecha de Nac."    [value]="c.birthDate | date:'dd/MM/yyyy'"></app-field>
+          <app-field label="Género"           [value]="c.gender"></app-field>
+        </app-section-card>
+
+        <app-section-card title="Contacto" [columns]="2">
+          <app-field label="Celular"          [value]="c.cellPhone"></app-field>
+          <app-field label="Correo personal"  [value]="c.personalEmail"></app-field>
+          <app-field label="Contacto emerg."  [value]="c.emergencyName"></app-field>
+          <app-field label="Teléfono emerg."  [value]="c.emergencyPhone"></app-field>
+        </app-section-card>
+
+        <app-section-card title="Domicilio" [columns]="2">
+          <app-field label="Dirección"    [value]="c.address"></app-field>
+          <app-field label="Distrito"     [value]="c.district"></app-field>
+          <app-field label="Departamento" [value]="c.departmentdirec"></app-field>
+        </app-section-card>
+
+        <app-section-card title="Financiero" [columns]="2">
+          <app-field label="Sistema Pensionario" [value]="c.afpType"></app-field>
+          <app-field label="AFP / ONP"            [value]="c.afpEntity"></app-field>
+          <app-field label="Banco"                [value]="c.bankEntity"></app-field>
+          <app-field label="Nro. de Cuenta"       [value]="c.bankAccount"></app-field>
+        </app-section-card>
+
+      </div>
+
+      <!-- Columna derecha: asignación RRHH + documentos -->
+      <div style="display:flex;flex-direction:column;gap:1rem;">
+
+        <!-- Asignación Corporativa -->
+        <app-section-card title="Asignación Corporativa" [columns]="1">
+
+          <app-banner variant="info" icon="corporate_fare" title="Solo visible para RRHH">
+            <p>Completa la asignación antes de activar al colaborador. Los datos se reflejarán en su expediente.</p>
+          </app-banner>
+
+          <!-- Resumen de asignación actual (si ya tiene) -->
+          @if (c.department?.name || c.position?.name || c.supervisor) {
+            <div style="display:flex;flex-direction:column;gap:0.25rem;padding:0.75rem;background:var(--bg-surface-alt,var(--bg-surface));border:1px solid var(--border-color);border-radius:var(--radius-md);margin:0.75rem 0 0;">
+              @if (c.department?.name) {
+                <p style="margin:0;font-size:0.8rem;color:var(--text-secondary);">
+                  <strong>Área:</strong> {{ c.department.name }}
+                </p>
+              }
+              @if (c.position?.name) {
+                <p style="margin:0;font-size:0.8rem;color:var(--text-secondary);">
+                  <strong>Cargo:</strong> {{ c.position.name }}
+                </p>
+              }
+              @if (c.supervisor) {
+                <p style="margin:0;font-size:0.8rem;color:var(--text-secondary);">
+                  <strong>Supervisor:</strong> {{ c.supervisor.firstName }} {{ c.supervisor.lastName }}
+                </p>
+              }
+            </div>
+          }
+
+          <form [formGroup]="hrForm" style="display:flex;flex-direction:column;gap:0.75rem;margin-top:0.75rem;">
+            <app-select
+              label="Área / Departamento"
+              formControlName="departmentId"
+              [options]="deptOptions()"
+              placeholder="— Seleccionar área —">
+            </app-select>
+
+            <app-select
+              label="Cargo"
+              formControlName="positionId"
+              [options]="positionOptions()"
+              placeholder="— Seleccionar cargo —">
+            </app-select>
+
+            <app-select
+              label="Supervisor directo"
+              formControlName="supervisorId"
+              [options]="supervisorOptions()"
+              placeholder="— Sin supervisor asignado —">
+            </app-select>
+
+            <div style="display:flex;justify-content:flex-end;align-items:center;gap:0.75rem;margin-top:0.25rem;">
+              @if (hrSaved()) {
+                <div class="save-notice">
+                  <span class="material-icons-round">check_circle</span>
+                  ¡Asignación guardada!
+                </div>
+              }
+              <app-button variant="secondary" icon="save" (clicked)="saveHrData()">
+                Guardar asignación
+              </app-button>
+            </div>
+          </form>
+        </app-section-card>
+
+        <!-- Documentos adjuntos -->
+        @if (c.documents?.length > 0) {
+          <app-section-card title="Documentos adjuntos" [columns]="1">
+            @for (doc of c.documents; track doc.id) {
+              <div style="display:flex;align-items:center;gap:0.75rem;padding:0.625rem 0;border-bottom:1px solid var(--border-color);">
+
+                <span class="material-icons-round" style="font-size:1.5rem;color:var(--color-primary);flex-shrink:0;">
+                  description
+                </span>
+
+                <div style="flex:1;min-width:0;">
+                  <p style="margin:0;font-size:0.875rem;font-weight:600;color:var(--text-main);">
+                    {{ docLabel(doc) }}
+                  </p>
+                  <p style="margin:0;font-size:0.75rem;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                    {{ doc.name ?? doc.originalName }}
+                  </p>
+                </div>
+
+                @if (docUrls()[doc.id]) {
+                  <a [href]="docUrls()[doc.id]" target="_blank" rel="noopener"
+                    style="display:inline-flex;align-items:center;gap:0.25rem;font-size:0.8rem;color:var(--color-primary);text-decoration:none;flex-shrink:0;">
+                    <span class="material-icons-round" style="font-size:1rem;">open_in_new</span>
+                    Ver
+                  </a>
+                } @else {
+                  <span class="material-icons-round" style="font-size:1rem;color:var(--text-secondary);">hourglass_top</span>
+                }
+
+              </div>
+            }
+          </app-section-card>
+        }
+
+      </div>
+    </div>
+
+    <!-- ── Modal: Activar colaborador ────────────────────────────────────── -->
+    <app-modal [isOpen]="isActivateModal()" title="Activar Colaborador" (close)="closeActivate()">
+
+      @if (activateError()) {
+        <app-banner variant="error" icon="error" [title]="activateError()"></app-banner>
+      }
+
+      <app-banner variant="warning" icon="person_check" title="Esta acción es irreversible">
+        <p>El candidato pasará a estado <strong>ACTIVO</strong>. Se le asignará el correo corporativo indicado y perderá acceso con sus credenciales de onboarding.</p>
+      </app-banner>
+
+      <form [formGroup]="activateForm" style="margin-top:1rem;">
+        <app-input
+          label="Correo Corporativo"
+          formControlName="corporateEmail"
+          placeholder="Ej. juan.garcia@empresa.com"
+          type="email">
+        </app-input>
+      </form>
+
+      <ng-container modal-actions>
+        <app-button variant="ghost" (clicked)="closeActivate()">Cancelar</app-button>
+        <app-button variant="primary" icon="person_check" [loading]="isActivating()" (clicked)="confirmActivate()">
+          Confirmar activación
+        </app-button>
+      </ng-container>
+
+    </app-modal>
+
+  </div>
+}

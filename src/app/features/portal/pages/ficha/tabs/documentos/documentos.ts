@@ -8,14 +8,19 @@ import {
   DOC_CATEGORIES, DOC_TYPE_LABELS,
 } from '@features/portal/models/document.model';
 import {
-  DocCard, DocUploadZone, EmptyState, Modal, LoadingSkeleton, ConfirmModal,
+  Banner, Button, ConfirmModal, DocCard, DocUploadZone,
+  EmptyState, LoadingSkeleton, Modal, PageHeader, TabsCard,
 } from '@shared/ui';
-import type { UploadPayload } from '@shared/ui';
+import type { UploadPayload, TabItem } from '@shared/ui';
+import { ToolbarLayout } from '@shared/layout';
 import { environment } from '@env';
 
 @Component({
   selector: 'app-documentos',
-  imports: [DocCard, DocUploadZone, EmptyState, Modal, LoadingSkeleton, ConfirmModal],
+  imports: [
+    Banner, Button, ConfirmModal, DocCard, DocUploadZone,
+    EmptyState, LoadingSkeleton, Modal, PageHeader, TabsCard, ToolbarLayout,
+  ],
   templateUrl: './documentos.html',
   styleUrl: './documentos.scss',
 })
@@ -23,18 +28,14 @@ export class Documentos {
   private readonly collaboratorService = inject(CollaboratorService);
   private readonly http                = inject(HttpClient);
 
-  // ─── Estado ──────────────────────────────────────────────────────────────
-  readonly categories      = DOC_CATEGORIES;
   readonly activeCategory  = signal<EmployeeDocumentType | 'ALL'>('ALL');
   readonly showUploadModal = signal(false);
   readonly isUploading     = signal(false);
   readonly uploadError     = signal('');
 
-  // ─── Confirmación de eliminación ──────────────────────────────────────────
   readonly showConfirmDelete = signal(false);
   readonly docToDelete       = signal<EmployeeDocument | null>(null);
 
-  // ─── Documentos ──────────────────────────────────────────────────────────
   readonly allDocs = signal<EmployeeDocument[] | undefined>(undefined);
 
   readonly filteredDocs = computed(() => {
@@ -45,25 +46,30 @@ export class Documentos {
   });
 
   readonly countFor = computed(() => {
-    const docs = this.allDocs() ?? [];
+    const docs  = this.allDocs() ?? [];
     const counts: Record<string, number> = { ALL: docs.length };
     for (const d of docs) counts[d.type] = (counts[d.type] ?? 0) + 1;
     return counts;
   });
 
-  constructor() { this.loadDocs(); }
+  // Tabs compatibles con TabsCard
+  readonly tabItems = computed<TabItem[]>(() =>
+    DOC_CATEGORIES.map(cat => ({
+      id:    cat.type,
+      label: cat.label,
+      icon:  cat.icon,
+    }))
+  );
 
-  // ─── Helpers ─────────────────────────────────────────────────────────────
+  constructor() { this.loadDocs(); }
 
   activeCategoryLabel(): string {
     if (this.activeCategory() === 'ALL') return 'Todos los documentos';
     return DOC_TYPE_LABELS[this.activeCategory() as EmployeeDocumentType] ?? 'Documentos';
   }
 
-  // ─── Acciones ────────────────────────────────────────────────────────────
-
-  selectCategory(type: EmployeeDocumentType | 'ALL'): void {
-    this.activeCategory.set(type);
+  selectCategory(type: string): void {
+    this.activeCategory.set(type as EmployeeDocumentType | 'ALL');
   }
 
   async onDownload(doc: EmployeeDocument): Promise<void> {
@@ -87,7 +93,6 @@ export class Documentos {
     const doc = this.docToDelete();
     if (!doc) return;
     this.showConfirmDelete.set(false);
-
     try {
       await firstValueFrom(
         this.http.delete(`${environment.apiUrl}/employees/documents/${doc.id}`)

@@ -1,0 +1,39 @@
+<form [formGroup]="form" style="display:flex;flex-direction:column;gap:1rem;">
+
+  <app-section-card title="Domicilio Actual" [columns]="2">
+
+    <!-- Toggle: misma que documento -->
+    <div style="grid-column:1/-1;">
+      <label style="display:flex;align-items:center;gap:0.625rem;cursor:pointer;padding:0.75rem;background:var(--bg-surface-alt,var(--bg-surface));border:1px solid var(--border-color);border-radius:var(--radius-md);">
+        <input type="checkbox" (change)="toggleSameAsDoc($event)" [checked]="sameAsDoc()">
+        <span>Mi domicilio actual es el mismo que figura en mi documento de identidad</span>
+      </label>
+      @if (sameAsDoc() && !svc.profile()?.docAddress) {
+        <app-banner variant="warning" icon="info" title="Sin dirección registrada">
+          <p>Primero completa la dirección de tu documento de identidad en el paso anterior.</p>
+        </app-banner>
+      }
+    </div>
+
+    <app-input label="Dirección (Calle / Av. / Jr. + Nro.)" formControlName="address"         placeholder="Ej. Av. Larco 500"></app-input>
+    <app-input label="Distrito"                              formControlName="district"         placeholder="Ej. Miraflores"></app-input>
+    <app-input label="Departamento"                          formControlName="departmentdirec"  placeholder="Ej. Lima"></app-input>
+    <app-input label="Referencia (opcional)"                 formControlName="addressRef"       placeholder="Ej. Frente al parque"></app-input>
+
+  </app-section-card>
+
+  <div style="display:flex;justify-content:flex-end;">
+    @if (showSave() && !saved()) {
+      <app-button variant="secondary" icon="save" [loading]="isSaving()" (clicked)="save()">
+        Guardar avance
+      </app-button>
+    }
+    @if (saved()) {
+      <div class="save-notice">
+        <span class="material-icons-round">check_circle</span>
+        ¡Avance guardado!
+      </div>
+    }
+  </div>
+
+</form>

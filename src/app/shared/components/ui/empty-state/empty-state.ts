@@ -7,7 +7,8 @@ import { Component, Input } from '@angular/core';
   styleUrl: './empty-state.scss',
 })
 export class EmptyState {
-  @Input() icon  = 'inbox';
-  @Input() title = 'Sin resultados';
+  @Input() icon        = 'inbox';
+  @Input() title       = 'Sin resultados';
   @Input() description = '';
+  @Input() compact     = false;
 }

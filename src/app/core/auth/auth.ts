@@ -70,6 +70,19 @@ export class AuthService {
     );
   }
 
+  /** Ruta inicial después de autenticarse, según el rol y estado del empleado */
+  getPostLoginRoute(): string[] {
+    const user = this._currentUser();
+    if (!user) return ['/auth/login'];
+    if (user.role === 'COMPANY_ADMIN' || user.role === 'HR_MANAGER' || user.role === 'HR_ANALYST') {
+      return ['/admin/candidatos'];
+    }
+    if (user.employeeStatus === 'SELECTED') {
+      return ['/onboarding'];
+    }
+    return ['/portal'];
+  }
+
   register(userData: any): Observable<any> {
     return this.http.post<any>(API_ENDPOINTS.auth.register, userData).pipe(
       map(res => res?.data ?? res),
@@ -88,6 +101,14 @@ export class AuthService {
     localStorage.setItem('saved_tenant', slug);
   }
 
+  patchCurrentUser(patch: Partial<User>): void {
+    const user = this._currentUser();
+    if (!user) return;
+    const updated = { ...user, ...patch };
+    localStorage.setItem('user', JSON.stringify(updated));
+    this._currentUser.set(updated);
+  }
+
   logout(): void {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
@@ -98,9 +119,15 @@ export class AuthService {
 
   private saveSession(data: AuthResponse): void {
     if (!data?.token) return;
+    // Combinar status del empleado en el objeto user para disponibilizarlo en guards
+    const user = {
+      ...data.user,
+      employeeStatus:   data.employeeStatus   ?? data.user.employeeStatus   ?? null,
+      onboardingStatus: data.onboardingStatus ?? data.user.onboardingStatus ?? null,
+    };
     localStorage.setItem('token', data.token);
-    localStorage.setItem('user', JSON.stringify(data.user));
-    this._currentUser.set(data.user);
+    localStorage.setItem('user', JSON.stringify(user));
+    this._currentUser.set(user);
   }
 
   private loadUserFromStorage(): User | null {

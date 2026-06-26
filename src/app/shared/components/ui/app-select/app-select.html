@@ -1,0 +1,13 @@
+<div class="select-group">
+  <label class="select-label">{{ label() }}</label>
+  <select
+    class="select-control"
+    [value]="internalValue()"
+    [disabled]="isDisabled()"
+    (change)="handleChange($event)">
+    <option value="">{{ placeholder() }}</option>
+    @for (opt of options(); track opt.value) {
+      <option [value]="opt.value" [selected]="opt.value === internalValue()">{{ opt.label }}</option>
+    }
+  </select>
+</div>

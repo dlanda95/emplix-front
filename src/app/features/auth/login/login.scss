@@ -239,6 +239,74 @@
   span { flex-shrink: 0; font-size: 1.1rem; }
 }
 
+// ─── Mode Toggle (Colaborador / Candidato) ───────────────────────────────────
+.mode-toggle {
+  display: flex;
+  background: var(--bg-base, #f3f4f6);
+  border-radius: 12px;
+  padding: 4px;
+  gap: 4px;
+  margin-bottom: 1.25rem;
+}
+
+.mode-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.5rem 0.75rem;
+  border: none;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: inherit;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  .material-icons-round { font-size: 1rem; }
+
+  &.active {
+    background: var(--bg-surface);
+    color: var(--color-primary);
+    font-weight: 600;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  &:hover:not(.active) {
+    color: var(--text-main);
+    background: rgba(0, 0, 0, 0.04);
+  }
+}
+
+// ─── Info candidato ──────────────────────────────────────────────────────────
+.candidate-info {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.625rem;
+  background: var(--color-primary-soft, rgba(99, 102, 241, 0.08));
+  border: 1px solid var(--color-primary-soft, rgba(99, 102, 241, 0.2));
+  border-radius: var(--radius-sm);
+  padding: 0.75rem 1rem;
+  margin-bottom: 1.25rem;
+
+  .material-icons-round {
+    font-size: 1.1rem;
+    color: var(--color-primary);
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  p {
+    margin: 0;
+    font-size: 0.825rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+  }
+}
+
 // ─── Microsoft Login ─────────────────────────────────────────────────────────
 .ms-section {
   margin-bottom: 0.25rem;

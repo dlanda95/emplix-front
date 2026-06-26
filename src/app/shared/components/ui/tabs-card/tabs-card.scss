@@ -3,110 +3,99 @@
 
 :host { display: block; width: 100%; }
 
+// ── Contenedor externo ────────────────────────────────────────────────────────
 .tabs-container {
   position: relative;
   width: 100%;
-  
   z-index: 5;
 }
 
-// --- 1. EL RIEL (CONTENEDOR GRIS) ---
+// ── Barra de navegación ───────────────────────────────────────────────────────
 .tabs-nav {
   display: flex;
   position: relative;
-  z-index: 1;
-
-  // 🔥 CAMBIO CLAVE 1: Crear el espacio de "aire"
-  background-color: var(--bg-body); // Color de fondo del riel (Gris claro)
-  //border-radius:0px 0px 999px 999px; // Riel completamente redondo
-  
-  // Este padding es la distancia entre el borde gris y la píldora blanca.
-  // 4px (0.25rem) es un estándar bueno para este estilo.
-  padding: 0.25rem; 
-  
   overflow-x: auto;
-  @include m.hide-scrollbar;
-  
-  // Sombra interna sutil para profundidad
-  box-shadow: inset 0 1px 2px rgba(0,0,0, 0.04); 
-  
-  // Asegura que los elementos internos respeten el padding
   box-sizing: border-box;
+  border-bottom: 2px solid var(--border-color);
+  @include m.hide-scrollbar;
 }
 
-// --- 2. EL INDICADOR (PÍLDORA BLANCA) ---
+// ── Indicador deslizante ──────────────────────────────────────────────────────
+// Queda en bottom:0 dentro del nav (3px de alto, color primario)
 .sliding-indicator {
   position: absolute;
-  
-  // 🔥 CAMBIO CLAVE 2: Sincronizar con el padding del riel
-  // Si el padding del padre es 0.25rem, el top/bottom aquí debe ser igual
-  // para que quede perfectamente encajado.
-  top: 0.25rem;
-  bottom: 0.25rem;
-  // (Left y Width los calcula el TS)
-  
-  background-color: white; 
-  border-radius: 999px; // Píldora redonda
-  
-  // Sombra suave para que "flote"
-  box-shadow: 0 2px 6px rgba(0,0,0, 0.06), 
-              0 0 1px rgba(0,0,0, 0.02);
-  
-  transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-  z-index: 1;
+  bottom: 0;
+  top: auto;
+  height: 3px;
+  border-radius: 3px 3px 0 0;
+  background-color: var(--color-primary);
+  transition: left  0.3s cubic-bezier(0.25, 0.8, 0.25, 1),
+              width 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  z-index: 2;
   pointer-events: none;
 }
 
-// --- 3. BOTÓN TAB ---
+// ── Botón de tab ──────────────────────────────────────────────────────────────
 .tab-btn {
-  flex: 1; 
+  flex: 0 0 auto;
   min-width: fit-content;
-  
-  position: relative; z-index: 2;
-  background: transparent; border: none; cursor: pointer;
-  display: flex; align-items: center; justify-content: center; gap: 0.5rem;
-  
-  // 🔥 CAMBIO CLAVE 3: Ajustar padding del botón
-  // Como ahora hay un padding en el contenedor, reducimos un poco el del botón
-  // para que no se vea gigante.
-  padding: 0.6rem 1.25rem;
-  border-radius: 999px;
-  
-  // Tipografía
+  position: relative;
+  z-index: 1;
+
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.875rem 1.375rem;
+  border-radius: 0;
+
   font-family: inherit;
-  font-size: var(--text-sm);
+  font-size: var(--text-base);   // 14px — más legible y con más presencia
   font-weight: 500;
   color: var(--text-secondary);
-  transition: color 0.2s ease;
   white-space: nowrap;
+  transition: color 0.2s ease, background-color 0.2s ease;
 
+  // Icono Material
   .icon {
-    font-size: 1.2em; margin-bottom: 1px;
-    opacity: 0.7; transition: all 0.2s ease;
+    font-size: 1.25rem;          // ~20px — proporcional al texto más grande
+    opacity: 0.6;
+    transition: opacity 0.2s, color 0.2s;
+    line-height: 1;
   }
 
-  // ESTADOS
+  // Hover — ligero fondo y texto más oscuro
   &:hover {
     color: var(--text-main);
-    .icon { opacity: 1; }
+    background-color: rgba(0, 0, 0, 0.035);
+
+    .icon { opacity: 0.85; }
   }
 
+  // Activo — color primario + bold suave
   &.active {
     color: var(--color-primary);
-    font-weight: 700;
-    .icon { opacity: 1; color: var(--color-primary); }
+    font-weight: 600;
+
+    .icon {
+      opacity: 1;
+      color: var(--color-primary);
+    }
   }
 }
 
-// --- MOBILE ---
+// Variante fill: tabs equidistantes
+.tabs-nav.fill .tab-btn { flex: 1; justify-content: center; }
+
+// ── Responsive ────────────────────────────────────────────────────────────────
 @include m.respond-to('mobile') {
-  // En móvil podemos hacer el riel un poco menos alto si se desea
-  .tabs-nav { padding: 3px; } 
-  .sliding-indicator { top: 3px; bottom: 3px; }
-  
   .tab-btn {
-    flex: 0 0 auto;
-    padding: 0.5rem 1rem; // Más compacto en móvil
-    font-size: var(--text-xs);
+    padding: 0.65rem 1rem;
+    font-size: var(--text-sm);
+    gap: 0.375rem;
+
+    .icon { font-size: 1.1rem; }
   }
 }

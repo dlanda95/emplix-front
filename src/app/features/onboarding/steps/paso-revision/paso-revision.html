@@ -1,0 +1,90 @@
+@if (svc.profile(); as data) {
+
+  <div style="display:flex;flex-direction:column;gap:1rem;">
+
+    @if (submitted()) {
+      <app-banner variant="success" icon="check_circle" title="¡Expediente enviado!">
+        <p>Tu documentación fue enviada correctamente. Redirigiendo...</p>
+      </app-banner>
+    }
+
+    @if (error()) {
+      <app-banner variant="error" icon="error" [title]="error()"></app-banner>
+    }
+
+    <app-banner variant="warning" icon="info" title="Revisa tu información antes de enviar">
+      <p>Una vez enviado tu expediente, no podrás modificarlo hasta que RRHH revise y active tu cuenta.</p>
+    </app-banner>
+
+    <app-section-card title="Identidad" [columns]="2">
+      <app-field label="Nombre Completo"      [value]="data.firstName + ' ' + data.lastName"></app-field>
+      <app-field label="Tipo de Documento"    [value]="docTypeLabel(data.documentType)"></app-field>
+      <app-field label="Nro. de Documento"    [value]="data.documentId"></app-field>
+      <app-field label="Fecha de Nacimiento"  [value]="data.birthDate | date:'dd/MM/yyyy'"></app-field>
+    </app-section-card>
+
+    <app-section-card title="Dirección del Documento" [columns]="2">
+      <app-field label="Dirección"   [value]="data.docAddress"></app-field>
+      <app-field label="Distrito"    [value]="data.docDistrict"></app-field>
+      <app-field label="Departamento"[value]="data.docDepartment"></app-field>
+    </app-section-card>
+
+    <app-section-card title="Domicilio" [columns]="2">
+      <app-field label="Dirección"   [value]="data.address"></app-field>
+      <app-field label="Distrito"    [value]="data.district"></app-field>
+      <app-field label="Departamento"[value]="data.departmentdirec"></app-field>
+    </app-section-card>
+
+    <app-section-card title="Contacto" [columns]="3">
+      <app-field label="Celular"         [value]="data.cellPhone"></app-field>
+      <app-field label="Correo Personal" [value]="data.personalEmail"></app-field>
+      <app-field label="Emergencia"      [value]="data.emergencyName"></app-field>
+    </app-section-card>
+
+    <app-section-card title="Financiero" [columns]="3">
+      <app-field label="Sistema Pensionario" [value]="data.afpType"></app-field>
+      <app-field label="Banco"               [value]="data.bankEntity"></app-field>
+      <app-field label="Nro. de Cuenta"      [value]="data.bankAccount"></app-field>
+    </app-section-card>
+
+    <div style="display:flex;justify-content:flex-end;padding-top:0.5rem;">
+      <app-button
+        variant="primary"
+        icon="send"
+        [disabled]="submitted()"
+        (clicked)="openConfirm()">
+        Enviar expediente a RRHH
+      </app-button>
+    </div>
+
+  </div>
+}
+
+<!-- Modal de confirmación de envío -->
+<app-modal
+  [isOpen]="showConfirm()"
+  title="Confirmar envío de expediente"
+  (close)="closeConfirm()">
+
+  <app-banner variant="warning" icon="warning" title="¿Estás seguro de enviar tu expediente?">
+    <p>Antes de confirmar, verifica que:</p>
+    <ul style="margin:0.5rem 0 0 1rem;padding:0;line-height:1.9;">
+      <li>Todos tus datos personales son correctos.</li>
+      <li>Tu información financiera (AFP, banco y número de cuenta) está actualizada.</li>
+      <li>Los documentos subidos son legibles y están vigentes.</li>
+    </ul>
+    <p style="margin-top:0.75rem;">
+      Una vez enviado, <strong>no podrás modificar tu expediente</strong> hasta que Recursos Humanos lo revise.
+    </p>
+  </app-banner>
+
+  <div modal-actions>
+    <app-button variant="ghost" (clicked)="closeConfirm()">
+      Revisar antes de enviar
+    </app-button>
+    <app-button variant="primary" icon="send" [loading]="isSubmitting()" (clicked)="submit()">
+      Confirmar envío
+    </app-button>
+  </div>
+
+</app-modal>

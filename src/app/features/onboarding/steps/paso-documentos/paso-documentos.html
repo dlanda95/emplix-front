@@ -1,0 +1,71 @@
+<div class="doc-sections">
+
+  <app-banner variant="info" icon="cloud_upload" title="Documentos requeridos">
+    <p>Adjunta los documentos necesarios para completar tu expediente digital. Puedes guardar avance con los que tengas disponibles ahora.</p>
+  </app-banner>
+
+  @for (section of sections; track section.key) {
+    <app-section-card [title]="section.label" [columns]="1">
+
+      <p class="section-hint">{{ section.hint }}</p>
+
+      @switch (stateOf(section.key)) {
+
+        @case ('idle') {
+          <app-doc-upload-zone
+            [docType]="section.type"
+            (fileSelected)="onUpload(section, $event)">
+          </app-doc-upload-zone>
+        }
+
+        @case ('uploading') {
+          <div class="upload-progress">
+            <span class="material-icons-round upload-progress__icon">hourglass_top</span>
+            <span>Subiendo documento…</span>
+          </div>
+        }
+
+        @case ('done') {
+          <div class="upload-done">
+            <span class="material-icons-round upload-done__check">check_circle</span>
+            <div class="upload-done__info">
+              <span class="upload-done__name">{{ nameOf(section.key) }}</span>
+              <span class="upload-done__label">Documento subido correctamente</span>
+            </div>
+            <app-button variant="ghost" size="sm" icon="refresh" (clicked)="replace(section.key)">
+              Reemplazar
+            </app-button>
+          </div>
+        }
+
+        @case ('error') {
+          <app-banner variant="error" icon="error" title="Error al subir">
+            <p>Ocurrió un problema. Inténtalo de nuevo.</p>
+          </app-banner>
+          <app-doc-upload-zone
+            [docType]="section.type"
+            (fileSelected)="onUpload(section, $event)">
+          </app-doc-upload-zone>
+        }
+
+      }
+
+    </app-section-card>
+  }
+
+  <!-- Footer igual que otros pasos -->
+  <div class="doc-footer">
+    @if (showSave() && !saved()) {
+      <app-button variant="secondary" icon="save" (clicked)="saveDocs()">
+        Guardar avance
+      </app-button>
+    }
+    @if (saved()) {
+      <div class="save-notice">
+        <span class="material-icons-round">check_circle</span>
+        ¡Avance guardado!
+      </div>
+    }
+  </div>
+
+</div>

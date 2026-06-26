@@ -35,6 +35,7 @@ export class Login {
   private readonly msalService   = inject(MsalService);
 
   readonly step          = signal<1 | 2>(1);
+  readonly loginMode     = signal<'colaborador' | 'candidato'>('colaborador');
   readonly isLoading     = signal(false);
   readonly isMsalLoading = signal(false);
   readonly errorMessage  = signal('');
@@ -42,12 +43,19 @@ export class Login {
   // Refleja si la empresa tiene SSO de Microsoft configurado
   readonly hasMicrosoftSSO = computed(() => this.authService.hasMicrosoftSSO());
 
+  readonly isCandidate  = computed(() => this.loginMode() === 'candidato');
+  readonly fieldLabel   = computed(() => this.isCandidate() ? 'Número de Documento' : 'Correo Corporativo');
+  readonly fieldPlaceholder = computed(() => this.isCandidate() ? 'Ej. 12345678' : 'nombre@empresa.com');
+  readonly fieldIcon    = computed(() => this.isCandidate() ? 'badge' : 'email');
+  readonly fieldType    = computed(() => this.isCandidate() ? 'text' : 'email');
+  readonly passwordHint = computed(() => this.isCandidate() ? 'Tu contraseña inicial es tu número de documento' : '');
+
   tenantForm = this.fb.group({
     slug: [this.authService.currentTenant() || '', [Validators.required, Validators.minLength(3)]],
   });
 
   loginForm = this.fb.group({
-    email:    ['', [Validators.required, Validators.email]],
+    email:    ['', [Validators.required]],   // acepta email o número de documento
     password: ['', [Validators.required, Validators.minLength(6)]],
   });
 
@@ -101,7 +109,7 @@ export class Login {
     this.authService.login({ email: email!, password: password! }).subscribe({
       next: () => {
         this.isLoading.set(false);
-        this.router.navigate(['/dashboard']);
+        this.router.navigate(this.authService.getPostLoginRoute());
       },
       error: (err: HttpErrorResponse) => {
         this.isLoading.set(false);
@@ -126,7 +134,7 @@ export class Login {
       .subscribe({
         next: (result) => {
           this.authService.loginWithMicrosoft(result.idToken).subscribe({
-            next: () => this.router.navigate(['/dashboard']),
+            next: () => this.router.navigate(this.authService.getPostLoginRoute()),
             error: (err: HttpErrorResponse) => this.handleLoginError(err),
           });
         },
@@ -142,6 +150,12 @@ export class Login {
           this.errorMessage.set('No se pudo conectar con Microsoft. Permite las ventanas emergentes e intenta nuevamente.');
         },
       });
+  }
+
+  setLoginMode(mode: 'colaborador' | 'candidato'): void {
+    this.loginMode.set(mode);
+    this.errorMessage.set('');
+    this.loginForm.reset();
   }
 
   goBack(): void {
@@ -160,7 +174,11 @@ export class Login {
 
     switch (code) {
       case 'EMAIL_NOT_FOUND':
-        this.getControl(this.loginForm, 'email').setErrors({ serverError: message ?? 'El correo no está registrado en esta empresa.' });
+        this.getControl(this.loginForm, 'email').setErrors({
+          serverError: this.isCandidate()
+            ? (message ?? 'El número de documento no está registrado. Contacta a RRHH.')
+            : (message ?? 'El correo no está registrado en esta empresa.'),
+        });
         break;
       case 'WRONG_PASSWORD':
         this.getControl(this.loginForm, 'password').setErrors({ serverError: message ?? 'La contraseña es incorrecta.' });

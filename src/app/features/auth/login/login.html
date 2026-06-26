@@ -62,15 +62,42 @@
       <!-- ── PASO 2: Credenciales ────────────────────────────────────── -->
       @if (step() === 2) {
 
-        <!-- Botón Microsoft — solo si la empresa tiene SSO configurado -->
-        @if (hasMicrosoftSSO()) {
+        <!-- Selector de modo: Colaborador / Candidato -->
+        <div class="mode-toggle fade-in">
+          <button
+            class="mode-btn"
+            [class.active]="!isCandidate()"
+            type="button"
+            (click)="setLoginMode('colaborador')">
+            <span class="material-icons-round">badge</span>
+            Colaborador
+          </button>
+          <button
+            class="mode-btn"
+            [class.active]="isCandidate()"
+            type="button"
+            (click)="setLoginMode('candidato')">
+            <span class="material-icons-round">person_add</span>
+            Nuevo ingreso
+          </button>
+        </div>
+
+        <!-- Info candidato -->
+        @if (isCandidate()) {
+          <div class="candidate-info fade-in">
+            <span class="material-icons-round">info</span>
+            <p>Ingresa con el número de documento que usó RRHH al registrarte. Tu contraseña inicial es el mismo número.</p>
+          </div>
+        }
+
+        <!-- Botón Microsoft — solo colaboradores con SSO -->
+        @if (hasMicrosoftSSO() && !isCandidate()) {
           <div class="ms-section fade-in">
             <button
               class="ms-btn"
               type="button"
               [disabled]="isMsalLoading() || isLoading()"
               (click)="onMicrosoftLogin()">
-
               @if (isMsalLoading()) {
                 <span class="material-icons-round ms-spinner">autorenew</span>
                 <span>Conectando con Microsoft…</span>
@@ -93,14 +120,14 @@
           </div>
         }
 
-        <!-- Formulario email + contraseña -->
+        <!-- Formulario -->
         <form [formGroup]="loginForm" (ngSubmit)="onLogin()" class="login-form fade-in">
 
           <app-input-field
-            label="Correo Corporativo"
-            placeholder="nombre@empresa.com"
-            type="email"
-            icon="email"
+            [label]="fieldLabel()"
+            [placeholder]="fieldPlaceholder()"
+            [type]="fieldType()"
+            [icon]="fieldIcon()"
             [control]="getControl(loginForm, 'email')">
           </app-input-field>
 
@@ -109,12 +136,15 @@
             placeholder="••••••"
             type="password"
             icon="lock"
+            [hint]="passwordHint()"
             [control]="getControl(loginForm, 'password')">
           </app-input-field>
 
-          <div class="form-actions">
-            <a routerLink="/auth/forgot-password" class="forgot-link">¿Olvidaste tu contraseña?</a>
-          </div>
+          @if (!isCandidate()) {
+            <div class="form-actions">
+              <a routerLink="/auth/forgot-password" class="forgot-link">¿Olvidaste tu contraseña?</a>
+            </div>
+          }
 
           <app-primary-btn [fullWidth]="true" [loading]="isLoading()">
             Iniciar Sesión
@@ -122,9 +152,11 @@
 
         </form>
 
-        <div class="form-footer fade-in">
-          <p>¿No tienes cuenta? <a routerLink="/auth/register" class="register-link">Regístrate</a></p>
-        </div>
+        @if (!isCandidate()) {
+          <div class="form-footer fade-in">
+            <p>¿No tienes cuenta? <a routerLink="/auth/register" class="register-link">Regístrate</a></p>
+          </div>
+        }
 
       }
 

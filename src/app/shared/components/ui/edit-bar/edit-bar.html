@@ -1,0 +1,14 @@
+<div class="edit-bar">
+  <app-button variant="ghost" size="sm" (clicked)="cancelled.emit()">
+    Cancelar
+  </app-button>
+  <app-button
+    variant="primary"
+    size="sm"
+    [icon]="submitIcon()"
+    [loading]="isSubmitting()"
+    [disabled]="!canSubmit()"
+    (clicked)="submitted.emit()">
+    {{ isSubmitting() ? loadingLabel() : submitLabel() }}
+  </app-button>
+</div>

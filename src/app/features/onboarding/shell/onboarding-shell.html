@@ -1,0 +1,85 @@
+<!-- ── Loading ────────────────────────────────────────────────────────── -->
+@if (isLoading()) {
+  <app-loading-skeleton variant="card"></app-loading-skeleton>
+}
+
+<!-- ── Documentación enviada ─────────────────────────────────────────── -->
+@else if (submitted()) {
+  <div class="submitted-state">
+    <span class="material-icons-round submitted-icon">check_circle</span>
+    <h2 class="submitted-title">Documentación enviada</h2>
+    <p class="submitted-sub">Tu expediente fue enviado. RRHH lo revisará y te notificará cuando tu acceso sea activado.</p>
+    <app-banner variant="info" icon="info" title="¿Qué sigue?">
+      <p>RRHH completará los datos contractuales. Recibirás tus credenciales corporativas cuando el proceso esté completo.</p>
+    </app-banner>
+  </div>
+}
+
+<!-- ── Wizard ────────────────────────────────────────────────────────── -->
+@else {
+  <div class="onboarding-layout">
+
+    <!-- Bienvenida -->
+    <div class="onboarding-welcome">
+      <span class="material-icons-round welcome-icon">assignment_ind</span>
+      <div>
+        <h1 class="welcome-title">Hola, {{ user()?.firstName }}</h1>
+        <p class="welcome-sub">Completa tu expediente digital para iniciar tu incorporación.</p>
+      </div>
+    </div>
+
+    <!-- Stepper -->
+    <div class="onboarding-stepper">
+      @for (step of steps; track step.path; let i = $index) {
+        <button
+          class="step-item"
+          [class.active]="i === currentStepIndex()"
+          [class.done]="onboardingService.isStepSaved(step.path) && i !== currentStepIndex()"
+          [class.locked]="i > currentStepIndex() && !canGoNext()"
+          [title]="i > currentStepIndex() && !canGoNext() ? currentStep().pendingHint : step.label"
+          (click)="navigateTo(i)"
+          type="button">
+          <div class="step-dot">
+            <span class="material-icons-round">
+              {{ i < currentStepIndex() ? 'check' : step.icon }}
+            </span>
+          </div>
+          <span class="step-label">{{ step.label }}</span>
+        </button>
+        @if (i < steps.length - 1) {
+          <div class="step-connector" [class.done]="i < currentStepIndex()"></div>
+        }
+      }
+    </div>
+
+    <!-- Contenido del paso -->
+    <div class="onboarding-content">
+      <router-outlet></router-outlet>
+    </div>
+
+    <!-- Navegación Prev / Siguiente -->
+    <div class="onboarding-nav">
+      @if (!isFirst()) {
+        <app-button variant="ghost" icon="arrow_back" (clicked)="prev()">Anterior</app-button>
+      } @else {
+        <span></span>
+      }
+
+      <span class="nav-counter">Paso {{ currentStepIndex() + 1 }} de {{ steps.length }}</span>
+
+      @if (!isLast() && canGoNext()) {
+        <app-button variant="primary" (clicked)="next()">
+          Siguiente
+          <span class="material-icons-round" style="font-size:1.1rem;margin-left:0.25rem;vertical-align:middle;">arrow_forward</span>
+        </app-button>
+      }
+      @if (!isLast() && !canGoNext() && currentStep().pendingHint) {
+        <span class="save-hint">
+          <span class="material-icons-round">info</span>
+          {{ currentStep().pendingHint }}
+        </span>
+      }
+    </div>
+
+  </div>
+}
