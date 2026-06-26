@@ -9,17 +9,29 @@
   width: 100%;
   z-index: 5;
   background: var(--bg-body);
+
+  // Línea separadora flotante — no toca los bordes laterales
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 1.75rem;
+    right: 1.75rem;
+    height: 1.5px;
+    background: var(--border-color);
+    border-radius: 1px;
+    z-index: 0;
+  }
 }
 
 // ── Barra de navegación ────────────────────────────────────────────────────────
-// padding lateral → tabs flotan sin tocar los bordes; la border-bottom sí va de borde a borde
 .tabs-nav {
   display: flex;
+  justify-content: flex-start; // sobreescrito por .center y .fill
   position: relative;
   overflow-x: auto;
   box-sizing: border-box;
-  padding: 0 1.5rem;
-  border-bottom: 1.5px solid var(--border-color);
+  padding: 0 1.75rem;
   @include m.hide-scrollbar;
 }
 
@@ -32,7 +44,7 @@
   background: var(--color-primary);
   transition: left  0.28s cubic-bezier(0.25, 0.8, 0.25, 1),
               width 0.28s cubic-bezier(0.25, 0.8, 0.25, 1);
-  z-index: 2;
+  z-index: 3; // sobre la línea ::after
   pointer-events: none;
 }
 
@@ -50,8 +62,7 @@
   align-items: center;
   gap: 0.45rem;
   padding: 0.8rem 1.1rem;
-  // offset top → el hover pill (border-radius) no queda pegado a la border-bottom
-  margin: 0.3rem 0.1rem 0;
+  margin: 0.3rem 0.1rem 0; // offset top → pill hover no tapa la línea base
   border-radius: 8px 8px 0 0;
 
   font-family: inherit;
@@ -86,11 +97,13 @@
   }
 }
 
-// Variante fill — tabs equidistantes (ej. modales acotados)
-.tabs-nav.fill .tab-btn { flex: 1; justify-content: center; }
+// ── Variantes de alineación ─────────────────────────────────────────────────────
+.tabs-nav.center { justify-content: center; }
+.tabs-nav.fill   .tab-btn { flex: 1; justify-content: center; }
 
 // ── Responsive ─────────────────────────────────────────────────────────────────
 @include m.respond-to('mobile') {
+  .tabs-container::after { left: 1rem; right: 1rem; }
   .tabs-nav { padding: 0 1rem; }
   .tab-btn  {
     padding: 0.65rem 0.875rem;
