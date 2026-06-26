@@ -1,13 +1,13 @@
-<div style="display:flex; flex-direction:column; min-height:100%;">
+<div class="ig-layout">
 
   <app-tabs-card
     [items]="tabItems()"
     [current]="activeTab()"
     (currentChange)="activeTab.set($event)"
-    align="fill">
+    align="start">
   </app-tabs-card>
 
-  <div style="padding: 1.25rem 1.75rem; flex:1;" class="content-wrapper">
+  <div class="ig-content">
 
     @switch (activeTab()) {
 
