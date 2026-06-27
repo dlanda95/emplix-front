@@ -5,26 +5,15 @@ import { firstValueFrom } from 'rxjs';
 import { CollaboratorService } from '@features/portal/services/collaborator.service';
 import {
   EmployeeDocument, EmployeeDocumentType,
+  DOC_CATEGORIES, DOC_TYPE_LABELS,
 } from '@features/portal/models/document.model';
 import {
-  Banner, Button, DocCard, DocUploadZone, EmptyState, LoadingSkeleton, Modal,
+  Banner, Button, DocCard, DocUploadZone,
+  EmptyState, LoadingSkeleton, Modal, PageHeader, TabsCard,
 } from '@shared/ui';
-import type { UploadPayload } from '@shared/ui';
+import type { UploadPayload, TabItem } from '@shared/ui';
+import { ToolbarLayout } from '@shared/layout';
 import { environment } from '@env';
-
-export interface DocSection {
-  type:  EmployeeDocumentType;
-  label: string;
-  icon:  string;
-}
-
-const SECTIONS: DocSection[] = [
-  { type: 'CONTRACT',      label: 'Contratos',    icon: 'gavel'             },
-  { type: 'ID_CARD',       label: 'Identidad',    icon: 'badge'             },
-  { type: 'CERTIFICATION', label: 'Certificados', icon: 'workspace_premium' },
-  { type: 'MEDICAL',       label: 'Médico',       icon: 'medical_services'  },
-  { type: 'OTHER',         label: 'Otros',        icon: 'folder_open'       },
-];
 
 const DOC_TYPE_DISPLAY: Record<string, string> = {
   DNI: 'DNI', PASSPORT: 'Pasaporte', CE: 'Carnet de Extranjería',
@@ -33,57 +22,72 @@ const DOC_TYPE_DISPLAY: Record<string, string> = {
 
 @Component({
   selector: 'app-documentos',
-  imports: [Banner, Button, DocCard, DocUploadZone, EmptyState, LoadingSkeleton, Modal],
+  imports: [
+    Banner, Button, DocCard, DocUploadZone,
+    EmptyState, LoadingSkeleton, Modal, PageHeader, TabsCard, ToolbarLayout,
+  ],
   templateUrl: './documentos.html',
-  styleUrl: './documentos.scss',
+  styleUrl:    './documentos.scss',
 })
 export class Documentos {
   private readonly collaboratorService = inject(CollaboratorService);
   private readonly http                = inject(HttpClient);
 
-  readonly sections      = SECTIONS;
-  readonly allDocs       = signal<EmployeeDocument[] | undefined>(undefined);
-  readonly isLoading     = signal(true);
-  readonly uploadError   = signal('');
-  readonly isUploading   = signal(false);
+  readonly activeCategory  = signal<EmployeeDocumentType | 'ALL'>('ALL');
+  readonly showUploadModal = signal(false);
+  readonly isUploading     = signal(false);
+  readonly uploadError     = signal('');
+  readonly allDocs         = signal<EmployeeDocument[] | undefined>(undefined);
+  readonly declaredDoc     = signal<string | null>(null);
 
-  readonly showModal   = signal(false);
-  readonly uploadType  = signal<EmployeeDocumentType>('OTHER');
+  readonly filteredDocs = computed(() => {
+    const docs = this.allDocs();
+    if (!docs) return undefined;
+    const cat = this.activeCategory();
+    return cat === 'ALL' ? docs : docs.filter(d => d.type === cat);
+  });
 
-  // Texto de documento declarado en el perfil (para la sección Identidad)
-  readonly declaredDoc = signal<string | null>(null);
+  readonly tabItems = computed<TabItem[]>(() =>
+    DOC_CATEGORIES.map(cat => ({ id: cat.type, label: cat.label, icon: cat.icon }))
+  );
 
-  readonly docsFor = (type: EmployeeDocumentType) =>
-    (this.allDocs() ?? []).filter(d => d.type === type);
+  // Tipo a pre-seleccionar en el modal: el tab activo si no es ALL
+  readonly uploadDocType = computed<EmployeeDocumentType | undefined>(() => {
+    const cat = this.activeCategory();
+    return cat === 'ALL' ? undefined : cat as EmployeeDocumentType;
+  });
 
-  readonly countFor = (type: EmployeeDocumentType) => this.docsFor(type).length;
-
-  constructor() {
-    this.load();
-  }
+  constructor() { this.load(); }
 
   private load(): void {
-    this.isLoading.set(true);
+    this.allDocs.set(undefined);
     this.collaboratorService.getDocuments().subscribe({
-      next: docs => { this.allDocs.set(docs); this.isLoading.set(false); },
-      error: ()  => { this.allDocs.set([]);   this.isLoading.set(false); },
+      next: docs => this.allDocs.set(docs),
+      error: ()  => this.allDocs.set([]),
     });
     this.collaboratorService.getProfile().subscribe({
-      next: profile => {
-        const type = profile.documentType;
-        const num  = profile.documentId;
-        if (type || num) {
-          const label = type ? (DOC_TYPE_DISPLAY[type] ?? type) : '';
-          this.declaredDoc.set([label, num].filter(Boolean).join(' · '));
+      next: p => {
+        if (p.documentType || p.documentId) {
+          const label = p.documentType ? (DOC_TYPE_DISPLAY[p.documentType] ?? p.documentType) : '';
+          this.declaredDoc.set([label, p.documentId].filter(Boolean).join(' · '));
         }
       },
     });
   }
 
-  openUploadFor(type: EmployeeDocumentType): void {
-    this.uploadType.set(type);
+  selectCategory(type: string): void {
+    this.activeCategory.set(type as EmployeeDocumentType | 'ALL');
+  }
+
+  openUpload(): void {
     this.uploadError.set('');
-    this.showModal.set(true);
+    this.showUploadModal.set(true);
+  }
+
+  activeCategoryLabel(): string {
+    const cat = this.activeCategory();
+    if (cat === 'ALL') return 'Todos los documentos';
+    return DOC_TYPE_LABELS[cat as EmployeeDocumentType] ?? 'Documentos';
   }
 
   async onDownload(doc: EmployeeDocument): Promise<void> {
@@ -110,16 +114,12 @@ export class Documentos {
       await firstValueFrom(
         this.http.post<any>(`${environment.apiUrl}/employees/me/documents`, form)
       );
-      this.showModal.set(false);
+      this.showUploadModal.set(false);
       this.load();
     } catch (err: any) {
       this.uploadError.set(err?.error?.message ?? 'Error al subir el archivo.');
     } finally {
       this.isUploading.set(false);
     }
-  }
-
-  sectionLabel(type: EmployeeDocumentType): string {
-    return SECTIONS.find(s => s.type === type)?.label ?? type;
   }
 }
