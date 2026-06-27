@@ -32,8 +32,7 @@ export class TabsCard {
 
   constructor() {
     afterNextRender(() => {
-      this.updateIndicator();
-      this.checkOverflow();
+      this.equalizeAndUpdate();
     });
   }
 
@@ -44,19 +43,47 @@ export class TabsCard {
   }
 
   onResize(): void {
-    queueMicrotask(() => {
-      this.updateIndicator();
-      this.checkOverflow();
-    });
+    queueMicrotask(() => this.equalizeAndUpdate());
   }
 
   checkOverflow(): void {
     const el = this.navEl?.nativeElement;
     if (!el) return;
-    // Hay overflow si el contenido scrolleable supera el ancho visible
-    // y además no estamos al final del scroll (aún hay más a la derecha)
     const atEnd = el.scrollLeft + el.clientWidth >= el.scrollWidth - 4;
     this.hasOverflow.set(el.scrollWidth > el.clientWidth && !atEnd);
+  }
+
+  private equalizeAndUpdate(): void {
+    this.equalizeTabWidths();
+    this.updateIndicator();
+    this.checkOverflow();
+  }
+
+  // Aplica el mismo ancho a todos los tabs: el mayor entre el ancho natural
+  // máximo y lo que corresponde si se reparte el espacio disponible del nav.
+  // Así los tabs son simétricos y hacen scroll si no caben.
+  private equalizeTabWidths(): void {
+    const buttons = this.tabButtons?.toArray();
+    const nav     = this.navEl?.nativeElement;
+    if (!buttons?.length || !nav) return;
+
+    // 1. Resetear widths para medir el ancho natural de cada tab
+    buttons.forEach(b => (b.nativeElement.style.width = ''));
+
+    // 2. Ancho natural máximo entre todos los botones
+    const maxNatural = Math.max(
+      ...buttons.map(b => (b.nativeElement as HTMLElement).getBoundingClientRect().width)
+    );
+
+    // 3. Ancho si se reparte el espacio del nav equitativamente
+    //    (padding lateral ≈ 1.75rem * 2 = 56px)
+    const navPad      = parseFloat(getComputedStyle(nav).paddingLeft) * 2;
+    const evenWidth   = (nav.clientWidth - navPad) / buttons.length;
+
+    // 4. Usar el mayor de los dos para que quepan los labels más largos
+    const finalWidth  = Math.ceil(Math.max(maxNatural, evenWidth));
+
+    buttons.forEach(b => (b.nativeElement.style.width = `${finalWidth}px`));
   }
 
   private updateIndicator(): void {

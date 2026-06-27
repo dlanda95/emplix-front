@@ -114,7 +114,9 @@
 
 // ── Variantes de alineación ─────────────────────────────────────────────────────
 .tabs-nav.center { justify-content: center; }
-.tabs-nav.fill   .tab-btn { flex: 1; justify-content: center; }
+// fill: el ancho uniforme lo calcula equalizeTabWidths() en TS;
+// los botones deben centrar su contenido dentro del ancho asignado
+.tabs-nav.fill .tab-btn { justify-content: center; }
 
 // ── Responsive ─────────────────────────────────────────────────────────────────
 @include m.respond-to('mobile') {
