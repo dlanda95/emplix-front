@@ -5,7 +5,7 @@ import { firstValueFrom } from 'rxjs';
 import { CollaboratorService } from '@features/portal/services/collaborator.service';
 import {
   EmployeeDocument, EmployeeDocumentType,
-  DOC_CATEGORIES, DOC_TYPE_LABELS,
+  DOC_CATEGORIES, DOC_TYPE_LABELS, DocCategoryId, filterDocsByCategory,
 } from '@features/portal/models/document.model';
 import {
   Banner, Button, DocCard, DocUploadZone,
@@ -15,9 +15,8 @@ import type { UploadPayload, TabItem } from '@shared/ui';
 import { ToolbarLayout } from '@shared/layout';
 import { environment } from '@env';
 
-const DOC_TYPE_DISPLAY: Record<string, string> = {
-  DNI: 'DNI', PASSPORT: 'Pasaporte', CE: 'Carnet de Extranjería',
-  RUC: 'RUC', PTP: 'PTP',
+const DOC_IDENTITY_DISPLAY: Record<string, string> = {
+  DNI: 'DNI', PASSPORT: 'Pasaporte', CE: 'Carnet de Extranjería', RUC: 'RUC', PTP: 'PTP',
 };
 
 @Component({
@@ -33,7 +32,7 @@ export class Documentos {
   private readonly collaboratorService = inject(CollaboratorService);
   private readonly http                = inject(HttpClient);
 
-  readonly activeCategory  = signal<EmployeeDocumentType | 'ALL'>('ALL');
+  readonly activeCategory  = signal<DocCategoryId>('ALL');
   readonly showUploadModal = signal(false);
   readonly isUploading     = signal(false);
   readonly uploadError     = signal('');
@@ -43,18 +42,26 @@ export class Documentos {
   readonly filteredDocs = computed(() => {
     const docs = this.allDocs();
     if (!docs) return undefined;
-    const cat = this.activeCategory();
-    return cat === 'ALL' ? docs : docs.filter(d => d.type === cat);
+    return filterDocsByCategory(docs, this.activeCategory());
   });
 
   readonly tabItems = computed<TabItem[]>(() =>
     DOC_CATEGORIES.map(cat => ({ id: cat.type, label: cat.label, icon: cat.icon }))
   );
 
-  // Tipo a pre-seleccionar en el modal: el tab activo si no es ALL
+  // Tipo real + label a enviar al backend según categoría activa
+  readonly activeUploadAs = computed(() => {
+    const cat = DOC_CATEGORIES.find(c => c.type === this.activeCategory());
+    return cat?.uploadAs ?? null;
+  });
+
+  // Tipo que se pasa a DocUploadZone (para ocultar el selector de tipo)
   readonly uploadDocType = computed<EmployeeDocumentType | undefined>(() => {
     const cat = this.activeCategory();
-    return cat === 'ALL' ? undefined : cat as EmployeeDocumentType;
+    if (cat === 'ALL')           return undefined;
+    if (cat === 'RESUME')        return 'OTHER';
+    if (cat === 'ADDRESS_PROOF') return 'OTHER';
+    return cat as EmployeeDocumentType;
   });
 
   constructor() { this.load(); }
@@ -68,7 +75,7 @@ export class Documentos {
     this.collaboratorService.getProfile().subscribe({
       next: p => {
         if (p.documentType || p.documentId) {
-          const label = p.documentType ? (DOC_TYPE_DISPLAY[p.documentType] ?? p.documentType) : '';
+          const label = p.documentType ? (DOC_IDENTITY_DISPLAY[p.documentType] ?? p.documentType) : '';
           this.declaredDoc.set([label, p.documentId].filter(Boolean).join(' · '));
         }
       },
@@ -76,7 +83,7 @@ export class Documentos {
   }
 
   selectCategory(type: string): void {
-    this.activeCategory.set(type as EmployeeDocumentType | 'ALL');
+    this.activeCategory.set(type as DocCategoryId);
   }
 
   openUpload(): void {
@@ -87,7 +94,9 @@ export class Documentos {
   activeCategoryLabel(): string {
     const cat = this.activeCategory();
     if (cat === 'ALL') return 'Todos los documentos';
-    return DOC_TYPE_LABELS[cat as EmployeeDocumentType] ?? 'Documentos';
+    return DOC_CATEGORIES.find(c => c.type === cat)?.label
+      ?? DOC_TYPE_LABELS[cat as EmployeeDocumentType]
+      ?? 'Documentos';
   }
 
   async onDownload(doc: EmployeeDocument): Promise<void> {
@@ -106,9 +115,11 @@ export class Documentos {
     this.isUploading.set(true);
     this.uploadError.set('');
 
+    const uploadAs = this.activeUploadAs();
     const form = new FormData();
-    form.append('file', payload.file);
-    form.append('type', payload.type);
+    form.append('file',  payload.file);
+    form.append('type',  uploadAs?.type ?? payload.type);
+    if (uploadAs?.label) form.append('label', uploadAs.label);
 
     try {
       await firstValueFrom(

@@ -5,6 +5,15 @@ export type EmployeeDocumentType =
   | 'MEDICAL'
   | 'OTHER';
 
+// Categorías virtuales: no existen en la BD, son filtros por prefijo de nombre
+// RESUME       → OTHER docs cuyo name empieza con CV_
+// ADDRESS_PROOF → OTHER docs cuyo name empieza con RECIBO_
+export type DocCategoryId =
+  | EmployeeDocumentType
+  | 'ALL'
+  | 'RESUME'
+  | 'ADDRESS_PROOF';
+
 export interface EmployeeDocument {
   id:            string;
   name:          string;
@@ -18,18 +27,22 @@ export interface EmployeeDocument {
 }
 
 export interface DocCategory {
-  type:  EmployeeDocumentType | 'ALL';
-  label: string;
-  icon:  string;
+  type:      DocCategoryId;
+  label:     string;
+  icon:      string;
+  // Para categorías virtuales: tipo real que se envía al backend + label de prefijo
+  uploadAs?: { type: EmployeeDocumentType; label: string };
 }
 
 export const DOC_CATEGORIES: DocCategory[] = [
-  { type: 'ALL',           label: 'Todos',         icon: 'folder_open'        },
-  { type: 'CONTRACT',      label: 'Contratos',     icon: 'gavel'              },
-  { type: 'ID_CARD',       label: 'Identidad',     icon: 'badge'              },
-  { type: 'CERTIFICATION', label: 'Certificados',  icon: 'workspace_premium'  },
-  { type: 'MEDICAL',       label: 'Médico',        icon: 'medical_services'   },
-  { type: 'OTHER',         label: 'Otros',         icon: 'folder'             },
+  { type: 'ALL',          label: 'Todos',            icon: 'folder_open'       },
+  { type: 'RESUME',       label: 'CV',               icon: 'description',        uploadAs: { type: 'OTHER', label: 'CV'               } },
+  { type: 'ID_CARD',      label: 'Identidad',        icon: 'badge'              },
+  { type: 'ADDRESS_PROOF',label: 'Recibo Domicilio', icon: 'home',               uploadAs: { type: 'OTHER', label: 'RECIBO_DOMICILIO'  } },
+  { type: 'CONTRACT',     label: 'Contratos',        icon: 'gavel'              },
+  { type: 'CERTIFICATION',label: 'Certificados',     icon: 'workspace_premium'  },
+  { type: 'MEDICAL',      label: 'Médico',           icon: 'medical_services'   },
+  { type: 'OTHER',        label: 'Otros',            icon: 'folder'             },
 ];
 
 export const DOC_TYPE_LABELS: Record<EmployeeDocumentType, string> = {
@@ -39,6 +52,19 @@ export const DOC_TYPE_LABELS: Record<EmployeeDocumentType, string> = {
   MEDICAL:       'Médico',
   OTHER:         'Otro',
 };
+
+/** Filtra documentos según la categoría activa (incluye virtuales) */
+export function filterDocsByCategory(docs: EmployeeDocument[], cat: DocCategoryId): EmployeeDocument[] {
+  switch (cat) {
+    case 'ALL':          return docs;
+    case 'RESUME':       return docs.filter(d => d.type === 'OTHER' && d.name.toUpperCase().startsWith('CV_'));
+    case 'ADDRESS_PROOF':return docs.filter(d => d.type === 'OTHER' && d.name.toUpperCase().startsWith('RECIBO_'));
+    case 'OTHER':        return docs.filter(d => d.type === 'OTHER'
+                                && !d.name.toUpperCase().startsWith('CV_')
+                                && !d.name.toUpperCase().startsWith('RECIBO_'));
+    default:             return docs.filter(d => d.type === cat);
+  }
+}
 
 export interface FileIconConfig {
   icon:  string;
