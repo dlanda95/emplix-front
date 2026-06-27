@@ -23,9 +23,11 @@
     <button class="action-btn download-btn" (click)="download.emit(doc)" title="Descargar">
       <span class="material-icons-round">download</span>
     </button>
-    <button class="action-btn delete-btn" (click)="delete.emit(doc)" title="Eliminar">
-      <span class="material-icons-round">delete_outline</span>
-    </button>
+    @if (showDelete) {
+      <button class="action-btn delete-btn" (click)="delete.emit(doc)" title="Eliminar">
+        <span class="material-icons-round">delete_outline</span>
+      </button>
+    }
   </div>
 
 </div>

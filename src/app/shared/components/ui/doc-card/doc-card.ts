@@ -12,6 +12,7 @@ import {
 })
 export class DocCard {
   @Input({ required: true }) doc!: EmployeeDocument;
+  @Input() showDelete = true;
   @Output() download = new EventEmitter<EmployeeDocument>();
   @Output() delete   = new EventEmitter<EmployeeDocument>();
 

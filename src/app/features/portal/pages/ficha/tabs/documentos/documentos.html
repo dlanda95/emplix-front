@@ -1,75 +1,81 @@
 <div class="docs-page">
 
-  <!-- ── Cabecera ──────────────────────────────────────────────────────── -->
-  <app-toolbar-layout>
-    <ng-container main>
-      <app-page-header
-        [title]="activeCategoryLabel()"
-        [subtitle]="(filteredDocs()?.length ?? 0) > 0
-                    ? (filteredDocs()!.length + ' archivo' + (filteredDocs()!.length === 1 ? '' : 's'))
-                    : ''">
-      </app-page-header>
-    </ng-container>
-    <ng-container actions>
-      <app-button variant="secondary" icon="upload" (clicked)="showUploadModal.set(true)">
-        Subir documento
-      </app-button>
-    </ng-container>
-  </app-toolbar-layout>
-
-  <!-- ── Tabs de categoría (mismo estilo corporativo que Info General) ── -->
-  <app-tabs-card
-    [items]="tabItems()"
-    [current]="activeCategory()"
-    (currentChange)="selectCategory($event)">
-  </app-tabs-card>
-
-  <!-- ── Error inline ───────────────────────────────────────────────────── -->
-  @if (uploadError()) {
+  @if (uploadError() && !showModal()) {
     <app-banner variant="error" icon="error_outline" title="Error" [dismissible]="true"
                 (dismissed)="uploadError.set('')">
       {{ uploadError() }}
     </app-banner>
   }
 
-  <!-- ── Loading ────────────────────────────────────────────────────────── -->
-  @if (filteredDocs() === undefined) {
-    <div class="docs-grid">
-      @for (i of [1,2,3,4,5,6]; track i) {
+  @if (isLoading()) {
+
+    <!-- Skeletons de sección -->
+    @for (s of sections; track s.type) {
+      <div class="dsec dsec--loading">
         <app-loading-skeleton variant="card"></app-loading-skeleton>
-      }
-    </div>
-  }
+      </div>
+    }
 
-  <!-- ── Sin documentos ─────────────────────────────────────────────────── -->
-  @else if (filteredDocs()!.length === 0) {
-    <app-empty-state
-      icon="folder_open"
-      title="Sin documentos"
-      description="No hay archivos en esta categoría. Usa el botón para subir uno.">
-    </app-empty-state>
-  }
+  } @else {
 
-  <!-- ── Grid de documentos ─────────────────────────────────────────────── -->
-  @else {
-    <div class="docs-grid">
-      @for (doc of filteredDocs()!; track doc.id) {
-        <app-doc-card
-          [doc]="doc"
-          (download)="onDownload($event)"
-          (delete)="onDeleteRequest($event)">
-        </app-doc-card>
-      }
-    </div>
+    @for (sec of sections; track sec.type) {
+      <div class="dsec">
+
+        <!-- Cabecera de sección -->
+        <div class="dsec__header">
+          <div class="dsec__title-group">
+            <div class="dsec__icon-wrap">
+              <span class="material-icons-round">{{ sec.icon }}</span>
+            </div>
+            <div class="dsec__meta">
+              <span class="dsec__title">{{ sec.label }}</span>
+              @if (sec.type === 'ID_CARD' && declaredDoc()) {
+                <span class="dsec__hint">Declarado: {{ declaredDoc() }}</span>
+              }
+            </div>
+            @if (countFor(sec.type) > 0) {
+              <span class="dsec__count">{{ countFor(sec.type) }}</span>
+            }
+          </div>
+
+          <app-button variant="ghost" icon="add" (clicked)="openUploadFor(sec.type)">
+            Agregar
+          </app-button>
+        </div>
+
+        <!-- Documentos o estado vacío -->
+        <div class="dsec__body">
+          @if (docsFor(sec.type).length > 0) {
+            <div class="docs-grid">
+              @for (doc of docsFor(sec.type); track doc.id) {
+                <app-doc-card [doc]="doc" [showDelete]="false"
+                              (download)="onDownload($event)">
+                </app-doc-card>
+              }
+            </div>
+          } @else {
+            <div class="dsec__empty">
+              <span class="material-icons-round dsec__empty-icon">inbox</span>
+              <p>Sin documentos en esta categoría</p>
+              <button class="dsec__empty-cta" (click)="openUploadFor(sec.type)">
+                <span class="material-icons-round">add</span> Subir el primero
+              </button>
+            </div>
+          }
+        </div>
+
+      </div>
+    }
+
   }
 
 </div>
 
-<!-- ── Modal de subida ──────────────────────────────────────────────────────── -->
+<!-- Modal de subida por categoría -->
 <app-modal
-  title="Subir documento"
-  [isOpen]="showUploadModal()"
-  (close)="showUploadModal.set(false)">
+  [title]="'Subir ' + sectionLabel(uploadType())"
+  [isOpen]="showModal()"
+  (close)="showModal.set(false)">
 
   @if (uploadError()) {
     <app-banner variant="error" icon="error_outline" title="Error al subir">
@@ -78,20 +84,9 @@
   }
 
   <app-doc-upload-zone
+    [docType]="uploadType()"
     [class.is-uploading]="isUploading()"
     (fileSelected)="onFileSelected($event)">
   </app-doc-upload-zone>
 
 </app-modal>
-
-<!-- ── Confirmación de eliminación ────────────────────────────────────────── -->
-<app-confirm-modal
-  [isOpen]="showConfirmDelete()"
-  icon="delete_outline"
-  title="Eliminar documento"
-  [message]="'¿Seguro que deseas eliminar ' + (docToDelete()?.originalName || docToDelete()?.name || 'este archivo') + '? Esta acción no se puede deshacer.'"
-  confirmLabel="Eliminar"
-  confirmVariant="danger"
-  (confirmed)="onDeleteConfirmed()"
-  (cancelled)="onDeleteCancelled()">
-</app-confirm-modal>
