@@ -20,6 +20,50 @@
   }
 }
 
+// ── Tarjeta de subida inline ──────────────────────────────────────────────────
+.docs-add-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 140px;
+
+  background: transparent;
+  border: 1.5px dashed var(--border-color);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: border-color 0.18s, background 0.18s;
+
+  &:hover {
+    border-color: var(--color-primary);
+    background: color-mix(in srgb, var(--color-primary) 4%, transparent);
+
+    .docs-add-card__icon { color: var(--color-primary); transform: scale(1.1); }
+    .docs-add-card__label { color: var(--color-primary); }
+  }
+
+  &--loading {
+    pointer-events: none;
+    opacity: 0.4;
+  }
+
+  &__icon {
+    font-size: 1.75rem;
+    color: var(--text-muted);
+    transition: color 0.18s, transform 0.18s;
+  }
+
+  &__label {
+    font-size: var(--text-sm);
+    font-weight: 500;
+    color: var(--text-secondary);
+    text-align: center;
+    line-height: 1.4;
+    transition: color 0.18s;
+  }
+}
+
 // ── Grid de documentos ────────────────────────────────────────────────────────
 .docs-grid {
   display: grid;

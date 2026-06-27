@@ -22,8 +22,8 @@ const DOC_IDENTITY_DISPLAY: Record<string, string> = {
 @Component({
   selector: 'app-documentos',
   imports: [
-    Banner, Button, DocCard, DocUploadZone,
-    EmptyState, LoadingSkeleton, Modal, PageHeader, TabsCard, ToolbarLayout,
+    Banner, DocCard, DocUploadZone,
+    LoadingSkeleton, Modal, PageHeader, TabsCard, ToolbarLayout,
   ],
   templateUrl: './documentos.html',
   styleUrl:    './documentos.scss',
