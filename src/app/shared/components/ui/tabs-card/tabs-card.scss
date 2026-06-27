@@ -8,6 +8,7 @@
   position: relative;
   width: 100%;
   z-index: 5;
+
   // Línea separadora flotante — no toca los bordes laterales
   &::after {
     content: '';
@@ -20,6 +21,22 @@
     border-radius: 1px;
     z-index: 0;
   }
+
+  // Fade derecho: indica que hay más tabs scrolleables
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0; right: 0; bottom: 0;
+    width: 2.5rem;
+    background: linear-gradient(to left, var(--bg-surface, #fff) 30%, transparent);
+    z-index: 4;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  // La clase .has-overflow la añade el componente cuando hay scroll
+  &.has-overflow::before { opacity: 1; }
 }
 
 // ── Barra de navegación ────────────────────────────────────────────────────────

@@ -1,5 +1,5 @@
-<div class="tabs-container" (window:resize)="onResize()">
-  <nav class="tabs-nav" [ngClass]="align">
+<div class="tabs-container" [class.has-overflow]="hasOverflow()" (window:resize)="onResize()">
+  <nav #navEl class="tabs-nav" [ngClass]="align" (scroll)="checkOverflow()">
 
     <div class="sliding-indicator"
          [style.left]="indicatorLeft()"
