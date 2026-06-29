@@ -7,6 +7,11 @@ import {
 } from '@shared/ui';
 import type { FilterChipItem } from '@shared/ui';
 import { RequestsAdminService, ChangeRequest, RequestStatus } from '../services/requests-admin.service';
+import {
+  GENDER_OPTIONS, MARITAL_STATUS_OPTIONS, ACADEMIC_LEVEL_OPTIONS,
+  DOCUMENT_TYPE_OPTIONS, AFP_TYPE_OPTIONS, AFP_ENTITY_OPTIONS, AFP_COMMISSION_OPTIONS,
+  catalogLabel,
+} from '@features/portal/models/catalog.model';
 
 // Campos por sección (para detectar de qué sección es cada solicitud)
 const ADDRESS_FIELDS  = new Set(['address', 'district', 'province', 'departmentdirec', 'addressRef']);
@@ -51,16 +56,33 @@ const FIELD_LABELS: Record<string, string> = {
   bankCci:       'CCI',
 };
 
+// Mapeo campo → opciones de catálogo para mostrar la etiqueta legible
+const FIELD_OPTIONS: Record<string, Array<{ value: string; label: string }>> = {
+  gender:         GENDER_OPTIONS,
+  maritalStatus:  MARITAL_STATUS_OPTIONS,
+  academicLevel:  ACADEMIC_LEVEL_OPTIONS,
+  documentType:   DOCUMENT_TYPE_OPTIONS,
+  afpType:        AFP_TYPE_OPTIONS,
+  afpEntity:      AFP_ENTITY_OPTIONS,
+  afpCommission:  AFP_COMMISSION_OPTIONS,
+};
+
 /** Normaliza un valor para comparación: null / undefined / '' → null */
 function norm(val: unknown): string | null {
   if (val === null || val === undefined || val === '') return null;
   return String(val);
 }
 
-/** Etiqueta de visualización para un valor (null → guión) */
-function display(val: unknown): string {
-  const n = norm(val);
-  return n ?? '—';
+/** Etiqueta de visualización para un valor raw (null → guión, enum → label legible) */
+function display(val: unknown, field?: string): string {
+  const raw = norm(val);
+  if (raw === null) return '—';
+  if (field && FIELD_OPTIONS[field]) return catalogLabel(FIELD_OPTIONS[field], raw);
+  // Fechas ISO → formato local
+  if (field === 'birthDate' && /^\d{4}-\d{2}-\d{2}/.test(raw)) {
+    return new Date(raw).toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  }
+  return raw;
 }
 
 function detectSection(data: Record<string, unknown> | null | undefined): { label: string; icon: string } {
@@ -81,8 +103,8 @@ function buildDiff(data: Record<string, unknown> | null | undefined): Array<{ fi
     .map(k => ({
       field: k,
       label: FIELD_LABELS[k],
-      old:   display(previous[k]),
-      new:   display(data[k]),
+      old:   display(previous[k], k),
+      new:   display(data[k], k),
     }));
 }
 
