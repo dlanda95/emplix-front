@@ -6,7 +6,11 @@ import { Badge, Banner, Button, Field, LoadingSkeleton, SectionCard, Modal, AppS
 import type { SelectOption } from '@shared/ui';
 import { CandidatesService } from '../../services/candidates.service';
 import type { DeptWithPositions, EmployeeMinimal } from '../../services/candidates.service';
-import { catalogLabel, DOCUMENT_TYPE_OPTIONS } from '@features/portal/models/catalog.model';
+import {
+  catalogLabel,
+  DOCUMENT_TYPE_OPTIONS, GENDER_OPTIONS, MARITAL_STATUS_OPTIONS, ACADEMIC_LEVEL_OPTIONS,
+  AFP_TYPE_OPTIONS, AFP_ENTITY_OPTIONS,
+} from '@features/portal/models/catalog.model';
 
 const DOC_LABELS: { prefix: string; label: string }[] = [
   { prefix: 'DNI_CE',          label: 'Documento de Identidad'          },
@@ -157,6 +161,26 @@ export class CandidateDetail implements OnInit {
 
   docTypeLabel(val: string | null | undefined): string {
     return catalogLabel(DOCUMENT_TYPE_OPTIONS, val);
+  }
+
+  genderLabel(val: string | null | undefined): string {
+    return catalogLabel(GENDER_OPTIONS, val);
+  }
+
+  maritalStatusLabel(val: string | null | undefined): string {
+    return catalogLabel(MARITAL_STATUS_OPTIONS, val);
+  }
+
+  academicLevelLabel(val: string | null | undefined): string {
+    return catalogLabel(ACADEMIC_LEVEL_OPTIONS, val);
+  }
+
+  afpTypeLabel(val: string | null | undefined): string {
+    return catalogLabel(AFP_TYPE_OPTIONS, val);
+  }
+
+  afpEntityLabel(val: string | null | undefined): string {
+    return catalogLabel(AFP_ENTITY_OPTIONS, val);
   }
 
   docLabel(doc: { name?: string; originalName?: string }): string {

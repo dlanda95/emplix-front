@@ -44,7 +44,7 @@
           </app-field>
           <app-field label="Tipo / Nro. Doc"  [value]="docTypeLabel(c.documentType) + ' · ' + c.documentId"></app-field>
           <app-field label="Fecha de Nac."    [value]="c.birthDate | date:'dd/MM/yyyy'"></app-field>
-          <app-field label="Género"           [value]="c.gender"></app-field>
+          <app-field label="Género"           [value]="genderLabel(c.gender)"></app-field>
         </app-section-card>
 
         <app-section-card title="Contacto" [columns]="2">
@@ -61,8 +61,8 @@
         </app-section-card>
 
         <app-section-card title="Financiero" [columns]="2">
-          <app-field label="Sistema Pensionario" [value]="c.afpType"></app-field>
-          <app-field label="AFP / ONP"            [value]="c.afpEntity"></app-field>
+          <app-field label="Sistema Pensionario" [value]="afpTypeLabel(c.afpType)"></app-field>
+          <app-field label="AFP / ONP"            [value]="afpEntityLabel(c.afpEntity)"></app-field>
           <app-field label="Banco"                [value]="c.bankEntity"></app-field>
           <app-field label="Nro. de Cuenta"       [value]="c.bankAccount"></app-field>
         </app-section-card>
