@@ -3,20 +3,18 @@
 }
 
 @if (!isLoading() && candidate(); as c) {
-  <div style="display:flex;flex-direction:column;gap:1.5rem;">
+  <div class="cand-page">
 
     <!-- ── Header ─────────────────────────────────────────────────────────── -->
-    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;">
-      <div style="display:flex;align-items:center;gap:0.75rem;">
+    <div class="cand-header">
+      <div class="cand-header__identity">
         <app-button variant="ghost" icon="arrow_back" size="sm" (clicked)="back()">Volver</app-button>
         <div>
-          <h2 style="margin:0;font-size:1.25rem;font-weight:600;">{{ c.firstName }} {{ c.lastName }}</h2>
-          <p style="margin:0;color:var(--text-secondary);font-size:0.875rem;">
-            {{ docTypeLabel(c.documentType) }} · {{ c.documentId }}
-          </p>
+          <h2>{{ c.firstName }} {{ c.lastName }}</h2>
+          <p>{{ docTypeLabel(c.documentType) }} · {{ c.documentId }}</p>
         </div>
       </div>
-      <div style="display:flex;align-items:center;gap:0.75rem;">
+      <div class="cand-header__actions">
         <app-badge [variant]="onboardingStatusVariant(c.onboardingStatus)">
           {{ onboardingStatusLabel(c.onboardingStatus) }}
         </app-badge>
@@ -29,10 +27,10 @@
     </div>
 
     <!-- ── Vista dividida ─────────────────────────────────────────────────── -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;align-items:start;">
+    <div class="cand-layout">
 
       <!-- Columna izquierda: datos del candidato (solo lectura) -->
-      <div style="display:flex;flex-direction:column;gap:1rem;">
+      <div class="cand-col">
 
         @if (!canActivate) {
           <app-banner variant="warning" icon="hourglass_empty" title="Esperando documentación">
@@ -72,7 +70,7 @@
       </div>
 
       <!-- Columna derecha: asignación RRHH + documentos -->
-      <div style="display:flex;flex-direction:column;gap:1rem;">
+      <div class="cand-col">
 
         <!-- Asignación Corporativa -->
         <app-section-card title="Asignación Corporativa" [columns]="1">
@@ -83,26 +81,20 @@
 
           <!-- Resumen de asignación actual (si ya tiene) -->
           @if (c.department?.name || c.position?.name || c.supervisor) {
-            <div style="display:flex;flex-direction:column;gap:0.25rem;padding:0.75rem;background:var(--bg-surface-alt,var(--bg-surface));border:1px solid var(--border-color);border-radius:var(--radius-md);margin:0.75rem 0 0;">
+            <div class="assign-summary">
               @if (c.department?.name) {
-                <p style="margin:0;font-size:0.8rem;color:var(--text-secondary);">
-                  <strong>Área:</strong> {{ c.department.name }}
-                </p>
+                <p><strong>Área:</strong> {{ c.department.name }}</p>
               }
               @if (c.position?.name) {
-                <p style="margin:0;font-size:0.8rem;color:var(--text-secondary);">
-                  <strong>Cargo:</strong> {{ c.position.name }}
-                </p>
+                <p><strong>Cargo:</strong> {{ c.position.name }}</p>
               }
               @if (c.supervisor) {
-                <p style="margin:0;font-size:0.8rem;color:var(--text-secondary);">
-                  <strong>Supervisor:</strong> {{ c.supervisor.firstName }} {{ c.supervisor.lastName }}
-                </p>
+                <p><strong>Supervisor:</strong> {{ c.supervisor.firstName }} {{ c.supervisor.lastName }}</p>
               }
             </div>
           }
 
-          <form [formGroup]="hrForm" style="display:flex;flex-direction:column;gap:0.75rem;margin-top:0.75rem;">
+          <form [formGroup]="hrForm" class="hr-form">
             <app-select
               label="Área / Departamento"
               formControlName="departmentId"
@@ -124,7 +116,7 @@
               placeholder="— Sin supervisor asignado —">
             </app-select>
 
-            <div style="display:flex;justify-content:flex-end;align-items:center;gap:0.75rem;margin-top:0.25rem;">
+            <div class="hr-form-footer">
               @if (hrSaved()) {
                 <div class="save-notice">
                   <span class="material-icons-round">check_circle</span>
@@ -142,25 +134,18 @@
         @if (c.documents?.length > 0) {
           <app-section-card title="Documentos adjuntos" [columns]="1">
             @for (doc of c.documents; track doc.id) {
-              <div style="display:flex;align-items:center;gap:0.75rem;padding:0.625rem 0;border-bottom:1px solid var(--border-color);">
+              <div class="doc-row">
 
-                <span class="material-icons-round" style="font-size:1.5rem;color:var(--color-primary);flex-shrink:0;">
-                  description
-                </span>
+                <span class="material-icons-round doc-row__icon">description</span>
 
-                <div style="flex:1;min-width:0;">
-                  <p style="margin:0;font-size:0.875rem;font-weight:600;color:var(--text-main);">
-                    {{ docLabel(doc) }}
-                  </p>
-                  <p style="margin:0;font-size:0.75rem;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
-                    {{ doc.name ?? doc.originalName }}
-                  </p>
+                <div class="doc-row__info">
+                  <p class="doc-row__name">{{ docLabel(doc) }}</p>
+                  <p class="doc-row__file">{{ doc.name ?? doc.originalName }}</p>
                 </div>
 
                 @if (docUrls()[doc.id]) {
-                  <a [href]="docUrls()[doc.id]" target="_blank" rel="noopener"
-                    style="display:inline-flex;align-items:center;gap:0.25rem;font-size:0.8rem;color:var(--color-primary);text-decoration:none;flex-shrink:0;">
-                    <span class="material-icons-round" style="font-size:1rem;">open_in_new</span>
+                  <a [href]="docUrls()[doc.id]" target="_blank" rel="noopener" class="doc-row__link">
+                    <span class="material-icons-round">open_in_new</span>
                     Ver
                   </a>
                 } @else {
