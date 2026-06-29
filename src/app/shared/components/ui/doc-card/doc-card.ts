@@ -25,5 +25,5 @@ export class DocCard {
       day: 'numeric', month: 'short', year: 'numeric',
     });
   }
-  get displayName() { return this.doc.originalName || this.doc.name; }
+  get displayName() { return this.doc.name; }
 }
