@@ -12,13 +12,14 @@ import {
 })
 export class DocCard {
   @Input({ required: true }) doc!: EmployeeDocument;
-  @Input() showDelete = true;
+  @Input() showDelete  = true;
+  @Input() badgeLabel?: string; // sobreescribe el tipo mostrado en el badge
   @Output() download = new EventEmitter<EmployeeDocument>();
   @Output() delete   = new EventEmitter<EmployeeDocument>();
 
-  get fileIcon()  { return getFileIconConfig(this.doc.mimeType, this.doc.name); }
-  get typeLabel() { return DOC_TYPE_LABELS[this.doc.type] ?? 'Otro'; }
-  get fileSize()  { return formatFileSize(this.doc.size); }
+  get fileIcon()   { return getFileIconConfig(this.doc.mimeType, this.doc.name); }
+  get typeLabel()  { return this.badgeLabel ?? DOC_TYPE_LABELS[this.doc.type] ?? 'Otro'; }
+  get fileSize()   { return formatFileSize(this.doc.size); }
   get uploadDate() {
     return new Date(this.doc.createdAt).toLocaleDateString('es-PE', {
       day: 'numeric', month: 'short', year: 'numeric',

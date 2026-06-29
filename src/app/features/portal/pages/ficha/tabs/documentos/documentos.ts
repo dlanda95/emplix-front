@@ -99,6 +99,20 @@ export class Documentos {
       ?? 'Documentos';
   }
 
+  // Etiqueta del badge por doc: resuelve las categorías virtuales por prefijo de nombre
+  docCategoryLabel(doc: EmployeeDocument): string {
+    const name = doc.name.toUpperCase();
+    if (doc.type === 'OTHER') {
+      if (name.startsWith('CV_'))     return 'CV';
+      if (name.startsWith('RECIBO_')) return 'Recibo Dom.';
+      if (name.startsWith('DOCUMENTO_')) return 'Otro';
+      return 'Otro';
+    }
+    return DOC_CATEGORIES.find(c => c.type === doc.type)?.label
+      ?? DOC_TYPE_LABELS[doc.type]
+      ?? 'Documento';
+  }
+
   async onDownload(doc: EmployeeDocument): Promise<void> {
     try {
       const res: any = await firstValueFrom(

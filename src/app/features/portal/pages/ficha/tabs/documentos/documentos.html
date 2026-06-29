@@ -53,6 +53,7 @@
         <app-doc-card
           [doc]="doc"
           [showDelete]="false"
+          [badgeLabel]="docCategoryLabel(doc)"
           (download)="onDownload($event)">
         </app-doc-card>
       }
