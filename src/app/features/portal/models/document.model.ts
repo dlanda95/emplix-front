@@ -34,15 +34,18 @@ export interface DocCategory {
   uploadAs?: { type: EmployeeDocumentType; label: string };
 }
 
+// Nomenclatura de archivo: el backend genera PREFIX_APELLIDO_NOMBRE.ext
+// usando el `label` enviado como prefijo (o el type si no hay label).
+// Para ID_CARD añade también el N° de documento: PREFIX_DOCID_APELLIDO_NOMBRE.ext
 export const DOC_CATEGORIES: DocCategory[] = [
-  { type: 'ALL',          label: 'Todos',            icon: 'folder_open'       },
-  { type: 'RESUME',       label: 'CV',               icon: 'description',        uploadAs: { type: 'OTHER', label: 'CV'               } },
-  { type: 'ID_CARD',      label: 'Identidad',        icon: 'badge'              },
-  { type: 'ADDRESS_PROOF',label: 'Recibo Domicilio', icon: 'home',               uploadAs: { type: 'OTHER', label: 'RECIBO_DOMICILIO'  } },
-  { type: 'CONTRACT',     label: 'Contratos',        icon: 'gavel'              },
-  { type: 'CERTIFICATION',label: 'Certificados',     icon: 'workspace_premium'  },
-  { type: 'MEDICAL',      label: 'Médico',           icon: 'medical_services'   },
-  { type: 'OTHER',        label: 'Otros',            icon: 'folder'             },
+  { type: 'ALL',           label: 'Todos',            icon: 'folder_open'      },
+  { type: 'RESUME',        label: 'CV',               icon: 'description',        uploadAs: { type: 'OTHER',        label: 'CV'              } },
+  { type: 'ID_CARD',       label: 'Identidad',        icon: 'badge',              uploadAs: { type: 'ID_CARD',      label: 'DNI_CE'          } },
+  { type: 'ADDRESS_PROOF', label: 'Recibo Domicilio', icon: 'home',               uploadAs: { type: 'OTHER',        label: 'RECIBO_DOMICILIO'} },
+  { type: 'CONTRACT',      label: 'Contratos',        icon: 'gavel',              uploadAs: { type: 'CONTRACT',     label: 'CONTRATO'        } },
+  { type: 'CERTIFICATION', label: 'Certificados',     icon: 'workspace_premium',  uploadAs: { type: 'CERTIFICATION',label: 'CERTIFICADO'     } },
+  { type: 'MEDICAL',       label: 'Médico',           icon: 'medical_services',   uploadAs: { type: 'MEDICAL',      label: 'EXAMEN_MEDICO'   } },
+  { type: 'OTHER',         label: 'Otros',            icon: 'folder',             uploadAs: { type: 'OTHER',        label: 'DOCUMENTO'       } },
 ];
 
 export const DOC_TYPE_LABELS: Record<EmployeeDocumentType, string> = {

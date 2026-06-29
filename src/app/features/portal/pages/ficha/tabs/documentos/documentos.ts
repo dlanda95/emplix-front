@@ -55,13 +55,13 @@ export class Documentos {
     return cat?.uploadAs ?? null;
   });
 
-  // Tipo que se pasa a DocUploadZone (para ocultar el selector de tipo)
+  // Tipo real que se pasa a DocUploadZone para ocultar el selector de tipo.
+  // Se lee desde uploadAs si existe, o del cat si es un tipo real de BD.
   readonly uploadDocType = computed<EmployeeDocumentType | undefined>(() => {
     const cat = this.activeCategory();
-    if (cat === 'ALL')           return undefined;
-    if (cat === 'RESUME')        return 'OTHER';
-    if (cat === 'ADDRESS_PROOF') return 'OTHER';
-    return cat as EmployeeDocumentType;
+    if (cat === 'ALL') return undefined;
+    const catDef = DOC_CATEGORIES.find(c => c.type === cat);
+    return catDef?.uploadAs?.type ?? (cat as EmployeeDocumentType);
   });
 
   constructor() { this.load(); }
