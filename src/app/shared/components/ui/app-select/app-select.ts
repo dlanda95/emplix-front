@@ -30,9 +30,11 @@ export class AppSelect implements ControlValueAccessor {
   private _onTouched = () => {};
 
   constructor() {
-    // Sincroniza el valor al elemento nativo después del render,
-    // cuando las opciones del @for ya están en el DOM.
+    // Depende de AMBAS señales: cuando options() cambia (nuevas opciones en DOM)
+    // O internalValue() cambia, re-sincroniza el elemento nativo.
+    // El effect corre DESPUÉS del render, así que las opciones ya están en el DOM.
     effect(() => {
+      this.options(); // suscribirse a cambios de opciones
       const val = this.internalValue();
       if (this.selectEl?.nativeElement) {
         this.selectEl.nativeElement.value = val;
