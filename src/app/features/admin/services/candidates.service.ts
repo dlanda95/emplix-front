@@ -4,10 +4,22 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { environment } from '@env';
 
+export interface AreaPosition {
+  id:   string;
+  name: string;
+}
+
+export interface AreaChild {
+  id:        string;
+  name:      string;
+  positions: AreaPosition[];
+}
+
 export interface DeptWithPositions {
   id:        string;
   name:      string;
-  positions: { id: string; name: string }[];
+  positions: AreaPosition[];
+  children:  AreaChild[];
 }
 
 export interface EmployeeMinimal {

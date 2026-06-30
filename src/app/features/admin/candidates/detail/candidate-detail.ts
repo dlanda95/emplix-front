@@ -2,6 +2,7 @@ import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
+import { forkJoin } from 'rxjs';
 import { Badge, Banner, Button, Field, LoadingSkeleton, SectionCard, Modal, AppSelect, AppInput } from '@shared/ui';
 import type { SelectOption } from '@shared/ui';
 import { CandidatesService } from '../../services/candidates.service';
@@ -40,15 +41,19 @@ export class CandidateDetail implements OnInit {
   readonly hrSaved        = signal(false);
 
   // Catálogos org
-  readonly departments    = signal<DeptWithPositions[]>([]);
-  readonly employees      = signal<EmployeeMinimal[]>([]);
-  readonly selectedDeptId = signal<string>('');
+  readonly departments = signal<DeptWithPositions[]>([]);
+  readonly employees   = signal<EmployeeMinimal[]>([]);
+
+  // Estado UI del selector en cascada (no van al payload guardado)
+  readonly uiAreaId    = signal<string>('');
+  readonly uiSubareaId = signal<string>('');
 
   // URLs de documentos (cargadas asíncronamente)
   readonly docUrls = signal<Record<string, string>>({});
 
   hrForm = this.fb.group({
-    departmentId: [''],
+    areaId:       [''],   // UI only — no se envía al backend
+    subareaId:    [''],   // UI only — no se envía al backend
     positionId:   [''],
     supervisorId: [''],
   });
@@ -63,11 +68,27 @@ export class CandidateDetail implements OnInit {
     this.departments().map(d => ({ value: d.id, label: d.name }))
   );
 
+  readonly selectedAreaHasSubareas = computed(() => {
+    const area = this.departments().find(d => d.id === this.uiAreaId());
+    return (area?.children.length ?? 0) > 0;
+  });
+
+  readonly subareaOptions = computed<SelectOption[]>(() => {
+    const area = this.departments().find(d => d.id === this.uiAreaId());
+    return area?.children.map(c => ({ value: c.id, label: c.name })) ?? [];
+  });
+
   readonly positionOptions = computed<SelectOption[]>(() => {
-    const deptId = this.selectedDeptId();
-    if (!deptId) return [];
-    const dept = this.departments().find(d => d.id === deptId);
-    return dept?.positions.map(p => ({ value: p.id, label: p.name })) ?? [];
+    const subareaId = this.uiSubareaId();
+    const areaId    = this.uiAreaId();
+    if (!areaId) return [];
+
+    const area = this.departments().find(d => d.id === areaId);
+    if (subareaId) {
+      const sub = area?.children.find(c => c.id === subareaId);
+      return sub?.positions.map(p => ({ value: p.id, label: p.name })) ?? [];
+    }
+    return area?.positions.map(p => ({ value: p.id, label: p.name })) ?? [];
   });
 
   readonly supervisorOptions = computed<SelectOption[]>(() =>
@@ -83,34 +104,51 @@ export class CandidateDetail implements OnInit {
     const id = this.route.snapshot.paramMap.get('id');
     if (!id) { this.nav.navigate(['/admin/candidatos']); return; }
 
-    // Cargar catálogos en paralelo (no bloquean el render)
-    this.svc.listDepartments().subscribe(d => this.departments.set(d));
-    this.svc.listActiveEmployees().subscribe(e => this.employees.set(e));
+    // Subscripciones reactivas de cascada (usuario cambia el select)
+    this.hrForm.get('areaId')!.valueChanges.subscribe(areaId => {
+      this.uiAreaId.set(areaId ?? '');
+      this.uiSubareaId.set('');
+      this.hrForm.patchValue({ subareaId: '', positionId: '' }, { emitEvent: false });
+    });
 
-    // Sincronizar selectedDeptId con el control (valueChanges solo reactive al usuario)
-    this.hrForm.get('departmentId')!.valueChanges.subscribe(v => {
-      this.selectedDeptId.set(v ?? '');
+    this.hrForm.get('subareaId')!.valueChanges.subscribe(subareaId => {
+      this.uiSubareaId.set(subareaId ?? '');
       this.hrForm.get('positionId')!.setValue('', { emitEvent: false });
     });
 
-    // Cargar candidato
-    this.svc.get(id).subscribe({
-      next: data => {
-        this.candidate.set(data);
+    // Cargar candidato + catálogos en paralelo
+    forkJoin({
+      candidate: this.svc.get(id),
+      depts:     this.svc.listDepartments(),
+      employees: this.svc.listActiveEmployees(),
+    }).subscribe({
+      next: ({ candidate, depts, employees }) => {
+        this.departments.set(depts);
+        this.employees.set(employees);
+        this.candidate.set(candidate);
         this.isLoading.set(false);
 
-        // Pre-rellenar asignación existente — patchValue con emitEvent:false
-        // no dispara valueChanges, así que actualizamos selectedDeptId manualmente
-        const deptId = data.department?.id ?? data.departmentId ?? '';
-        this.selectedDeptId.set(deptId);
-        this.hrForm.patchValue({
-          departmentId: deptId,
-          positionId:   data.position?.id    ?? data.positionId    ?? '',
-          supervisorId: data.supervisor?.id  ?? data.supervisorId  ?? '',
-        }, { emitEvent: false });
+        // Determinar si el departamento guardado es un área o subárea
+        const savedDeptId = candidate.department?.id ?? candidate.departmentId ?? '';
+        const savedPosId  = candidate.position?.id   ?? candidate.positionId   ?? '';
+        const savedSupId  = candidate.supervisor?.id  ?? candidate.supervisorId ?? '';
+
+        const isTopArea  = depts.find(d => d.id === savedDeptId);
+        const parentArea = !isTopArea && depts.find(d => d.children.some(c => c.id === savedDeptId));
+
+        if (isTopArea) {
+          this.uiAreaId.set(savedDeptId);
+          this.hrForm.patchValue({ areaId: savedDeptId, subareaId: '', positionId: savedPosId, supervisorId: savedSupId }, { emitEvent: false });
+        } else if (parentArea) {
+          this.uiAreaId.set(parentArea.id);
+          this.uiSubareaId.set(savedDeptId);
+          this.hrForm.patchValue({ areaId: parentArea.id, subareaId: savedDeptId, positionId: savedPosId, supervisorId: savedSupId }, { emitEvent: false });
+        } else {
+          this.hrForm.patchValue({ positionId: savedPosId, supervisorId: savedSupId }, { emitEvent: false });
+        }
 
         // Cargar URLs de docs adjuntos
-        for (const doc of data.documents ?? []) {
+        for (const doc of candidate.documents ?? []) {
           this.svc.getDocUrl(doc.id).subscribe({
             next: url => this.docUrls.update(m => ({ ...m, [doc.id]: url })),
             error: () => {},
@@ -119,7 +157,6 @@ export class CandidateDetail implements OnInit {
       },
       error: () => { this.isLoading.set(false); this.nav.navigate(['/admin/candidatos']); },
     });
-
   }
 
   // ── Acciones ─────────────────────────────────────────────────────────────────
@@ -127,7 +164,13 @@ export class CandidateDetail implements OnInit {
   saveHrData(): void {
     const id = this.candidate()?.id;
     if (!id) return;
-    this.svc.updateHrData(id, this.hrForm.getRawValue() as Record<string, unknown>).subscribe({
+    const v = this.hrForm.getRawValue();
+    const payload = {
+      departmentId: v.subareaId || v.areaId || null,
+      positionId:   v.positionId   || null,
+      supervisorId: v.supervisorId || null,
+    };
+    this.svc.updateHrData(id, payload).subscribe({
       next: updated => {
         this.candidate.update(c => ({ ...c, ...updated }));
         this.hrSaved.set(true);

@@ -97,10 +97,19 @@
           <form [formGroup]="hrForm" class="hr-form">
             <app-select
               label="Área / Departamento"
-              formControlName="departmentId"
+              formControlName="areaId"
               [options]="deptOptions()"
               placeholder="— Seleccionar área —">
             </app-select>
+
+            @if (selectedAreaHasSubareas()) {
+              <app-select
+                label="Subárea"
+                formControlName="subareaId"
+                [options]="subareaOptions()"
+                placeholder="— Seleccionar subárea —">
+              </app-select>
+            }
 
             <app-select
               label="Cargo"
