@@ -188,7 +188,7 @@ export class Organizacion {
       description: v.description || undefined,
       code:        v.code || null,
       areaType:    v.areaType as AreaType,
-      isActive:    v.isActive!,
+      isActive:    v.isActive === true || (v.isActive as unknown) === 'true',
     };
     this.isSaving.set(true);
     const id = this.editingId();
@@ -226,7 +226,7 @@ export class Organizacion {
       name:        v.name!,
       description: v.description || undefined,
       areaType:    v.areaType as AreaType,
-      isActive:    v.isActive!,
+      isActive:    v.isActive === true || (v.isActive as unknown) === 'true',
     };
     const parentId = this.subareaParentId();
     const editId   = this.editingId();
@@ -281,7 +281,7 @@ export class Organizacion {
       hierarchyLevel: Number(v.hierarchyLevel),
       roleType:       v.roleType as RoleType,
       departmentId:   v.departmentId || null,
-      isActive:       v.isActive!,
+      isActive:       v.isActive === true || (v.isActive as unknown) === 'true',
     };
     this.isSaving.set(true);
     const id = this.editingId();
