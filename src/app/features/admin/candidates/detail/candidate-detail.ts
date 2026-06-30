@@ -40,9 +40,9 @@ export class CandidateDetail implements OnInit {
   readonly hrSaved        = signal(false);
 
   // Catálogos org
-  readonly departments = signal<DeptWithPositions[]>([]);
-  readonly allPositions = signal<{ id: string; name: string }[]>([]);
-  readonly employees   = signal<EmployeeMinimal[]>([]);
+  readonly departments    = signal<DeptWithPositions[]>([]);
+  readonly employees      = signal<EmployeeMinimal[]>([]);
+  readonly selectedDeptId = signal<string>('');
 
   // URLs de documentos (cargadas asíncronamente)
   readonly docUrls = signal<Record<string, string>>({});
@@ -63,9 +63,12 @@ export class CandidateDetail implements OnInit {
     this.departments().map(d => ({ value: d.id, label: d.name }))
   );
 
-  readonly positionOptions = computed<SelectOption[]>(() =>
-    this.allPositions().map(p => ({ value: p.id, label: p.name }))
-  );
+  readonly positionOptions = computed<SelectOption[]>(() => {
+    const deptId = this.selectedDeptId();
+    if (!deptId) return [];
+    const dept = this.departments().find(d => d.id === deptId);
+    return dept?.positions.map(p => ({ value: p.id, label: p.name })) ?? [];
+  });
 
   readonly supervisorOptions = computed<SelectOption[]>(() =>
     this.employees().map(e => ({
@@ -82,8 +85,13 @@ export class CandidateDetail implements OnInit {
 
     // Cargar catálogos en paralelo (no bloquean el render)
     this.svc.listDepartments().subscribe(d => this.departments.set(d));
-    this.svc.listPositions().subscribe(p => this.allPositions.set(p));
     this.svc.listActiveEmployees().subscribe(e => this.employees.set(e));
+
+    // Sincronizar selectedDeptId con el control (valueChanges solo reactive al usuario)
+    this.hrForm.get('departmentId')!.valueChanges.subscribe(v => {
+      this.selectedDeptId.set(v ?? '');
+      this.hrForm.get('positionId')!.setValue('', { emitEvent: false });
+    });
 
     // Cargar candidato
     this.svc.get(id).subscribe({
@@ -91,9 +99,12 @@ export class CandidateDetail implements OnInit {
         this.candidate.set(data);
         this.isLoading.set(false);
 
-        // Pre-rellenar asignación existente (sin disparar valueChanges innecesariamente)
+        // Pre-rellenar asignación existente — patchValue con emitEvent:false
+        // no dispara valueChanges, así que actualizamos selectedDeptId manualmente
+        const deptId = data.department?.id ?? data.departmentId ?? '';
+        this.selectedDeptId.set(deptId);
         this.hrForm.patchValue({
-          departmentId: data.department?.id  ?? data.departmentId  ?? '',
+          departmentId: deptId,
           positionId:   data.position?.id    ?? data.positionId    ?? '',
           supervisorId: data.supervisor?.id  ?? data.supervisorId  ?? '',
         }, { emitEvent: false });
