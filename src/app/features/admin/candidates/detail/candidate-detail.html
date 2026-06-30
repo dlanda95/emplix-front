@@ -111,12 +111,14 @@
               </app-select>
             }
 
-            <app-select
-              label="Cargo"
-              formControlName="positionId"
-              [options]="positionOptions()"
-              placeholder="— Seleccionar cargo —">
-            </app-select>
+            @if (showPositionSelect()) {
+              <app-select
+                label="Cargo"
+                formControlName="positionId"
+                [options]="positionOptions()"
+                placeholder="— Seleccionar cargo —">
+              </app-select>
+            }
 
             <app-select
               label="Supervisor directo"

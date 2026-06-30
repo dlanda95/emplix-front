@@ -73,6 +73,13 @@ export class CandidateDetail implements OnInit {
     return (area?.children.length ?? 0) > 0;
   });
 
+  // Cargo visible solo cuando ya se completó la selección previa
+  readonly showPositionSelect = computed(() => {
+    if (!this.uiAreaId()) return false;
+    if (this.selectedAreaHasSubareas() && !this.uiSubareaId()) return false;
+    return true;
+  });
+
   readonly subareaOptions = computed<SelectOption[]>(() => {
     const area = this.departments().find(d => d.id === this.uiAreaId());
     return area?.children.map(c => ({ value: c.id, label: c.name })) ?? [];
