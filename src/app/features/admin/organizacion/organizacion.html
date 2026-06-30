@@ -1,0 +1,306 @@
+<div class="org-page">
+
+  <app-page-header
+    title="Organización"
+    subtitle="Gestiona áreas, subáreas y cargos de la empresa.">
+  </app-page-header>
+
+  <!-- Tabs principales -->
+  <app-tabs-card
+    [items]="tabs"
+    [current]="activeTab()"
+    (currentChange)="onTabChange($event)"
+    align="start">
+  </app-tabs-card>
+
+  <!-- ── TAB: ÁREAS ──────────────────────────────────────────────────────── -->
+  @if (activeTab() === 'areas') {
+
+    <div class="org-toolbar">
+      <app-filter-chips
+        [items]="typeChips"
+        [active]="typeFilter()"
+        (activeChange)="typeFilter.set($event)">
+      </app-filter-chips>
+      <app-button variant="primary" icon="add" (clicked)="openNewArea()">
+        Nueva Área
+      </app-button>
+    </div>
+
+    @if (isLoading()) {
+      <app-loading-skeleton variant="card" [lines]="4"></app-loading-skeleton>
+    } @else if (filteredAreas().length === 0) {
+      <app-empty-state icon="account_tree" title="Sin áreas"
+        description="Crea la primera área organizacional de tu empresa.">
+      </app-empty-state>
+    } @else {
+      <div class="org-areas">
+        @for (area of filteredAreas(); track area.id) {
+
+          <div class="area-card" [class.area-card--inactive]="!area.isActive">
+
+            <!-- Header del área -->
+            <div class="area-card__header" (click)="toggleExpand(area.id)">
+              <div class="area-card__info">
+                <span class="material-icons-round area-card__chevron"
+                  [class.area-card__chevron--open]="expandedArea() === area.id">
+                  chevron_right
+                </span>
+                <div>
+                  <div class="area-card__title">
+                    <span class="area-card__name">{{ area.name }}</span>
+                    @if (area.code) {
+                      <span class="area-card__code">{{ area.code }}</span>
+                    }
+                    <app-badge [variant]="areaTypeVariant(area.areaType)">
+                      {{ areaTypeLabel(area.areaType) }}
+                    </app-badge>
+                    @if (!area.isActive) {
+                      <app-badge variant="error">Inactiva</app-badge>
+                    }
+                  </div>
+                  @if (area.description) {
+                    <p class="area-card__desc">{{ area.description }}</p>
+                  }
+                  <div class="area-card__stats">
+                    <span>
+                      <span class="material-icons-round">group</span>
+                      {{ area._count.employees }} empleado{{ area._count.employees !== 1 ? 's' : '' }}
+                    </span>
+                    <span>
+                      <span class="material-icons-round">account_tree</span>
+                      {{ area._count.children }} subárea{{ area._count.children !== 1 ? 's' : '' }}
+                    </span>
+                    <span>
+                      <span class="material-icons-round">badge</span>
+                      {{ area._count.positions }} cargo{{ area._count.positions !== 1 ? 's' : '' }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="area-card__actions" (click)="$event.stopPropagation()">
+                <app-button variant="ghost" icon="add" size="sm" (clicked)="openNewSubarea(area)">
+                  Subárea
+                </app-button>
+                <app-button variant="ghost" icon="edit" size="sm" (clicked)="openEditArea(area)">
+                  Editar
+                </app-button>
+                <app-button variant="ghost" icon="delete" size="sm" (clicked)="deleteArea(area)">
+                </app-button>
+              </div>
+            </div>
+
+            <!-- Subáreas expandibles -->
+            @if (expandedArea() === area.id) {
+              <div class="area-card__subareas">
+
+                @if (area.children.length === 0) {
+                  <p class="area-card__no-subareas">
+                    <span class="material-icons-round">subdirectory_arrow_right</span>
+                    Sin subáreas —
+                    <button class="area-card__link" (click)="openNewSubarea(area)">Crear una</button>
+                  </p>
+                } @else {
+                  @for (sub of area.children; track sub.id) {
+                    <div class="subarea-row" [class.subarea-row--inactive]="!sub.isActive">
+                      <span class="material-icons-round subarea-row__icon">subdirectory_arrow_right</span>
+                      <div class="subarea-row__info">
+                        <span class="subarea-row__name">{{ sub.name }}</span>
+                        @if (!sub.isActive) {
+                          <app-badge variant="error">Inactiva</app-badge>
+                        }
+                        @if (sub.description) {
+                          <span class="subarea-row__desc">{{ sub.description }}</span>
+                        }
+                      </div>
+                      <div class="subarea-row__stats">
+                        <span class="material-icons-round">group</span>
+                        {{ sub._count.employees }}
+                      </div>
+                      <div class="subarea-row__actions">
+                        <app-button variant="ghost" icon="edit" size="sm" (clicked)="openEditSubarea(sub)">
+                        </app-button>
+                        <app-button variant="ghost" icon="delete" size="sm" (clicked)="deleteArea(sub)">
+                        </app-button>
+                      </div>
+                    </div>
+                  }
+                }
+
+              </div>
+            }
+
+          </div>
+
+        }
+      </div>
+    }
+  }
+
+  <!-- ── TAB: CARGOS ─────────────────────────────────────────────────────── -->
+  @if (activeTab() === 'positions') {
+
+    <div class="org-toolbar">
+      <p class="org-toolbar__count">
+        {{ positions().length }} cargo{{ positions().length !== 1 ? 's' : '' }}
+      </p>
+      <app-button variant="primary" icon="add" (clicked)="openNewPosition()">
+        Nuevo Cargo
+      </app-button>
+    </div>
+
+    @if (isLoading()) {
+      <app-loading-skeleton variant="card" [lines]="5"></app-loading-skeleton>
+    } @else if (positions().length === 0) {
+      <app-empty-state icon="badge" title="Sin cargos"
+        description="Define los cargos de tu organización.">
+      </app-empty-state>
+    } @else {
+      <app-section-card [columns]="1">
+        <div class="pos-table">
+          <div class="pos-table__header">
+            <span>Cargo</span>
+            <span>Nivel</span>
+            <span>Tipo de Rol</span>
+            <span>Área asignada</span>
+            <span>Estado</span>
+            <span></span>
+          </div>
+          @for (pos of positions(); track pos.id) {
+            <div class="pos-table__row" [class.pos-table__row--inactive]="!pos.isActive">
+
+              <div class="pos-table__name">
+                <span class="material-icons-round">badge</span>
+                <span>{{ pos.name }}</span>
+              </div>
+
+              <div class="pos-level">
+                <span class="pos-level__dot">{{ pos.hierarchyLevel }}</span>
+              </div>
+
+              <div>
+                <app-badge variant="neutral">{{ roleTypeLabel(pos.roleType) }}</app-badge>
+              </div>
+
+              <div class="pos-table__area">
+                @if (pos.department) {
+                  <span class="material-icons-round">account_tree</span>
+                  {{ pos.department.name }}
+                } @else {
+                  <span class="pos-table__none">— Sin área —</span>
+                }
+              </div>
+
+              <div>
+                @if (pos.isActive) {
+                  <app-badge variant="success">Activo</app-badge>
+                } @else {
+                  <app-badge variant="error">Inactivo</app-badge>
+                }
+              </div>
+
+              <div class="pos-table__actions">
+                <app-button variant="ghost" icon="edit" size="sm" (clicked)="openEditPosition(pos)">
+                </app-button>
+                <app-button variant="ghost" icon="delete" size="sm" (clicked)="deletePosition(pos)">
+                </app-button>
+              </div>
+
+            </div>
+          }
+        </div>
+      </app-section-card>
+    }
+  }
+
+</div>
+
+<!-- ── Modal: Área ─────────────────────────────────────────────────────────── -->
+<app-modal
+  [isOpen]="areaModal()"
+  [title]="editingId() ? 'Editar Área' : 'Nueva Área'"
+  (close)="areaModal.set(false)">
+
+  @if (errorMsg()) {
+    <app-banner variant="error" icon="error" [title]="errorMsg()"></app-banner>
+  }
+
+  <form [formGroup]="areaForm" class="org-form">
+    <app-input label="Nombre del área *" formControlName="name" placeholder="Ej. Tecnología e Innovación"></app-input>
+    <app-input label="Código (opcional)" formControlName="code" placeholder="Ej. TI, RRHH"></app-input>
+    <app-input label="Descripción" formControlName="description" placeholder="Breve descripción del área"></app-input>
+    <app-select label="Tipo de área" formControlName="areaType" [options]="areaTypeOpts"></app-select>
+    <app-select label="Estado" formControlName="isActive"
+      [options]="[{value: 'true', label: 'Activa'}, {value: 'false', label: 'Inactiva'}]">
+    </app-select>
+  </form>
+
+  <ng-container modal-actions>
+    <app-button variant="ghost" (clicked)="areaModal.set(false)">Cancelar</app-button>
+    <app-button variant="primary" icon="save" [loading]="isSaving()" [disabled]="areaForm.invalid" (clicked)="saveArea()">
+      Guardar área
+    </app-button>
+  </ng-container>
+</app-modal>
+
+<!-- ── Modal: Subárea ──────────────────────────────────────────────────────── -->
+<app-modal
+  [isOpen]="subareaModal()"
+  [title]="editingId() ? 'Editar Subárea' : 'Nueva Subárea'"
+  (close)="subareaModal.set(false)">
+
+  @if (errorMsg()) {
+    <app-banner variant="error" icon="error" [title]="errorMsg()"></app-banner>
+  }
+
+  <form [formGroup]="subareaForm" class="org-form">
+    <app-input label="Nombre de la subárea *" formControlName="name" placeholder="Ej. Desarrollo de Software"></app-input>
+    <app-input label="Descripción" formControlName="description" placeholder="Descripción opcional"></app-input>
+    <app-select label="Tipo de área" formControlName="areaType" [options]="areaTypeOpts"></app-select>
+    <app-select label="Estado" formControlName="isActive"
+      [options]="[{value: 'true', label: 'Activa'}, {value: 'false', label: 'Inactiva'}]">
+    </app-select>
+  </form>
+
+  <ng-container modal-actions>
+    <app-button variant="ghost" (clicked)="subareaModal.set(false)">Cancelar</app-button>
+    <app-button variant="primary" icon="save" [loading]="isSaving()" [disabled]="subareaForm.invalid" (clicked)="saveSubarea()">
+      Guardar subárea
+    </app-button>
+  </ng-container>
+</app-modal>
+
+<!-- ── Modal: Cargo ────────────────────────────────────────────────────────── -->
+<app-modal
+  [isOpen]="posModal()"
+  [title]="editingId() ? 'Editar Cargo' : 'Nuevo Cargo'"
+  (close)="posModal.set(false)">
+
+  @if (errorMsg()) {
+    <app-banner variant="error" icon="error" [title]="errorMsg()"></app-banner>
+  }
+
+  <form [formGroup]="posForm" class="org-form org-form--pos">
+    <app-input label="Nombre del cargo *" formControlName="name" placeholder="Ej. Analista Senior"></app-input>
+    <app-input label="Descripción" formControlName="description" placeholder="Descripción del cargo"></app-input>
+    <div class="org-form__row">
+      <app-select label="Nivel jerárquico" formControlName="hierarchyLevel" [options]="levelOpts"></app-select>
+      <app-select label="Tipo de rol" formControlName="roleType" [options]="roleTypeOpts"></app-select>
+    </div>
+    <app-select label="Área asignada (opcional)" formControlName="departmentId"
+      [options]="[{value: '', label: '— Sin área —'}, ...areaOptions()]"
+      placeholder="— Sin área —">
+    </app-select>
+    <app-select label="Estado" formControlName="isActive"
+      [options]="[{value: 'true', label: 'Activo'}, {value: 'false', label: 'Inactivo'}]">
+    </app-select>
+  </form>
+
+  <ng-container modal-actions>
+    <app-button variant="ghost" (clicked)="posModal.set(false)">Cancelar</app-button>
+    <app-button variant="primary" icon="save" [loading]="isSaving()" [disabled]="posForm.invalid" (clicked)="savePosition()">
+      Guardar cargo
+    </app-button>
+  </ng-container>
+</app-modal>
