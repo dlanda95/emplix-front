@@ -1,4 +1,4 @@
-import { Component, forwardRef, input, signal } from '@angular/core';
+import { Component, ElementRef, ViewChild, effect, forwardRef, input, signal } from '@angular/core';
 import { NG_VALUE_ACCESSOR, ControlValueAccessor } from '@angular/forms';
 
 export interface SelectOption {
@@ -21,11 +21,24 @@ export class AppSelect implements ControlValueAccessor {
   readonly options     = input.required<SelectOption[]>();
   readonly placeholder = input<string>('— Seleccionar —');
 
+  @ViewChild('selectEl') private selectEl?: ElementRef<HTMLSelectElement>;
+
   readonly internalValue = signal<string>('');
   readonly isDisabled    = signal(false);
 
   private _onChange  = (_: string) => {};
   private _onTouched = () => {};
+
+  constructor() {
+    // Sincroniza el valor al elemento nativo después del render,
+    // cuando las opciones del @for ya están en el DOM.
+    effect(() => {
+      const val = this.internalValue();
+      if (this.selectEl?.nativeElement) {
+        this.selectEl.nativeElement.value = val;
+      }
+    });
+  }
 
   writeValue(val: unknown): void {
     this.internalValue.set(val != null ? String(val) : '');
