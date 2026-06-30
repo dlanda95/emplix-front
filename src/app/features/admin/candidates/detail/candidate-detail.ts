@@ -70,7 +70,7 @@ export class CandidateDetail implements OnInit {
 
   readonly selectedAreaHasSubareas = computed(() => {
     const area = this.departments().find(d => d.id === this.uiAreaId());
-    return (area?.children.length ?? 0) > 0;
+    return (area?.children?.length ?? 0) > 0;
   });
 
   // Cargo visible solo cuando ya se completó la selección previa
@@ -82,7 +82,7 @@ export class CandidateDetail implements OnInit {
 
   readonly subareaOptions = computed<SelectOption[]>(() => {
     const area = this.departments().find(d => d.id === this.uiAreaId());
-    return area?.children.map(c => ({ value: c.id, label: c.name })) ?? [];
+    return area?.children?.map(c => ({ value: c.id, label: c.name })) ?? [];
   });
 
   readonly positionOptions = computed<SelectOption[]>(() => {
@@ -92,10 +92,10 @@ export class CandidateDetail implements OnInit {
 
     const area = this.departments().find(d => d.id === areaId);
     if (subareaId) {
-      const sub = area?.children.find(c => c.id === subareaId);
-      return sub?.positions.map(p => ({ value: p.id, label: p.name })) ?? [];
+      const sub = area?.children?.find(c => c.id === subareaId);
+      return sub?.positions?.map(p => ({ value: p.id, label: p.name })) ?? [];
     }
-    return area?.positions.map(p => ({ value: p.id, label: p.name })) ?? [];
+    return area?.positions?.map(p => ({ value: p.id, label: p.name })) ?? [];
   });
 
   readonly supervisorOptions = computed<SelectOption[]>(() =>
