@@ -27,8 +27,8 @@ export class AppSelect implements ControlValueAccessor {
   private _onChange  = (_: string) => {};
   private _onTouched = () => {};
 
-  writeValue(val: string | null): void {
-    this.internalValue.set(val ?? '');
+  writeValue(val: unknown): void {
+    this.internalValue.set(val != null ? String(val) : '');
   }
 
   registerOnChange(fn: (_: string) => void): void  { this._onChange = fn; }
