@@ -116,6 +116,12 @@ export class Organizacion {
     ])
   );
 
+  // Angular templates no soportan spread; esta computed incluye la opción vacía
+  readonly areaSelectOptions = computed<SelectOption[]>(() => [
+    { value: '', label: '— Sin área —' },
+    ...this.areaOptions(),
+  ]);
+
   // ── Constantes para template ──────────────────────────────────────────────
   readonly tabs          = AREA_TABS;
   readonly typeChips     = TYPE_CHIPS;
@@ -296,6 +302,8 @@ export class Organizacion {
 
   // ── Helpers ───────────────────────────────────────────────────────────────
   areaTypeLabel(t: string):   string { return AREA_TYPE_LABELS[t as AreaType]  ?? t; }
-  areaTypeVariant(t: string): string { return AREA_TYPE_VARIANTS[t as AreaType] ?? 'neutral'; }
+  areaTypeVariant(t: string): 'primary' | 'success' | 'warning' | 'error' | 'neutral' {
+    return AREA_TYPE_VARIANTS[t as AreaType] ?? 'neutral';
+  }
   roleTypeLabel(t: string):   string { return ROLE_TYPE_LABELS[t as RoleType]  ?? t; }
 }

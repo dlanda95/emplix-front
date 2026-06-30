@@ -157,7 +157,7 @@
         description="Define los cargos de tu organización.">
       </app-empty-state>
     } @else {
-      <app-section-card [columns]="1">
+      <app-section-card title="Lista de cargos" [columns]="1">
         <div class="pos-table">
           <div class="pos-table__header">
             <span>Cargo</span>
@@ -289,7 +289,7 @@
       <app-select label="Tipo de rol" formControlName="roleType" [options]="roleTypeOpts"></app-select>
     </div>
     <app-select label="Área asignada (opcional)" formControlName="departmentId"
-      [options]="[{value: '', label: '— Sin área —'}, ...areaOptions()]"
+      [options]="areaSelectOptions()"
       placeholder="— Sin área —">
     </app-select>
     <app-select label="Estado" formControlName="isActive"

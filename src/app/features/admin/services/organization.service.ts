@@ -17,10 +17,10 @@ export const AREA_TYPE_LABELS: Record<AreaType, string> = {
   RECEPTIVE:   'Receptiva',
 };
 
-export const AREA_TYPE_VARIANTS: Record<AreaType, string> = {
+export const AREA_TYPE_VARIANTS: Record<AreaType, 'primary' | 'success' | 'warning' | 'error' | 'neutral'> = {
   TRANSVERSAL: 'neutral',
   EMISSIVE:    'success',
-  RECEPTIVE:   'info',
+  RECEPTIVE:   'warning',
 };
 
 export const ROLE_TYPE_LABELS: Record<RoleType, string> = {
