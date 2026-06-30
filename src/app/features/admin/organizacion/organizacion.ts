@@ -174,7 +174,7 @@ export class Organizacion {
     this.editingId.set(area.id);
     this.areaForm.patchValue({
       name: area.name, description: area.description ?? '', areaType: area.areaType,
-      isActive: area.isActive, code: (area as Area).code ?? '',
+      isActive: String(area.isActive), code: (area as Area).code ?? '',
     });
     this.errorMsg.set('');
     this.areaModal.set(true);
@@ -244,7 +244,7 @@ export class Organizacion {
     this.subareaParentId.set(sub.parentId);
     this.editingId.set(sub.id);
     this.subareaForm.patchValue({
-      name: sub.name, description: sub.description ?? '', areaType: sub.areaType, isActive: sub.isActive,
+      name: sub.name, description: sub.description ?? '', areaType: sub.areaType, isActive: String(sub.isActive),
     });
     this.errorMsg.set('');
     this.subareaModal.set(true);
@@ -266,7 +266,7 @@ export class Organizacion {
       hierarchyLevel: String(pos.hierarchyLevel),
       roleType:       pos.roleType,
       departmentId:   pos.departmentId ?? '',
-      isActive:       pos.isActive,
+      isActive:       String(pos.isActive),
     });
     this.errorMsg.set('');
     this.posModal.set(true);
