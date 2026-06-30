@@ -71,6 +71,12 @@ export class CandidatesService {
     return this.http.get<any>(`${environment.apiUrl}/organization/departments`).pipe(map(r => r?.data ?? r));
   }
 
+  listPositions(): Observable<{ id: string; name: string }[]> {
+    return this.http.get<any>(`${environment.apiUrl}/organization/positions`).pipe(
+      map(r => (r?.data ?? r).map((p: any) => ({ id: p.id, name: p.name })))
+    );
+  }
+
   listActiveEmployees(): Observable<EmployeeMinimal[]> {
     return this.http.get<any>(`${environment.apiUrl}/employees`).pipe(map(r => r?.data ?? r));
   }

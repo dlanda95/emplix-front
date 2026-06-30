@@ -41,6 +41,7 @@ export class CandidateDetail implements OnInit {
 
   // Catálogos org
   readonly departments = signal<DeptWithPositions[]>([]);
+  readonly allPositions = signal<{ id: string; name: string }[]>([]);
   readonly employees   = signal<EmployeeMinimal[]>([]);
 
   // URLs de documentos (cargadas asíncronamente)
@@ -62,11 +63,9 @@ export class CandidateDetail implements OnInit {
     this.departments().map(d => ({ value: d.id, label: d.name }))
   );
 
-  readonly positionOptions = computed<SelectOption[]>(() => {
-    const deptId = this.hrForm.get('departmentId')?.value ?? '';
-    const dept   = this.departments().find(d => d.id === deptId);
-    return dept?.positions.map(p => ({ value: p.id, label: p.name })) ?? [];
-  });
+  readonly positionOptions = computed<SelectOption[]>(() =>
+    this.allPositions().map(p => ({ value: p.id, label: p.name }))
+  );
 
   readonly supervisorOptions = computed<SelectOption[]>(() =>
     this.employees().map(e => ({
@@ -83,6 +82,7 @@ export class CandidateDetail implements OnInit {
 
     // Cargar catálogos en paralelo (no bloquean el render)
     this.svc.listDepartments().subscribe(d => this.departments.set(d));
+    this.svc.listPositions().subscribe(p => this.allPositions.set(p));
     this.svc.listActiveEmployees().subscribe(e => this.employees.set(e));
 
     // Cargar candidato
@@ -98,10 +98,6 @@ export class CandidateDetail implements OnInit {
           supervisorId: data.supervisor?.id  ?? data.supervisorId  ?? '',
         }, { emitEvent: false });
 
-        if (!this.hrForm.value.departmentId) {
-          this.hrForm.get('positionId')?.disable();
-        }
-
         // Cargar URLs de docs adjuntos
         for (const doc of data.documents ?? []) {
           this.svc.getDocUrl(doc.id).subscribe({
@@ -113,12 +109,6 @@ export class CandidateDetail implements OnInit {
       error: () => { this.isLoading.set(false); this.nav.navigate(['/admin/candidatos']); },
     });
 
-    // Cascade: al cambiar área, habilitar/limpiar cargo
-    this.hrForm.get('departmentId')?.valueChanges.subscribe(deptId => {
-      const posCtrl = this.hrForm.get('positionId')!;
-      posCtrl.setValue('', { emitEvent: false });
-      deptId ? posCtrl.enable() : posCtrl.disable();
-    });
   }
 
   // ── Acciones ─────────────────────────────────────────────────────────────────
