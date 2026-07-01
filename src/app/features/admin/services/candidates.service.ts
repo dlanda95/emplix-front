@@ -30,17 +30,49 @@ export interface EmployeeMinimal {
 }
 
 export interface CandidateSummary {
-  id:              string;
-  firstName:       string;
-  lastName:        string;
-  middleName?:     string | null;
-  documentType?:   string | null;
-  documentId?:     string | null;
-  onboardingStatus?:string | null;
-  hireDate:        string;
-  position?:       { name: string } | null;
-  department?:     { name: string } | null;
-  user?:           { email: string; isActive: boolean } | null;
+  id:               string;
+  firstName:        string;
+  lastName:         string;
+  middleName?:      string | null;
+  documentType?:    string | null;
+  documentId?:      string | null;
+  onboardingStatus?: string | null;
+  hireDate:         string;
+  position?:        { name: string } | null;
+  department?:      { name: string } | null;
+  user?:            { email: string; isActive: boolean } | null;
+}
+
+export interface CandidateDetail {
+  id:               string;
+  firstName:        string;
+  lastName:         string;
+  middleName:       string | null;
+  secondLastName:   string | null;
+  documentType:     string | null;
+  documentId:       string | null;
+  birthDate:        string | null;
+  gender:           string | null;
+  maritalStatus:    string | null;
+  cellPhone:        string | null;
+  personalEmail:    string | null;
+  emergencyName:    string | null;
+  emergencyPhone:   string | null;
+  address:          string | null;
+  district:         string | null;
+  departmentdirec:  string | null;
+  afpType:          string | null;
+  afpEntity:        string | null;
+  bankEntity:       string | null;
+  bankAccount:      string | null;
+  onboardingStatus: 'DOCS_SUBMITTED' | 'COMPLETED' | 'PENDING' | null;
+  departmentId:     string | null;
+  positionId:       string | null;
+  supervisorId:     string | null;
+  department:       { id: string; name: string } | null;
+  position:         { id: string; name: string } | null;
+  supervisor:       { id: string; firstName: string; lastName: string } | null;
+  documents:        { id: string; name: string; originalName?: string }[];
 }
 
 export interface CreateCandidatePayload {
@@ -60,40 +92,42 @@ export class CandidatesService {
   private readonly endpoint = `${environment.apiUrl}/candidates`;
 
   list(): Observable<CandidateSummary[]> {
-    return this.http.get<any>(this.endpoint).pipe(map(r => r?.data ?? r));
+    return this.http.get<CandidateSummary[]>(this.endpoint);
   }
 
-  get(id: string): Observable<any> {
-    return this.http.get<any>(`${this.endpoint}/${id}`).pipe(map(r => r?.data ?? r));
+  get(id: string): Observable<CandidateDetail> {
+    return this.http.get<CandidateDetail>(`${this.endpoint}/${id}`);
   }
 
-  create(payload: CreateCandidatePayload): Observable<any> {
-    return this.http.post<any>(this.endpoint, payload).pipe(map(r => r?.data ?? r));
+  create(payload: CreateCandidatePayload): Observable<CandidateDetail> {
+    return this.http.post<CandidateDetail>(this.endpoint, payload);
   }
 
-  updateHrData(id: string, data: Record<string, unknown>): Observable<any> {
-    return this.http.patch<any>(`${this.endpoint}/${id}/hr-data`, data).pipe(map(r => r?.data ?? r));
+  updateHrData(id: string, data: Record<string, unknown>): Observable<CandidateDetail> {
+    return this.http.patch<CandidateDetail>(`${this.endpoint}/${id}/hr-data`, data);
   }
 
-  activate(id: string, corporateEmail: string): Observable<any> {
-    return this.http.post<any>(`${this.endpoint}/${id}/activate`, { corporateEmail }).pipe(map(r => r?.data ?? r));
+  activate(id: string, corporateEmail: string): Observable<void> {
+    return this.http.post<void>(`${this.endpoint}/${id}/activate`, { corporateEmail });
   }
 
   listDepartments(): Observable<DeptWithPositions[]> {
-    return this.http.get<any>(`${environment.apiUrl}/organization/departments`).pipe(map(r => r?.data ?? r));
+    return this.http.get<DeptWithPositions[]>(`${environment.apiUrl}/organization/departments`);
   }
 
   listPositions(): Observable<{ id: string; name: string }[]> {
-    return this.http.get<any>(`${environment.apiUrl}/organization/positions`).pipe(
-      map(r => (r?.data ?? r).map((p: any) => ({ id: p.id, name: p.name })))
+    return this.http.get<any[]>(`${environment.apiUrl}/organization/positions`).pipe(
+      map(positions => positions.map(p => ({ id: p.id, name: p.name }))),
     );
   }
 
   listActiveEmployees(): Observable<EmployeeMinimal[]> {
-    return this.http.get<any>(`${environment.apiUrl}/employees`).pipe(map(r => r?.data ?? r));
+    return this.http.get<EmployeeMinimal[]>(`${environment.apiUrl}/employees`);
   }
 
   getDocUrl(docId: string): Observable<string> {
-    return this.http.get<any>(`${environment.apiUrl}/employees/documents/${docId}/url`).pipe(map(r => r?.url ?? r?.data?.url ?? ''));
+    return this.http.get<{ url: string }>(`${environment.apiUrl}/employees/documents/${docId}/url`).pipe(
+      map(r => r?.url ?? ''),
+    );
   }
 }

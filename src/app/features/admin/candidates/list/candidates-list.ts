@@ -1,24 +1,28 @@
-import { Component, inject, signal, OnInit } from '@angular/core';
+import { Component, DestroyRef, inject, signal, OnInit } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AppInput, AppSelect, Badge, Banner, Button, EmptyState, LoadingSkeleton, Modal, SectionCard } from '@shared/ui';
 import { CandidatesService, CandidateSummary } from '../../services/candidates.service';
+import { OnboardingLabelPipe, OnboardingVariantPipe } from '../onboarding-status.pipe';
 import { DOCUMENT_TYPE_OPTIONS } from '@features/portal/models/catalog.model';
 
 @Component({
   selector: 'app-candidates-list',
-  imports: [CommonModule, ReactiveFormsModule, AppInput, AppSelect, Badge, Banner, Button, EmptyState, LoadingSkeleton, Modal, SectionCard],
+  imports: [CommonModule, ReactiveFormsModule, AppInput, AppSelect, Badge, Banner, Button, EmptyState, LoadingSkeleton, Modal, SectionCard, OnboardingLabelPipe, OnboardingVariantPipe],
   templateUrl: './candidates-list.html',
   styleUrl: './candidates-list.scss',
 })
 export class CandidatesList implements OnInit {
-  private readonly svc    = inject(CandidatesService);
-  private readonly router = inject(Router);
-  private readonly fb     = inject(FormBuilder);
+  private readonly svc        = inject(CandidatesService);
+  private readonly router     = inject(Router);
+  private readonly fb         = inject(FormBuilder);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly candidates   = signal<CandidateSummary[]>([]);
   readonly isLoading    = signal(true);
+  readonly loadError    = signal('');
   readonly isModalOpen  = signal(false);
   readonly isCreating   = signal(false);
   readonly createError  = signal('');
@@ -38,9 +42,9 @@ export class CandidatesList implements OnInit {
 
   load(): void {
     this.isLoading.set(true);
-    this.svc.list().subscribe({
-      next: list => { this.candidates.set(list); this.isLoading.set(false); },
-      error: ()  => this.isLoading.set(false),
+    this.svc.list().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next:  list => { this.candidates.set(list); this.isLoading.set(false); },
+      error: err  => { this.isLoading.set(false); this.loadError.set(err?.error?.message ?? 'Error al cargar los candidatos.'); },
     });
   }
 
@@ -58,16 +62,4 @@ export class CandidatesList implements OnInit {
   }
 
   openDetail(id: string): void { this.router.navigate(['/admin/candidatos', id]); }
-
-  statusLabel(status: string | null | undefined): string {
-    return status === 'DOCS_SUBMITTED' ? 'Docs. Enviados'
-         : status === 'COMPLETED'      ? 'Completado'
-         : 'Pendiente de docs.';
-  }
-
-  statusVariant(status: string | null | undefined): 'success' | 'warning' | 'neutral' {
-    return status === 'DOCS_SUBMITTED' ? 'success'
-         : status === 'COMPLETED'      ? 'neutral'
-         : 'warning';
-  }
 }

@@ -5,6 +5,10 @@
     subtitle="Gestiona las solicitudes de actualización de datos enviadas por los colaboradores.">
   </app-page-header>
 
+  @if (loadError()) {
+    <app-banner variant="error" icon="error" [title]="loadError()"></app-banner>
+  }
+
   @if (pendingCount() > 0) {
     <app-banner variant="warning" icon="pending_actions" title="Solicitudes pendientes de revisión">
       <p>Hay <strong>{{ pendingCount() }}</strong> solicitud{{ pendingCount() !== 1 ? 'es' : '' }} pendiente{{ pendingCount() !== 1 ? 's' : '' }} de aprobación.</p>

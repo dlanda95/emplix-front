@@ -5,10 +5,14 @@
     subtitle="Directorio de empleados activos de la organización">
   </app-page-header>
 
+  @if (loadError()) {
+    <app-banner variant="error" icon="error" [title]="loadError()"></app-banner>
+  }
+
   @if (isLoading()) {
     <app-loading-skeleton variant="card"></app-loading-skeleton>
     <app-loading-skeleton variant="card" [lines]="5"></app-loading-skeleton>
-  } @else {
+  } @else if (!loadError()) {
 
     <!-- Estadísticas rápidas -->
     <div class="colabs-stats">

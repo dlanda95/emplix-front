@@ -1,7 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
 import { environment } from '@env';
 
 export interface EmployeeSummary {
@@ -26,6 +25,6 @@ export class EmployeesAdminService {
   private readonly base = `${environment.apiUrl}/employees`;
 
   list(): Observable<EmployeeSummary[]> {
-    return this.http.get<any>(this.base).pipe(map(r => r?.data ?? r));
+    return this.http.get<EmployeeSummary[]>(this.base);
   }
 }

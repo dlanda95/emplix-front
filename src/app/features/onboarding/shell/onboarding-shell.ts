@@ -1,4 +1,5 @@
-import { Component, inject, signal, computed, OnInit } from '@angular/core';
+import { Component, DestroyRef, inject, signal, computed, OnInit } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router, RouterOutlet, NavigationEnd } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { filter } from 'rxjs/operators';
@@ -33,6 +34,7 @@ export class OnboardingShell implements OnInit {
   private readonly router            = inject(Router);
   readonly onboardingService         = inject(OnboardingService);
   private readonly authService       = inject(AuthService);
+  private readonly destroyRef        = inject(DestroyRef);
 
   readonly steps     = ONBOARDING_STEPS;
   readonly isLoading = signal(true);
@@ -52,7 +54,7 @@ export class OnboardingShell implements OnInit {
   readonly user = this.authService.currentUser;
 
   ngOnInit(): void {
-    this.onboardingService.loadProfile().subscribe({
+    this.onboardingService.loadProfile().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: profile => {
         this.isLoading.set(false);
         // Si ya está enviado, el computed submitted() ya lo refleja — solo salir
@@ -69,6 +71,7 @@ export class OnboardingShell implements OnInit {
 
     this.router.events.pipe(
       filter(e => e instanceof NavigationEnd),
+      takeUntilDestroyed(this.destroyRef),
     ).subscribe((e: any) => this.syncStepFromUrl(e.url));
   }
 

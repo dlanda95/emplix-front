@@ -1,20 +1,23 @@
-import { Component, inject, signal, computed, OnInit } from '@angular/core';
+import { Component, DestroyRef, inject, signal, computed, OnInit } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
-import { Avatar, Badge, Button, EmptyState, FilterChips, LoadingSkeleton, PageHeader, SectionCard, StatCard, AppInput } from '@shared/ui';
+import { Avatar, Badge, Banner, Button, EmptyState, FilterChips, LoadingSkeleton, PageHeader, SectionCard, StatCard, AppInput } from '@shared/ui';
 import { EmployeesAdminService, EmployeeSummary } from '../employees.service';
 import type { FilterChipItem } from '@shared/ui';
 
 @Component({
   selector: 'app-employees-list',
-  imports: [CommonModule, ReactiveFormsModule, Avatar, Badge, Button, EmptyState, FilterChips, LoadingSkeleton, PageHeader, SectionCard, StatCard, AppInput],
+  imports: [CommonModule, ReactiveFormsModule, Avatar, Badge, Banner, Button, EmptyState, FilterChips, LoadingSkeleton, PageHeader, SectionCard, StatCard, AppInput],
   templateUrl: './employees-list.html',
 })
 export class EmployeesList implements OnInit {
-  private readonly svc = inject(EmployeesAdminService);
+  private readonly svc        = inject(EmployeesAdminService);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly employees    = signal<EmployeeSummary[]>([]);
   readonly isLoading    = signal(true);
+  readonly loadError    = signal('');
   readonly search       = signal('');
   readonly activeFilter = signal('all');
   readonly searchCtrl   = new FormControl('');
@@ -63,10 +66,12 @@ export class EmployeesList implements OnInit {
   );
 
   ngOnInit(): void {
-    this.searchCtrl.valueChanges.subscribe(q => this.search.set(q ?? ''));
-    this.svc.list().subscribe({
+    this.searchCtrl.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(q => this.search.set(q ?? ''));
+    this.svc.list().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next:  list => { this.employees.set(list); this.isLoading.set(false); },
-      error: ()   => this.isLoading.set(false),
+      error: err  => { this.isLoading.set(false); this.loadError.set(err?.error?.message ?? 'Error al cargar los colaboradores.'); },
     });
   }
 

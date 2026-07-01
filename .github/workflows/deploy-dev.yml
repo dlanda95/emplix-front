@@ -1,0 +1,28 @@
+name: Deploy — Development (Azure Static Web Apps)
+
+on:
+  push:
+    branches: [dev]
+
+jobs:
+  deploy:
+    name: Deploy Frontend (SWA DEV)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Deploy to Azure Static Web Apps (DEV)
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_SWA_TOKEN_DEV }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          action: upload
+          app_location: /
+          output_location: dist/emplix/browser
+          app_build_command: npm run build -- --configuration production

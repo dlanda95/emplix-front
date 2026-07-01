@@ -1,4 +1,5 @@
-import { Component, inject, signal, computed } from '@angular/core';
+import { Component, DestroyRef, inject, signal, computed } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import {
@@ -125,13 +126,15 @@ const STATUS_FILTER_CHIPS: FilterChipItem[] = [
   templateUrl: './requests-admin.html',
 })
 export class RequestsAdmin {
-  private readonly svc = inject(RequestsAdminService);
+  private readonly svc        = inject(RequestsAdminService);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly statusFilter  = signal<string>('ALL');
   readonly isLoading     = signal(true);
   readonly requests      = signal<ChangeRequest[]>([]);
   readonly statusChips   = STATUS_FILTER_CHIPS;
 
+  readonly loadError     = signal('');
   readonly rejectModal   = signal(false);
   readonly rejectTarget  = signal<string | null>(null);
   readonly rejectReason  = new FormControl('');
@@ -149,9 +152,9 @@ export class RequestsAdmin {
 
   private loadAll(): void {
     this.isLoading.set(true);
-    this.svc.getAll().subscribe({
+    this.svc.getAll().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: list => { this.requests.set(list); this.isLoading.set(false); },
-      error: () => this.isLoading.set(false),
+      error: err  => { this.isLoading.set(false); this.loadError.set(err?.error?.message ?? 'Error al cargar las solicitudes.'); },
     });
   }
 

@@ -1,4 +1,5 @@
-import { Component, inject, signal, computed } from '@angular/core';
+import { Component, DestroyRef, inject, signal, computed } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import {
@@ -54,8 +55,9 @@ const LEVEL_OPTIONS: SelectOption[] = Array.from({ length: 10 }, (_, i) => ({
   styleUrl:    './organizacion.scss',
 })
 export class Organizacion {
-  private readonly svc = inject(OrganizationAdminService);
-  private readonly fb  = inject(FormBuilder);
+  private readonly svc        = inject(OrganizationAdminService);
+  private readonly fb         = inject(FormBuilder);
+  private readonly destroyRef = inject(DestroyRef);
 
   // ── Estado ────────────────────────────────────────────────────────────────
   readonly activeTab     = signal<string>('areas');
@@ -63,6 +65,7 @@ export class Organizacion {
   readonly expandedArea  = signal<string | null>(null);
   readonly isLoading     = signal(true);
   readonly isSaving      = signal(false);
+  readonly loadError     = signal('');
   readonly errorMsg      = signal('');
 
   // ── Datos ─────────────────────────────────────────────────────────────────
@@ -74,8 +77,12 @@ export class Organizacion {
   readonly subareaModal = signal(false);
   readonly posModal     = signal(false);
 
-  editingId    = signal<string | null>(null);
+  editingId       = signal<string | null>(null);
   subareaParentId = signal<string | null>(null);
+
+  // ── Confirmación de borrado ────────────────────────────────────────────────
+  readonly deleteModal  = signal(false);
+  readonly deleteTarget = signal<{ name: string; isArea: boolean; id: string; isSubarea: boolean } | null>(null);
 
   // ── Formularios ───────────────────────────────────────────────────────────
   areaForm = this.fb.group({
@@ -137,17 +144,17 @@ export class Organizacion {
   // ── Carga ─────────────────────────────────────────────────────────────────
   private loadAreas(): void {
     this.isLoading.set(true);
-    this.svc.getAreas(true).subscribe({
+    this.svc.getAreas(true).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: list => { this.areas.set(list); this.isLoading.set(false); },
-      error: ()  => this.isLoading.set(false),
+      error: err  => { this.isLoading.set(false); this.loadError.set(err?.error?.message ?? 'Error al cargar las áreas.'); },
     });
   }
 
   private loadPositions(): void {
     this.isLoading.set(true);
-    this.svc.getPositions(true).subscribe({
+    this.svc.getPositions(true).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: list => { this.positions.set(list); this.isLoading.set(false); },
-      error: ()  => this.isLoading.set(false),
+      error: err  => { this.isLoading.set(false); this.loadError.set(err?.error?.message ?? 'Error al cargar los cargos.'); },
     });
   }
 
@@ -199,15 +206,10 @@ export class Organizacion {
     });
   }
 
-  deleteArea(area: Area | Subarea): void {
-    if (!confirm(`¿Eliminar "${area.name}"? Esta acción no se puede deshacer.`)) return;
-    const obs$ = (area as Area).parentId === null
-      ? this.svc.deleteArea(area.id)
-      : this.svc.deleteSubarea(area.id);
-    obs$.subscribe({
-      next: () => this.loadAreas(),
-      error: (err) => alert(err?.error?.message ?? 'Error al eliminar'),
-    });
+  requestDeleteArea(area: Area | Subarea): void {
+    const isSubarea = (area as Area).parentId !== null;
+    this.deleteTarget.set({ name: area.name, id: area.id, isArea: true, isSubarea });
+    this.deleteModal.set(true);
   }
 
   // ── Modal Subárea ─────────────────────────────────────────────────────────
@@ -292,11 +294,29 @@ export class Organizacion {
     });
   }
 
-  deletePosition(pos: Position): void {
-    if (!confirm(`¿Eliminar cargo "${pos.name}"?`)) return;
-    this.svc.deletePosition(pos.id).subscribe({
-      next: () => this.loadPositions(),
-      error: (err) => alert(err?.error?.message ?? 'Error al eliminar'),
+  requestDeletePosition(pos: Position): void {
+    this.deleteTarget.set({ name: pos.name, id: pos.id, isArea: false, isSubarea: false });
+    this.deleteModal.set(true);
+  }
+
+  confirmDelete(): void {
+    const target = this.deleteTarget();
+    if (!target) return;
+    this.isSaving.set(true);
+    const obs$ = target.isArea
+      ? (target.isSubarea ? this.svc.deleteSubarea(target.id) : this.svc.deleteArea(target.id))
+      : this.svc.deletePosition(target.id);
+    obs$.subscribe({
+      next: () => {
+        this.deleteModal.set(false);
+        this.isSaving.set(false);
+        if (target.isArea) this.loadAreas(); else this.loadPositions();
+      },
+      error: err => {
+        this.isSaving.set(false);
+        this.errorMsg.set(err?.error?.message ?? 'Error al eliminar');
+        this.deleteModal.set(false);
+      },
     });
   }
 

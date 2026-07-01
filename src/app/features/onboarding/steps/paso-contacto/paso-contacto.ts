@@ -1,4 +1,5 @@
 import { Component, inject, signal, effect, computed } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { AppInput, Button, SectionCard } from '@shared/ui';
 import { OnboardingService } from '../../services/onboarding.service';
@@ -37,7 +38,7 @@ export class PasoContacto {
       this.form.patchValue(values as any, { emitEvent: false });
     });
 
-    this.form.valueChanges.subscribe(v => {
+    this.form.valueChanges.pipe(takeUntilDestroyed()).subscribe(v => {
       this.svc.setDraft(this.STEP_KEY, v as Record<string, unknown>);
       this.svc.markDirty(this.STEP_KEY);
     });

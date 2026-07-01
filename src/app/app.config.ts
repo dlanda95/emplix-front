@@ -7,8 +7,9 @@ import { provideNativeDateAdapter } from '@angular/material/core';
 import { MsalService, MsalBroadcastService, MSAL_INSTANCE, MsalGuard } from '@azure/msal-angular';
 import { MSALInstanceFactory } from '@core/config/msal.config';
 
-import { tenantInterceptor } from '@core/interceptors/tenant.interceptor';
-import { authInterceptor }   from '@core/auth/interceptors/auth-interceptor';
+import { tenantInterceptor }      from '@core/interceptors/tenant.interceptor';
+import { authInterceptor }        from '@core/auth/interceptors/auth-interceptor';
+import { apiResponseInterceptor } from '@core/http/api-response.interceptor';
 import { routes } from './app.routes';
 
 export const appConfig: ApplicationConfig = {
@@ -19,7 +20,7 @@ export const appConfig: ApplicationConfig = {
 
     provideHttpClient(
       withFetch(),
-      withInterceptors([tenantInterceptor, authInterceptor])
+      withInterceptors([tenantInterceptor, authInterceptor, apiResponseInterceptor])
     ),
 
     { provide: MSAL_INSTANCE, useFactory: MSALInstanceFactory },

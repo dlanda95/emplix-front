@@ -5,6 +5,10 @@
     subtitle="Gestiona áreas, subáreas y cargos de la empresa.">
   </app-page-header>
 
+  @if (loadError()) {
+    <app-banner variant="error" icon="error" [title]="loadError()"></app-banner>
+  }
+
   <!-- Tabs principales -->
   <app-tabs-card
     [items]="tabs"
@@ -86,7 +90,7 @@
                 <app-button variant="ghost" icon="edit" size="sm" (clicked)="openEditArea(area)">
                   Editar
                 </app-button>
-                <app-button variant="ghost" icon="delete" size="sm" (clicked)="deleteArea(area)">
+                <app-button variant="ghost" icon="delete" size="sm" (clicked)="requestDeleteArea(area)">
                 </app-button>
               </div>
             </div>
@@ -121,7 +125,7 @@
                       <div class="subarea-row__actions">
                         <app-button variant="ghost" icon="edit" size="sm" (clicked)="openEditSubarea(sub)">
                         </app-button>
-                        <app-button variant="ghost" icon="delete" size="sm" (clicked)="deleteArea(sub)">
+                        <app-button variant="ghost" icon="delete" size="sm" (clicked)="requestDeleteArea(sub)">
                         </app-button>
                       </div>
                     </div>
@@ -203,7 +207,7 @@
               <div class="pos-table__actions">
                 <app-button variant="ghost" icon="edit" size="sm" (clicked)="openEditPosition(pos)">
                 </app-button>
-                <app-button variant="ghost" icon="delete" size="sm" (clicked)="deletePosition(pos)">
+                <app-button variant="ghost" icon="delete" size="sm" (clicked)="requestDeletePosition(pos)">
                 </app-button>
               </div>
 
@@ -215,6 +219,22 @@
   }
 
 </div>
+
+<!-- ── Modal: Confirmar eliminación ───────────────────────────────────────── -->
+<app-modal [isOpen]="deleteModal()" title="Confirmar eliminación" (close)="deleteModal.set(false)">
+  <app-banner variant="warning" icon="delete_forever" title="Esta acción no se puede deshacer">
+    <p>¿Eliminar <strong>{{ deleteTarget()?.name }}</strong>?</p>
+  </app-banner>
+  @if (errorMsg()) {
+    <app-banner variant="error" icon="error" [title]="errorMsg()"></app-banner>
+  }
+  <ng-container modal-actions>
+    <app-button variant="ghost" (clicked)="deleteModal.set(false)">Cancelar</app-button>
+    <app-button variant="primary" icon="delete" [loading]="isSaving()" (clicked)="confirmDelete()">
+      Eliminar
+    </app-button>
+  </ng-container>
+</app-modal>
 
 <!-- ── Modal: Área ─────────────────────────────────────────────────────────── -->
 <app-modal

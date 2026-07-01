@@ -1,12 +1,14 @@
-import { Component, inject, signal, computed, OnInit } from '@angular/core';
+import { Component, DestroyRef, inject, signal, computed, OnInit } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { forkJoin } from 'rxjs';
 import { Badge, Banner, Button, Field, LoadingSkeleton, SectionCard, Modal, AppSelect, AppInput } from '@shared/ui';
+import { OnboardingLabelPipe, OnboardingVariantPipe } from '../onboarding-status.pipe';
 import type { SelectOption } from '@shared/ui';
 import { CandidatesService } from '../../services/candidates.service';
-import type { DeptWithPositions, EmployeeMinimal } from '../../services/candidates.service';
+import type { CandidateDetail as CandidateDetailModel, DeptWithPositions, EmployeeMinimal } from '../../services/candidates.service';
 import {
   catalogLabel,
   DOCUMENT_TYPE_OPTIONS, GENDER_OPTIONS, MARITAL_STATUS_OPTIONS, ACADEMIC_LEVEL_OPTIONS,
@@ -23,17 +25,18 @@ const DOC_LABELS: { prefix: string; label: string }[] = [
 
 @Component({
   selector: 'app-candidate-detail',
-  imports: [CommonModule, ReactiveFormsModule, Badge, Banner, Button, Field, LoadingSkeleton, SectionCard, Modal, AppSelect, AppInput],
+  imports: [CommonModule, ReactiveFormsModule, Badge, Banner, Button, Field, LoadingSkeleton, SectionCard, Modal, AppSelect, AppInput, OnboardingLabelPipe, OnboardingVariantPipe],
   templateUrl: './candidate-detail.html',
   styleUrl: './candidate-detail.scss',
 })
 export class CandidateDetail implements OnInit {
-  private readonly svc   = inject(CandidatesService);
-  private readonly route = inject(ActivatedRoute);
-  private readonly nav   = inject(Router);
-  private readonly fb    = inject(FormBuilder);
+  private readonly svc        = inject(CandidatesService);
+  private readonly route      = inject(ActivatedRoute);
+  private readonly nav        = inject(Router);
+  private readonly fb         = inject(FormBuilder);
+  private readonly destroyRef = inject(DestroyRef);
 
-  readonly candidate      = signal<any>(null);
+  readonly candidate      = signal<CandidateDetailModel | null>(null);
   readonly isLoading      = signal(true);
   readonly isActivating   = signal(false);
   readonly activateError  = signal('');
@@ -112,23 +115,27 @@ export class CandidateDetail implements OnInit {
     if (!id) { this.nav.navigate(['/admin/candidatos']); return; }
 
     // Subscripciones reactivas de cascada (usuario cambia el select)
-    this.hrForm.get('areaId')!.valueChanges.subscribe(areaId => {
-      this.uiAreaId.set(areaId ?? '');
-      this.uiSubareaId.set('');
-      this.hrForm.patchValue({ subareaId: '', positionId: '' }, { emitEvent: false });
-    });
+    this.hrForm.get('areaId')!.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(areaId => {
+        this.uiAreaId.set(areaId ?? '');
+        this.uiSubareaId.set('');
+        this.hrForm.patchValue({ subareaId: '', positionId: '' }, { emitEvent: false });
+      });
 
-    this.hrForm.get('subareaId')!.valueChanges.subscribe(subareaId => {
-      this.uiSubareaId.set(subareaId ?? '');
-      this.hrForm.get('positionId')!.setValue('', { emitEvent: false });
-    });
+    this.hrForm.get('subareaId')!.valueChanges
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(subareaId => {
+        this.uiSubareaId.set(subareaId ?? '');
+        this.hrForm.get('positionId')!.setValue('', { emitEvent: false });
+      });
 
     // Cargar candidato + catálogos en paralelo
     forkJoin({
       candidate: this.svc.get(id),
       depts:     this.svc.listDepartments(),
       employees: this.svc.listActiveEmployees(),
-    }).subscribe({
+    }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: ({ candidate, depts, employees }) => {
         this.departments.set(depts);
         this.employees.set(employees);
@@ -179,7 +186,7 @@ export class CandidateDetail implements OnInit {
     };
     this.svc.updateHrData(id, payload).subscribe({
       next: updated => {
-        this.candidate.update(c => ({ ...c, ...updated }));
+        this.candidate.set(updated);
         this.hrSaved.set(true);
         setTimeout(() => this.hrSaved.set(false), 2500);
       },
@@ -243,18 +250,6 @@ export class CandidateDetail implements OnInit {
   get canActivate(): boolean {
     const c = this.candidate();
     return c?.onboardingStatus === 'DOCS_SUBMITTED' || c?.onboardingStatus === 'COMPLETED';
-  }
-
-  onboardingStatusLabel(val: string | null | undefined): string {
-    return val === 'DOCS_SUBMITTED' ? 'Documentación enviada'
-         : val === 'COMPLETED'      ? 'Completado'
-         : 'Pendiente de documentación';
-  }
-
-  onboardingStatusVariant(val: string | null | undefined): 'success' | 'warning' | 'neutral' {
-    return val === 'DOCS_SUBMITTED' ? 'success'
-         : val === 'COMPLETED'      ? 'neutral'
-         : 'warning';
   }
 
   back(): void { this.nav.navigate(['/admin/candidatos']); }

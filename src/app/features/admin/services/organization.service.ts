@@ -1,7 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
 import { environment } from '@env';
 
 const BASE = `${environment.apiUrl}/organization`;
@@ -99,17 +98,17 @@ export class OrganizationAdminService {
 
   // Áreas
   getAreas(includeInactive = false): Observable<Area[]> {
-    return this.http
-      .get<any>(`${BASE}/areas`, { params: includeInactive ? { includeInactive: 'true' } : {} })
-      .pipe(map(r => r?.data ?? r));
+    return this.http.get<Area[]>(`${BASE}/areas`, {
+      params: includeInactive ? { includeInactive: 'true' } : {},
+    });
   }
 
   createArea(payload: AreaPayload): Observable<Area> {
-    return this.http.post<any>(`${BASE}/areas`, payload).pipe(map(r => r?.data ?? r));
+    return this.http.post<Area>(`${BASE}/areas`, payload);
   }
 
   updateArea(id: string, payload: Partial<AreaPayload>): Observable<Area> {
-    return this.http.put<any>(`${BASE}/areas/${id}`, payload).pipe(map(r => r?.data ?? r));
+    return this.http.put<Area>(`${BASE}/areas/${id}`, payload);
   }
 
   deleteArea(id: string): Observable<void> {
@@ -118,11 +117,11 @@ export class OrganizationAdminService {
 
   // Subáreas
   createSubarea(parentId: string, payload: AreaPayload): Observable<Subarea> {
-    return this.http.post<any>(`${BASE}/areas/${parentId}/subareas`, payload).pipe(map(r => r?.data ?? r));
+    return this.http.post<Subarea>(`${BASE}/areas/${parentId}/subareas`, payload);
   }
 
   updateSubarea(id: string, payload: Partial<AreaPayload>): Observable<Subarea> {
-    return this.http.put<any>(`${BASE}/areas/${id}`, payload).pipe(map(r => r?.data ?? r));
+    return this.http.put<Subarea>(`${BASE}/areas/${id}`, payload);
   }
 
   deleteSubarea(id: string): Observable<void> {
@@ -131,17 +130,17 @@ export class OrganizationAdminService {
 
   // Cargos
   getPositions(includeInactive = false): Observable<Position[]> {
-    return this.http
-      .get<any>(`${BASE}/positions`, { params: includeInactive ? { includeInactive: 'true' } : {} })
-      .pipe(map(r => r?.data ?? r));
+    return this.http.get<Position[]>(`${BASE}/positions`, {
+      params: includeInactive ? { includeInactive: 'true' } : {},
+    });
   }
 
   createPosition(payload: PositionPayload): Observable<Position> {
-    return this.http.post<any>(`${BASE}/positions`, payload).pipe(map(r => r?.data ?? r));
+    return this.http.post<Position>(`${BASE}/positions`, payload);
   }
 
   updatePosition(id: string, payload: Partial<PositionPayload>): Observable<Position> {
-    return this.http.put<any>(`${BASE}/positions/${id}`, payload).pipe(map(r => r?.data ?? r));
+    return this.http.put<Position>(`${BASE}/positions/${id}`, payload);
   }
 
   deletePosition(id: string): Observable<void> {
