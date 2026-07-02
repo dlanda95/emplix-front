@@ -83,10 +83,10 @@
           @if (c.department?.name || c.position?.name || c.supervisor) {
             <div class="assign-summary">
               @if (c.department?.name) {
-                <p><strong>Área:</strong> {{ c.department.name }}</p>
+                <p><strong>Área:</strong> {{ c.department?.name }}</p>
               }
               @if (c.position?.name) {
-                <p><strong>Cargo:</strong> {{ c.position.name }}</p>
+                <p><strong>Cargo:</strong> {{ c.position?.name }}</p>
               }
               @if (c.supervisor) {
                 <p><strong>Supervisor:</strong> {{ c.supervisor.firstName }} {{ c.supervisor.lastName }}</p>
