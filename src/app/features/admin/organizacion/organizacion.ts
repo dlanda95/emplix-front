@@ -90,14 +90,14 @@ export class Organizacion {
     code:        [''],
     description: [''],
     areaType:    ['TRANSVERSAL'],
-    isActive:    [true],
+    isActive:    ['true'],
   });
 
   subareaForm = this.fb.group({
     name:        ['', [Validators.required, Validators.minLength(2)]],
     description: [''],
     areaType:    ['TRANSVERSAL'],
-    isActive:    [true],
+    isActive:    ['true'],
   });
 
   posForm = this.fb.group({
@@ -106,7 +106,7 @@ export class Organizacion {
     hierarchyLevel: ['1'],
     roleType:       ['OPERATIONAL'],
     departmentId:   [''],
-    isActive:       [true],
+    isActive:       ['true'],
   });
 
   // ── Computed ──────────────────────────────────────────────────────────────
@@ -172,7 +172,7 @@ export class Organizacion {
   // ── Modal Área ────────────────────────────────────────────────────────────
   openNewArea(): void {
     this.editingId.set(null);
-    this.areaForm.reset({ name: '', code: '', description: '', areaType: 'TRANSVERSAL', isActive: true });
+    this.areaForm.reset({ name: '', code: '', description: '', areaType: 'TRANSVERSAL', isActive: 'true' });
     this.errorMsg.set('');
     this.areaModal.set(true);
   }
@@ -195,7 +195,7 @@ export class Organizacion {
       description: v.description || undefined,
       code:        v.code || null,
       areaType:    v.areaType as AreaType,
-      isActive:    v.isActive === true || (v.isActive as unknown) === 'true',
+      isActive:    v.isActive === 'true',
     };
     this.isSaving.set(true);
     const id = this.editingId();
@@ -216,7 +216,7 @@ export class Organizacion {
   openNewSubarea(area: Area): void {
     this.subareaParentId.set(area.id);
     this.editingId.set(null);
-    this.subareaForm.reset({ name: '', description: '', areaType: area.areaType, isActive: true });
+    this.subareaForm.reset({ name: '', description: '', areaType: area.areaType, isActive: 'true' });
     this.errorMsg.set('');
     this.subareaModal.set(true);
   }
@@ -228,7 +228,7 @@ export class Organizacion {
       name:        v.name!,
       description: v.description || undefined,
       areaType:    v.areaType as AreaType,
-      isActive:    v.isActive === true || (v.isActive as unknown) === 'true',
+      isActive:    v.isActive === 'true',
     };
     const parentId = this.subareaParentId();
     const editId   = this.editingId();
@@ -255,7 +255,7 @@ export class Organizacion {
   // ── Modal Cargo ───────────────────────────────────────────────────────────
   openNewPosition(): void {
     this.editingId.set(null);
-    this.posForm.reset({ name: '', description: '', hierarchyLevel: '1', roleType: 'OPERATIONAL', departmentId: '', isActive: true });
+    this.posForm.reset({ name: '', description: '', hierarchyLevel: '1', roleType: 'OPERATIONAL', departmentId: '', isActive: 'true' });
     this.errorMsg.set('');
     this.posModal.set(true);
   }
@@ -283,7 +283,7 @@ export class Organizacion {
       hierarchyLevel: Number(v.hierarchyLevel),
       roleType:       v.roleType as RoleType,
       departmentId:   v.departmentId || null,
-      isActive:       v.isActive === true || (v.isActive as unknown) === 'true',
+      isActive:       v.isActive === 'true',
     };
     this.isSaving.set(true);
     const id = this.editingId();
