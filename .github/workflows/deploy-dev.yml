@@ -25,4 +25,4 @@ jobs:
           action: upload
           app_location: /
           output_location: dist/emplix/browser
-          app_build_command: npm run build -- --configuration production
+          app_build_command: npm run build -- --configuration staging
