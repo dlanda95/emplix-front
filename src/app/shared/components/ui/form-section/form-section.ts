@@ -7,4 +7,5 @@ import { Component, input } from '@angular/core';
 })
 export class FormSection {
   readonly title = input.required<string>();
+  readonly icon  = input<string>();
 }
