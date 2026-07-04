@@ -1,7 +1,7 @@
-import { Component, Input, Output, EventEmitter, OnInit, inject, signal, DestroyRef } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges, inject, signal, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { forkJoin } from 'rxjs';
 import { Drawer, AppInput, AppSelect, Button, Banner, FormRow, FormSection, Badge } from '@shared/ui';
@@ -17,7 +17,7 @@ type Step = 1 | 2 | 3;
   templateUrl: './create-employee-drawer.html',
   styleUrl: './create-employee-drawer.scss',
 })
-export class CreateEmployeeDrawer implements OnInit {
+export class CreateEmployeeDrawer implements OnChanges {
   @Input({ required: true }) isOpen = false;
   @Output() close   = new EventEmitter<void>();
   @Output() created = new EventEmitter<void>();
@@ -31,6 +31,7 @@ export class CreateEmployeeDrawer implements OnInit {
   saving     = false;
   errorMsg   = '';
   successData: { email?: string; tempPassword?: string } | null = null;
+  loadingForm = false;
 
   deptOptions    = signal<SelectOption[]>([]);
   posOptions     = signal<SelectOption[]>([]);
@@ -64,25 +65,35 @@ export class CreateEmployeeDrawer implements OnInit {
     role:        ['EMPLOYEE'],
   });
 
-  ngOnInit(): void {
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['isOpen']?.currentValue === true) {
+      this.loadFormData();
+    }
+  }
+
+  private loadFormData(): void {
+    this.loadingForm = true;
     const base = environment.apiUrl;
     forkJoin({
-      org:       this.http.get<any>(`${base}/organization`),
-      contracts: this.http.get<any[]>(`${base}/labor/contracts`),
-      shifts:    this.http.get<any[]>(`${base}/labor/shifts`),
-      emps:      this.http.get<any[]>(`${base}/employees`),
+      departments: this.http.get<any[]>(`${base}/organization/departments`),
+      positions:   this.http.get<any[]>(`${base}/organization/positions`),
+      contracts:   this.http.get<any[]>(`${base}/labor/contracts`),
+      shifts:      this.http.get<any[]>(`${base}/labor/shifts`),
+      emps:        this.http.get<any[]>(`${base}/employees`),
     }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: ({ org, contracts, shifts, emps }) => {
-        const depts = (org.areas ?? []).flatMap((a: any) => [a, ...(a.children ?? [])]);
-        this.deptOptions.set(depts.map((d: any) => ({ value: d.id, label: d.name })));
-
-        const positions = (org.areas ?? []).flatMap((a: any) => a.positions ?? []);
+      next: ({ departments, positions, contracts, shifts, emps }) => {
+        this.loadingForm = false;
+        const allDepts = departments.flatMap((a: any) => [
+          a,
+          ...(a.children ?? []),
+        ]);
+        this.deptOptions.set(allDepts.map((d: any) => ({ value: d.id, label: d.name })));
         this.posOptions.set(positions.map((p: any) => ({ value: p.id, label: p.name })));
-
         this.contractOptions.set(contracts.map(c => ({ value: c.id, label: c.name })));
         this.shiftOptions.set(shifts.map(s => ({ value: s.id, label: s.name })));
         this.empOptions.set(emps.map((e: any) => ({ value: e.id, label: `${e.firstName} ${e.lastName}` })));
       },
+      error: () => { this.loadingForm = false; },
     });
   }
 
