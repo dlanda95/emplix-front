@@ -1,7 +1,7 @@
-@if (visible) {
-  <div class="drawer-overlay" [class.drawer-overlay--in]="animating" (click)="close.emit()"></div>
+@if (visible()) {
+  <div class="drawer-overlay" [class.drawer-overlay--in]="animating()" (click)="close.emit()"></div>
 
-  <div class="drawer" [class]="'drawer--' + width" [class.drawer--in]="animating" role="dialog" aria-modal="true">
+  <div class="drawer" [class]="'drawer--' + width" [class.drawer--in]="animating()" role="dialog" aria-modal="true">
 
     <div class="drawer__header">
       <div class="drawer__title-group">

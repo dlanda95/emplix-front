@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, HostListener, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, Output, EventEmitter, HostListener, OnChanges, SimpleChanges, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -14,17 +14,17 @@ export class Drawer implements OnChanges {
   @Input() width: 'sm' | 'md' | 'lg' = 'md';
   @Output() close = new EventEmitter<void>();
 
-  visible = false;
-  animating = false;
+  readonly visible   = signal(false);
+  readonly animating = signal(false);
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['isOpen']) {
       if (this.isOpen) {
-        this.visible = true;
-        setTimeout(() => this.animating = true, 10);
+        this.visible.set(true);
+        setTimeout(() => this.animating.set(true), 10);
       } else {
-        this.animating = false;
-        setTimeout(() => this.visible = false, 350);
+        this.animating.set(false);
+        setTimeout(() => this.visible.set(false), 350);
       }
     }
   }
