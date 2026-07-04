@@ -1,0 +1,180 @@
+<div class="users-page">
+
+  <app-page-header
+    title="Usuarios y Accesos"
+    subtitle="Gestión centralizada de cuentas de empleados y usuarios del sistema">
+    <app-button
+      icon="badge"
+      variant="secondary"
+      (click)="showEmployeeDrawer = true">
+      Empleado directo
+    </app-button>
+    <app-button
+      icon="person_add"
+      variant="primary"
+      (click)="showUserDrawer = true">
+      Usuario del sistema
+    </app-button>
+  </app-page-header>
+
+  @if (loadError()) {
+    <app-banner variant="error" icon="error" [title]="loadError()"></app-banner>
+  }
+
+  @if (isLoading()) {
+    <div class="users-stats-skeleton">
+      <app-loading-skeleton variant="card"></app-loading-skeleton>
+      <app-loading-skeleton variant="card"></app-loading-skeleton>
+      <app-loading-skeleton variant="card"></app-loading-skeleton>
+    </div>
+    <app-loading-skeleton variant="card" [lines]="6"></app-loading-skeleton>
+
+  } @else if (!loadError()) {
+
+    <!-- Stats -->
+    <div class="users-stats">
+      <app-stat-card label="Usuarios activos"    [value]="totalActive().toString()"   icon="verified_user" variant="primary"></app-stat-card>
+      <app-stat-card label="Administradores / RH" [value]="totalAdmins().toString()"  icon="shield_person" variant="warning"></app-stat-card>
+      <app-stat-card label="Solo sistema"         [value]="totalSystem().toString()"   icon="manage_accounts" variant="info"></app-stat-card>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="users-toolbar">
+      <div class="users-toolbar__search">
+        <app-input
+          label="Buscar usuario..."
+          placeholder="Nombre, email, cargo o área"
+          [formControl]="searchCtrl">
+        </app-input>
+      </div>
+      <app-filter-chips
+        [items]="filterChips()"
+        [active]="activeFilter()"
+        (activeChange)="activeFilter.set($any($event))">
+      </app-filter-chips>
+    </div>
+
+    @if (filtered().length === 0) {
+      <app-empty-state
+        icon="manage_accounts"
+        title="Sin usuarios"
+        description="No hay usuarios que coincidan con tu búsqueda o filtro activo.">
+      </app-empty-state>
+
+    } @else {
+
+      <app-section-card title="Directorio de accesos" [columns]="1">
+
+        <div class="users-table-wrap">
+          <table class="users-table">
+            <thead>
+              <tr>
+                <th>Usuario</th>
+                <th>Rol</th>
+                <th>Posición / Área</th>
+                <th>Tipo</th>
+                <th>Estado</th>
+                <th>Alta</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (u of filtered(); track u.id) {
+                <tr class="users-table__row" [class.users-table__row--inactive]="!u.isActive">
+
+                  <!-- Identidad -->
+                  <td>
+                    <div class="users-cell">
+                      <app-avatar
+                        [name]="displayName(u)"
+                        [src]="u.employee?.photoUrl ?? undefined"
+                        size="sm">
+                      </app-avatar>
+                      <div class="users-cell__info">
+                        <span class="users-cell__name">{{ displayName(u) }}</span>
+                        <span class="users-cell__email">{{ u.email }}</span>
+                      </div>
+                    </div>
+                  </td>
+
+                  <!-- Rol -->
+                  <td>
+                    <app-badge [variant]="roleVariant(u.role)">{{ roleLabel(u.role) }}</app-badge>
+                  </td>
+
+                  <!-- Posición / Área -->
+                  <td class="users-table__text">
+                    @if (u.employee && (u.employee.position || u.employee.department)) {
+                      <span class="users-cell__pos">{{ u.employee.position?.name ?? '—' }}</span>
+                      @if (u.employee.department) {
+                        <span class="users-cell__dept">{{ u.employee.department.name }}</span>
+                      }
+                    } @else {
+                      <span class="users-table__muted">—</span>
+                    }
+                  </td>
+
+                  <!-- Tipo -->
+                  <td>
+                    @if (u.employee) {
+                      <span class="users-type users-type--employee">
+                        <span class="material-icons-round">badge</span>Empleado
+                      </span>
+                    } @else {
+                      <span class="users-type users-type--system">
+                        <span class="material-icons-round">manage_accounts</span>Sistema
+                      </span>
+                    }
+                  </td>
+
+                  <!-- Estado -->
+                  <td>
+                    <app-badge [variant]="u.isActive ? 'success' : 'neutral'">
+                      {{ u.isActive ? 'Activo' : 'Inactivo' }}
+                    </app-badge>
+                  </td>
+
+                  <!-- Fecha alta -->
+                  <td class="users-table__text users-table__muted">
+                    {{ u.createdAt | date:'dd/MM/yyyy' }}
+                  </td>
+
+                  <!-- Acciones -->
+                  <td class="users-table__actions">
+                    <app-button
+                      variant="ghost"
+                      size="sm"
+                      [icon]="u.isActive ? 'block' : 'check_circle'"
+                      (click)="toggleStatus(u)">
+                      {{ u.isActive ? 'Desactivar' : 'Activar' }}
+                    </app-button>
+                  </td>
+
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <p class="users-count">
+          Mostrando {{ filtered().length }} de {{ users().length }} usuarios
+        </p>
+
+      </app-section-card>
+    }
+  }
+
+</div>
+
+<!-- Drawers -->
+<app-create-employee-drawer
+  [isOpen]="showEmployeeDrawer"
+  (close)="showEmployeeDrawer = false"
+  (created)="onEmployeeCreated()">
+</app-create-employee-drawer>
+
+<app-create-user-drawer
+  [isOpen]="showUserDrawer"
+  (close)="showUserDrawer = false"
+  (created)="onUserCreated()">
+</app-create-user-drawer>
