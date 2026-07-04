@@ -6,10 +6,10 @@
       subtitle="Gestión centralizada de cuentas de empleados y usuarios del sistema">
     </app-page-header>
     <div class="users-page__actions">
-      <app-button icon="badge" variant="secondary" (clicked)="showEmployeeDrawer = true">
+      <app-button icon="badge" variant="secondary" (clicked)="showEmployeeDrawer.set(true)">
         Empleado directo
       </app-button>
-      <app-button icon="person_add" variant="primary" (clicked)="showUserDrawer = true">
+      <app-button icon="person_add" variant="primary" (clicked)="showUserDrawer.set(true)">
         Usuario del sistema
       </app-button>
     </div>
@@ -166,13 +166,13 @@
 
 <!-- Drawers -->
 <app-create-employee-drawer
-  [isOpen]="showEmployeeDrawer"
-  (close)="showEmployeeDrawer = false"
+  [isOpen]="showEmployeeDrawer()"
+  (close)="showEmployeeDrawer.set(false)"
   (created)="onEmployeeCreated()">
 </app-create-employee-drawer>
 
 <app-create-user-drawer
-  [isOpen]="showUserDrawer"
-  (close)="showUserDrawer = false"
+  [isOpen]="showUserDrawer()"
+  (close)="showUserDrawer.set(false)"
   (created)="onUserCreated()">
 </app-create-user-drawer>

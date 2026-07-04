@@ -33,8 +33,8 @@ export class UsersPage implements OnInit {
   readonly activeFilter = signal<'all' | 'employees' | 'system' | 'inactive'>('all');
   readonly searchCtrl   = new FormControl('');
 
-  showEmployeeDrawer = false;
-  showUserDrawer     = false;
+  showEmployeeDrawer = signal(false);
+  showUserDrawer     = signal(false);
 
   readonly filterChips = computed((): FilterChipItem[] => [
     { id: 'all',       label: 'Todos',             icon: 'people',         count: this.users().length },
@@ -89,12 +89,12 @@ export class UsersPage implements OnInit {
   }
 
   onEmployeeCreated(): void {
-    this.showEmployeeDrawer = false;
+    this.showEmployeeDrawer.set(false);
     this.loadUsers();
   }
 
   onUserCreated(): void {
-    this.showUserDrawer = false;
+    this.showUserDrawer.set(false);
     this.loadUsers();
   }
 
