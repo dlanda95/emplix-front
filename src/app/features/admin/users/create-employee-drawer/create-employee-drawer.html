@@ -29,7 +29,7 @@
       </p>
     </div>
     <div drawer-footer>
-      <app-button variant="primary" (click)="confirmSuccess()">Entendido</app-button>
+      <app-button variant="primary" (clicked)="confirmSuccess()">Entendido</app-button>
     </div>
 
   } @else {
@@ -146,16 +146,16 @@
     <!-- Footer -->
     <div drawer-footer>
       <div class="drawer-actions">
-        <app-button variant="ghost" (click)="step === 1 ? onClose() : prevStep()">
+        <app-button variant="ghost" (clicked)="step === 1 ? onClose() : prevStep()">
           {{ step === 1 ? 'Cancelar' : 'Atrás' }}
         </app-button>
         <div class="drawer-actions__right">
           @if (step < 3) {
-            <app-button variant="primary" icon="arrow_forward" (click)="nextStep()">
+            <app-button variant="primary" icon="arrow_forward" (clicked)="nextStep()">
               Continuar
             </app-button>
           } @else {
-            <app-button variant="primary" icon="check" [loading]="saving" (click)="submit()">
+            <app-button variant="primary" icon="check" [loading]="saving" (clicked)="submit()">
               Crear empleado
             </app-button>
           }

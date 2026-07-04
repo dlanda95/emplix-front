@@ -20,7 +20,7 @@
       </div>
     </div>
     <div drawer-footer>
-      <app-button variant="primary" (click)="confirmSuccess()">Entendido</app-button>
+      <app-button variant="primary" (clicked)="confirmSuccess()">Entendido</app-button>
     </div>
 
   } @else {
@@ -52,8 +52,8 @@
 
     <div drawer-footer>
       <div class="drawer-actions">
-        <app-button variant="ghost" (click)="onClose()">Cancelar</app-button>
-        <app-button variant="primary" icon="person_add" [loading]="saving" (click)="submit()">
+        <app-button variant="ghost" (clicked)="onClose()">Cancelar</app-button>
+        <app-button variant="primary" icon="person_add" [loading]="saving" (clicked)="submit()">
           Crear usuario
         </app-button>
       </div>
