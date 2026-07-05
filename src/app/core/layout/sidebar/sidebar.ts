@@ -42,21 +42,24 @@ export class Sidebar implements OnInit {
       ];
     }
 
+    const isSystemUser = !!user?.isSystemUser;
+
     const hrSection: MenuItem[] = hrUser ? [
       {
         label: 'RRHH', icon: 'corporate_fare', expanded: expanded.has('RRHH'),
         children: [
-          { label: 'Candidatos',    icon: 'group_add',       route: '/admin/candidatos'    },
-          { label: 'Colaboradores', icon: 'badge',           route: '/admin/colaboradores' },
-          { label: 'Solicitudes',   icon: 'approval',        route: '/admin/solicitudes'   },
-          { label: 'Organización',  icon: 'account_tree',    route: '/admin/organizacion'  },
-          { label: 'Usuarios',      icon: 'manage_accounts', route: '/admin/usuarios'      },
+          { label: 'Candidatos',    icon: 'group_add',       route: '/admin/candidatos'               },
+          { label: 'Colaboradores', icon: 'badge',           route: '/admin/colaboradores'             },
+          { label: 'Solicitudes',   icon: 'approval',        route: '/admin/solicitudes'               },
+          { label: 'Organización',  icon: 'account_tree',    route: '/admin/organizacion'              },
+          { label: 'Usuarios',      icon: 'manage_accounts', route: '/admin/usuarios'                  },
+          { label: 'Configuración', icon: 'tune',            route: '/admin/configuracion/tipos-usuario'},
         ],
       },
     ] : [];
 
-    // Portal disponible para todos los empleados activos, incluyendo personal RRHH
-    const portalSection: MenuItem[] = [
+    // Mi Portal solo para usuarios con ficha de empleado
+    const portalSection: MenuItem[] = !isSystemUser ? [
       {
         label: 'Mi Portal', icon: 'account_circle', expanded: expanded.has('Mi Portal'),
         children: [
@@ -65,7 +68,7 @@ export class Sidebar implements OnInit {
           { label: 'Mi Equipo',       icon: 'groups',        route: '/portal/equipo'          },
         ],
       },
-    ];
+    ] : [];
 
     return [
       { label: 'Dashboard', icon: 'dashboard', route: '/dashboard' },

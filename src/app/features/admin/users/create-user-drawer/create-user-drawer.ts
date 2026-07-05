@@ -1,10 +1,10 @@
-import { Component, Input, Output, EventEmitter, inject, DestroyRef } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges, inject, signal, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Drawer, AppInput, AppSelect, Button, Banner, FormRow, FormSection } from '@shared/ui';
 import type { SelectOption } from '@shared/ui';
-import { UsersAdminService, ROLE_LABELS, UserRole } from '../users-admin.service';
+import { UsersAdminService, SystemUserType } from '../users-admin.service';
 
 @Component({
   selector: 'app-create-user-drawer',
@@ -12,7 +12,7 @@ import { UsersAdminService, ROLE_LABELS, UserRole } from '../users-admin.service
   templateUrl: './create-user-drawer.html',
   styleUrl: './create-user-drawer.scss',
 })
-export class CreateUserDrawer {
+export class CreateUserDrawer implements OnChanges {
   @Input({ required: true }) isOpen = false;
   @Output() close   = new EventEmitter<void>();
   @Output() created = new EventEmitter<void>();
@@ -21,20 +21,50 @@ export class CreateUserDrawer {
   private readonly svc        = inject(UsersAdminService);
   private readonly destroyRef = inject(DestroyRef);
 
-  saving   = false;
-  errorMsg = '';
-  success  = false;
+  saving      = false;
+  loadingTypes = false;
+  errorMsg    = '';
+  success     = false;
   createdEmail = '';
 
-  readonly roleOptions: SelectOption[] = Object.entries(ROLE_LABELS).map(([value, label]) => ({ value, label }));
+  readonly userTypes    = signal<SystemUserType[]>([]);
+  readonly typeOptions  = signal<SelectOption[]>([]);
+  selectedType          = signal<SystemUserType | null>(null);
 
   form = this.fb.group({
-    firstName: ['', Validators.required],
-    lastName:  ['', Validators.required],
-    email:     ['', [Validators.required, Validators.email]],
-    role:      ['HR_ANALYST', Validators.required],
-    password:  ['', [Validators.required, Validators.minLength(8)]],
+    firstName:        ['', Validators.required],
+    lastName:         ['', Validators.required],
+    email:            ['', [Validators.required, Validators.email]],
+    systemUserTypeId: ['', Validators.required],
+    password:         ['', [Validators.required, Validators.minLength(8)]],
   });
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['isOpen']?.currentValue === true && this.userTypes().length === 0) {
+      this.loadTypes();
+    }
+  }
+
+  private loadTypes(): void {
+    this.loadingTypes = true;
+    this.svc.listSystemUserTypes()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: types => {
+          this.loadingTypes = false;
+          const active = types.filter(t => t.isActive);
+          this.userTypes.set(active);
+          this.typeOptions.set(active.map(t => ({ value: t.id, label: t.name })));
+          // listen to form control changes to update preview
+          this.form.get('systemUserTypeId')!.valueChanges
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe(id => {
+              this.selectedType.set(active.find(t => t.id === id) ?? null);
+            });
+        },
+        error: () => { this.loadingTypes = false; },
+      });
+  }
 
   invalid(field: string): boolean {
     const c = this.form.get(field);
@@ -43,16 +73,16 @@ export class CreateUserDrawer {
 
   submit(): void {
     if (this.form.invalid) { this.form.markAllAsTouched(); return; }
-    this.saving = true;
+    this.saving   = true;
     this.errorMsg = '';
 
     const v = this.form.value;
     this.svc.createSystemUser({
-      firstName: v.firstName!,
-      lastName:  v.lastName!,
-      email:     v.email!,
-      role:      v.role as UserRole,
-      password:  v.password!,
+      firstName:        v.firstName!,
+      lastName:         v.lastName!,
+      email:            v.email!,
+      systemUserTypeId: v.systemUserTypeId!,
+      password:         v.password!,
     }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: res => {
         this.saving = false;
@@ -80,6 +110,7 @@ export class CreateUserDrawer {
   private reset(): void {
     this.errorMsg = '';
     this.success  = false;
-    this.form.reset({ role: 'HR_ANALYST' });
+    this.selectedType.set(null);
+    this.form.reset();
   }
 }

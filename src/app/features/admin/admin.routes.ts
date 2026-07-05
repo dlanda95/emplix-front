@@ -26,4 +26,14 @@ export const ADMIN_ROUTES: Routes = [
     path: 'usuarios',
     loadComponent: () => import('./users/users-page').then(m => m.UsersPage),
   },
+  {
+    path: 'configuracion',
+    children: [
+      { path: '', redirectTo: 'tipos-usuario', pathMatch: 'full' },
+      {
+        path: 'tipos-usuario',
+        loadComponent: () => import('./config/user-types/user-types-page').then(m => m.UserTypesPage),
+      },
+    ],
+  },
 ];

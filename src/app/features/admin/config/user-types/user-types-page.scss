@@ -1,0 +1,236 @@
+@use 'abstracts/variables' as *;
+@use 'abstracts/mixins' as *;
+
+.config-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  padding-bottom: var(--space-8);
+}
+
+// ── Form ──────────────────────────────────────────────────────────────────────
+.type-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+
+  &__row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-4);
+
+    @include respond-to('mobile') { grid-template-columns: 1fr; }
+  }
+
+  &__actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--space-3);
+    padding-top: var(--space-2);
+    border-top: 1px solid var(--border-color);
+  }
+}
+
+.field-label {
+  display: block;
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary);
+  margin-bottom: var(--space-2);
+}
+
+.field-hint {
+  font-weight: var(--font-normal);
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.field-input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  color: var(--text-main);
+  background: var(--bg-surface);
+  transition: border-color var(--transition-fast);
+  box-sizing: border-box;
+
+  &:focus {
+    outline: none;
+    border-color: var(--color-primary);
+  }
+}
+
+.color-palette {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.color-swatch {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: transform var(--transition-fast), border-color var(--transition-fast);
+
+  &:hover { transform: scale(1.15); }
+
+  &--active {
+    border-color: var(--text-main);
+    transform: scale(1.1);
+  }
+}
+
+// ── Permissions grid ──────────────────────────────────────────────────────────
+.perms-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  align-items: center;
+
+  &__label {
+    width: 100%;
+    font-size: var(--text-xs);
+    font-weight: var(--font-semibold);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-secondary);
+    margin: 0 0 var(--space-1);
+  }
+}
+
+.perm-toggle {
+  cursor: pointer;
+
+  input { display: none; }
+
+  &__box {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    padding: 6px 12px;
+    border-radius: 100px;
+    border: 1.5px solid var(--border-color);
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    background: var(--bg-surface);
+    transition: all var(--transition-fast);
+
+    .material-icons-round { font-size: 15px; }
+  }
+
+  input:checked + &__box {
+    border-color: var(--color-primary);
+    background: var(--color-primary-soft, rgba(124, 58, 237, 0.08));
+    color: var(--color-primary);
+  }
+}
+
+// ── Types grid ────────────────────────────────────────────────────────────────
+.types-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: var(--space-4);
+}
+
+.type-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  transition: box-shadow var(--transition-fast);
+
+  &:hover { box-shadow: var(--shadow-sm); }
+
+  &--inactive { opacity: 0.6; }
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+  }
+
+  &__dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  &__info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  &__name {
+    font-size: var(--text-base);
+    font-weight: var(--font-semibold);
+    color: var(--text-main);
+  }
+
+  &__slug {
+    font-size: var(--text-xs);
+    color: var(--text-secondary);
+    font-family: monospace;
+  }
+
+  &__badges {
+    display: flex;
+    gap: var(--space-2);
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  &__desc {
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    margin: 0;
+    line-height: var(--leading-relaxed);
+  }
+
+  &__actions {
+    display: flex;
+    gap: var(--space-2);
+    flex-wrap: wrap;
+    padding-top: var(--space-3);
+    border-top: 1px solid var(--border-subtle);
+  }
+}
+
+// ── Permission chips (read-only view) ─────────────────────────────────────────
+.perms-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.perm-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: var(--text-xs);
+  padding: 2px 8px;
+  border-radius: 100px;
+  background: var(--bg-body);
+  color: var(--text-secondary);
+  opacity: 0.4;
+
+  .material-icons-round { font-size: 12px; }
+
+  &--on {
+    opacity: 1;
+    background: var(--color-success-soft);
+    color: var(--color-success);
+  }
+}

@@ -15,6 +15,7 @@ export interface User {
   email:            string;
   role:             UserRole;
   tenantSlug:       string;
+  isSystemUser?:    boolean;
   employeeStatus?:  EmployeeStatus  | null;
   onboardingStatus?:OnboardingStatus | null;
 }

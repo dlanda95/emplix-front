@@ -1,7 +1,7 @@
 <app-drawer
   [isOpen]="isOpen"
   title="Crear Usuario del Sistema"
-  subtitle="Acceso al panel sin ficha de empleado (auditor, admin externo...)"
+  subtitle="Acceso al panel sin ficha de empleado"
   width="sm"
   (close)="onClose()">
 
@@ -36,17 +36,59 @@
         </app-form-row>
         <app-input label="Correo electrónico *" formControlName="email" type="email"
           placeholder="usuario@empresa.com"></app-input>
+        <app-input label="Contraseña temporal *" formControlName="password" type="password"
+          placeholder="Mínimo 8 caracteres"></app-input>
       </app-form-section>
 
-      <app-form-section title="Acceso y permisos" icon="shield_person">
-        <app-select label="Rol en el sistema *" formControlName="role"
-          [options]="roleOptions" placeholder="Seleccionar rol"></app-select>
-        <app-input label="Contraseña *" formControlName="password" type="password"
-          placeholder="Mínimo 8 caracteres"></app-input>
-        <p class="hint">
-          <span class="material-icons-round">info</span>
-          Este usuario no tendrá ficha de empleado. Solo accederá al panel administrativo.
-        </p>
+      <app-form-section title="Tipo de acceso al sistema" icon="shield_person">
+        @if (loadingTypes) {
+          <p class="hint"><span class="material-icons-round">hourglass_empty</span> Cargando tipos...</p>
+        } @else {
+          <app-select
+            label="Tipo de usuario *"
+            formControlName="systemUserTypeId"
+            [options]="typeOptions()"
+            placeholder="Seleccionar tipo">
+          </app-select>
+
+          @if (selectedType()) {
+            <div class="type-preview" [style.border-left-color]="selectedType()!.color">
+              <span class="type-preview__name" [style.color]="selectedType()!.color">
+                {{ selectedType()!.name }}
+              </span>
+              @if (selectedType()!.description) {
+                <p class="type-preview__desc">{{ selectedType()!.description }}</p>
+              }
+              <div class="type-preview__perms">
+                @let p = selectedType()!.permissions;
+                <span class="perm" [class.perm--on]="p.canRead">
+                  <span class="material-icons-round">visibility</span>Leer
+                </span>
+                <span class="perm" [class.perm--on]="p.canCreate">
+                  <span class="material-icons-round">add_circle</span>Crear
+                </span>
+                <span class="perm" [class.perm--on]="p.canEdit">
+                  <span class="material-icons-round">edit</span>Editar
+                </span>
+                <span class="perm" [class.perm--on]="p.canDelete">
+                  <span class="material-icons-round">delete</span>Eliminar
+                </span>
+                <span class="perm" [class.perm--on]="p.canApprove">
+                  <span class="material-icons-round">task_alt</span>Aprobar
+                </span>
+                <span class="perm" [class.perm--on]="p.canManageConfig">
+                  <span class="material-icons-round">settings</span>Config
+                </span>
+              </div>
+            </div>
+          }
+
+          <p class="hint">
+            <span class="material-icons-round">info</span>
+            Sin acceso al portal de empleados. Gestiona los tipos en
+            <strong>Configuración → Tipos de usuario</strong>.
+          </p>
+        }
       </app-form-section>
     </form>
 
