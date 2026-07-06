@@ -9,23 +9,38 @@
     <app-button variant="primary" icon="person_add" [disabled]="!perms.canCreate()" (clicked)="openCreate()">Registrar candidato</app-button>
   </div>
 
-  <!-- Error de carga -->
   @if (loadError()) {
     <app-banner variant="error" icon="error" [title]="loadError()"></app-banner>
   }
 
-  <!-- Loading -->
+  <!-- Barra de búsqueda y filtro de estado -->
+  <div style="display:flex;gap:1rem;flex-wrap:wrap;align-items:flex-end;">
+    <div style="flex:1;min-width:200px;">
+      <app-input
+        label="Buscar candidato..."
+        placeholder="Nombre o documento"
+        [formControl]="searchCtrl">
+      </app-input>
+    </div>
+    <div style="min-width:200px;">
+      <app-select
+        label="Estado de onboarding"
+        [options]="onboardingOptions"
+        [formControl]="statusCtrl">
+      </app-select>
+    </div>
+  </div>
+
   @if (isLoading()) {
     <app-loading-skeleton variant="card"></app-loading-skeleton>
-  }
+  } @else if (candidates().length === 0 && !loadError()) {
+    <app-empty-state
+      icon="group_add"
+      title="Sin resultados"
+      description="No hay candidatos que coincidan con la búsqueda o el filtro seleccionado.">
+    </app-empty-state>
+  } @else {
 
-  <!-- Empty -->
-  @else if (candidates().length === 0 && !loadError()) {
-    <app-empty-state icon="group_add" title="Sin candidatos" description="Registra el primer candidato para iniciar el proceso de onboarding."></app-empty-state>
-  }
-
-  <!-- Tabla -->
-  @else {
     <app-section-card title="Candidatos seleccionados" [columns]="1">
       <table style="width:100%;border-collapse:collapse;">
         <thead>
@@ -48,7 +63,7 @@
                 {{ c.documentType }} {{ c.documentId }}
               </td>
               <td style="padding:0.75rem;color:var(--text-secondary);font-size:0.875rem;">
-                {{ c.position?.name ?? '—' }} <br>
+                {{ c.position?.name ?? '—' }}<br>
                 <span style="font-size:0.8rem;">{{ c.department?.name ?? '' }}</span>
               </td>
               <td style="padding:0.75rem;font-size:0.875rem;">{{ c.hireDate | date:'dd/MM/yyyy' }}</td>
@@ -62,6 +77,16 @@
           }
         </tbody>
       </table>
+
+      <div style="display:flex;justify-content:flex-end;padding:1rem 0 0;">
+        <app-pagination
+          [page]="page()"
+          [total]="total()"
+          [pageSize]="pageSize"
+          (pageChange)="onPageChange($event)">
+        </app-pagination>
+      </div>
+
     </app-section-card>
   }
 
@@ -73,24 +98,19 @@
     }
 
     <form [formGroup]="form" style="display:flex;flex-direction:column;gap:0.75rem;">
-
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;">
         <app-input label="Primer Nombre *"    formControlName="firstName"  placeholder="Ej. Juan"></app-input>
         <app-input label="Segundo Nombre"     formControlName="middleName" placeholder="Ej. Carlos"></app-input>
         <app-input label="Apellido Paterno *" formControlName="lastName"   placeholder="Ej. García"></app-input>
       </div>
-
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;">
         <app-select label="Tipo de Documento *" formControlName="documentType" [options]="documentTypes"></app-select>
         <app-input  label="Nro. de Documento *" formControlName="documentId"   placeholder="Ej. 12345678"></app-input>
       </div>
-
       <app-input label="Fecha de Ingreso Estimada *" type="date" formControlName="hireDate"></app-input>
-
       <app-banner variant="info" icon="key" title="Credenciales temporales">
         <p>El candidato podrá ingresar con su número de documento como usuario y contraseña temporal.</p>
       </app-banner>
-
     </form>
 
     <ng-container modal-actions>

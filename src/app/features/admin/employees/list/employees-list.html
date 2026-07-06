@@ -9,63 +9,38 @@
     <app-banner variant="error" icon="error" [title]="loadError()"></app-banner>
   }
 
+  <!-- Barra de búsqueda y filtros -->
+  <div class="colabs-toolbar">
+    <div class="colabs-toolbar__search">
+      <app-input
+        label="Buscar colaborador..."
+        placeholder="Nombre, área o documento"
+        [formControl]="searchCtrl">
+      </app-input>
+    </div>
+    <div class="colabs-toolbar__filter">
+      <app-select
+        label="Departamento"
+        [options]="deptOptions()"
+        [formControl]="deptCtrl">
+      </app-select>
+    </div>
+  </div>
+
   @if (isLoading()) {
     <app-loading-skeleton variant="card"></app-loading-skeleton>
     <app-loading-skeleton variant="card" [lines]="5"></app-loading-skeleton>
   } @else if (!loadError()) {
 
-    <!-- Estadísticas rápidas -->
-    <div class="colabs-stats">
-      <app-stat-card
-        label="Total colaboradores"
-        [value]="employees().length.toString()"
-        icon="badge"
-        variant="primary">
-      </app-stat-card>
-      <app-stat-card
-        label="Departamentos"
-        [value]="totalDepts().toString()"
-        icon="apartment"
-        variant="info">
-      </app-stat-card>
-      <app-stat-card
-        label="Con supervisor"
-        [value]="totalWithSupervisor().toString()"
-        icon="supervisor_account"
-        variant="success">
-      </app-stat-card>
-    </div>
-
-    <!-- Barra de búsqueda y filtros -->
-    <div class="colabs-toolbar">
-      <div class="colabs-toolbar__search">
-        <app-input
-          label="Buscar colaborador..."
-          placeholder="Nombre, cargo, área o documento"
-          [formControl]="searchCtrl">
-        </app-input>
-      </div>
-      <app-filter-chips
-        [items]="deptChips()"
-        [active]="activeFilter()"
-        (activeChange)="activeFilter.set($event)">
-      </app-filter-chips>
-    </div>
-
-    <!-- Sin resultados -->
-    @if (filtered().length === 0) {
+    @if (employees().length === 0) {
       <app-empty-state
         icon="search_off"
         title="Sin resultados"
-        description="No se encontraron colaboradores que coincidan con tu búsqueda o filtro activo.">
+        description="No se encontraron colaboradores que coincidan con la búsqueda o filtro.">
       </app-empty-state>
-
     } @else {
 
-      <!-- Tabla de colaboradores -->
-      <app-section-card
-        [title]="activeFilter() === 'all' ? 'Todos los colaboradores' : activeFilter()"
-        [columns]="1">
+      <app-section-card title="Colaboradores" [columns]="1">
 
         <div class="colabs-table-wrap">
           <table class="colabs-table">
@@ -81,30 +56,18 @@
               </tr>
             </thead>
             <tbody>
-              @for (emp of filtered(); track emp.id) {
+              @for (emp of employees(); track emp.id) {
                 <tr class="colabs-table__row">
-
-                  <!-- Identidad -->
                   <td>
                     <div class="colabs-cell">
-                      <app-avatar
-                        [name]="fullName(emp)"
-                        [src]="emp.photoUrl ?? undefined"
-                        size="sm">
-                      </app-avatar>
+                      <app-avatar [name]="fullName(emp)" [src]="emp.photoUrl ?? undefined" size="sm"></app-avatar>
                       <div class="colabs-cell__info">
                         <span class="colabs-cell__name">{{ fullName(emp) }}</span>
                         <span class="colabs-cell__email">{{ emp.user?.email ?? '—' }}</span>
                       </div>
                     </div>
                   </td>
-
-                  <!-- Cargo -->
-                  <td class="colabs-table__text">
-                    {{ emp.position?.name ?? '—' }}
-                  </td>
-
-                  <!-- Área -->
+                  <td class="colabs-table__text">{{ emp.position?.name ?? '—' }}</td>
                   <td>
                     @if (emp.department) {
                       <app-badge variant="neutral">{{ emp.department.name }}</app-badge>
@@ -112,39 +75,34 @@
                       <span class="colabs-table__muted">Sin área</span>
                     }
                   </td>
-
-                  <!-- Documento -->
                   <td class="colabs-table__text">
                     <span class="colabs-table__doc-type">{{ emp.documentType }}</span>
                     {{ emp.documentId ?? '—' }}
                   </td>
-
-                  <!-- Supervisor -->
-                  <td class="colabs-table__text colabs-table__muted">
-                    {{ supervisorName(emp) }}
-                  </td>
-
-                  <!-- Fecha de ingreso -->
+                  <td class="colabs-table__text colabs-table__muted">{{ supervisorName(emp) }}</td>
                   <td class="colabs-table__text colabs-table__muted">
                     {{ emp.hireDate ? (emp.hireDate | date:'dd/MM/yyyy') : '—' }}
                   </td>
-
-                  <!-- Acciones -->
                   <td class="colabs-table__actions">
                     <app-button variant="ghost" size="sm" icon="open_in_new" (clicked)="openProfile(emp.id)">
                       Ver perfil
                     </app-button>
                   </td>
-
                 </tr>
               }
             </tbody>
           </table>
         </div>
 
-        <p class="colabs-count">
-          Mostrando {{ filtered().length }} de {{ employees().length }} colaboradores
-        </p>
+        <div class="colabs-footer">
+          <app-pagination
+            [page]="page()"
+            [total]="total()"
+            [pageSize]="pageSize"
+            (pageChange)="onPageChange($event)">
+          </app-pagination>
+          <span class="colabs-footer__info">{{ showRange() }}</span>
+        </div>
 
       </app-section-card>
     }

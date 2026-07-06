@@ -29,6 +29,7 @@ export { DocUploadZone }   from './doc-upload-zone/doc-upload-zone';
 export { FilterChips }        from './filter-chips/filter-chips';
 export { ChangeRequestBar }   from './change-request-bar/change-request-bar';
 export { Drawer }             from './drawer/drawer';
+export { Pagination }         from './pagination/pagination';
 
 export type { AvatarSize }       from './avatar/avatar';
 export type { UploadPayload }    from './doc-upload-zone/doc-upload-zone';

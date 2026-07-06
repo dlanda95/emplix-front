@@ -86,13 +86,32 @@ export interface CreateCandidatePayload {
   departmentId?:string;
 }
 
+export interface PagedResult<T> {
+  data:       T[];
+  total:      number;
+  page:       number;
+  totalPages: number;
+}
+
+export interface CandidateListParams {
+  page?:             number;
+  limit?:            number;
+  search?:           string;
+  onboardingStatus?: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class CandidatesService {
   private readonly http     = inject(HttpClient);
   private readonly endpoint = `${environment.apiUrl}/candidates`;
 
-  list(): Observable<CandidateSummary[]> {
-    return this.http.get<CandidateSummary[]>(this.endpoint);
+  list(params: CandidateListParams = {}): Observable<PagedResult<CandidateSummary>> {
+    const p: Record<string, string> = {};
+    if (params.page)             p['page']             = String(params.page);
+    if (params.limit)            p['limit']            = String(params.limit);
+    if (params.search?.trim())   p['search']           = params.search.trim();
+    if (params.onboardingStatus) p['onboardingStatus'] = params.onboardingStatus;
+    return this.http.get<PagedResult<CandidateSummary>>(this.endpoint, { params: p });
   }
 
   get(id: string): Observable<CandidateDetail> {

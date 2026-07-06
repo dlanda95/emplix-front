@@ -1,10 +1,11 @@
-import { Component, DestroyRef, inject, signal, computed } from '@angular/core';
+import { Component, DestroyRef, OnInit, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { debounceTime, distinctUntilChanged } from 'rxjs';
 import {
   Avatar, Badge, Banner, Button, EmptyState, FilterChips, LoadingSkeleton,
-  Modal, PageHeader, SectionCard, AppInput,
+  Modal, PageHeader, Pagination, SectionCard, AppInput,
 } from '@shared/ui';
 import type { FilterChipItem } from '@shared/ui';
 import { RequestsAdminService, ChangeRequest, RequestStatus } from '../services/requests-admin.service';
@@ -117,16 +118,18 @@ const STATUS_FILTER_CHIPS: FilterChipItem[] = [
   { id: 'REJECTED', label: 'Rechazadas' },
 ];
 
+const PAGE_SIZE = 25;
+
 @Component({
   selector: 'app-requests-admin',
   imports: [
     CommonModule, ReactiveFormsModule,
     Avatar, Badge, Banner, Button, EmptyState, FilterChips,
-    LoadingSkeleton, Modal, PageHeader, SectionCard, AppInput,
+    LoadingSkeleton, Modal, PageHeader, Pagination, SectionCard, AppInput,
   ],
   templateUrl: './requests-admin.html',
 })
-export class RequestsAdmin {
+export class RequestsAdmin implements OnInit {
   private readonly svc        = inject(RequestsAdminService);
   private readonly destroyRef = inject(DestroyRef);
   readonly perms              = inject(PermissionsService);
@@ -134,6 +137,10 @@ export class RequestsAdmin {
   readonly statusFilter  = signal<string>('ALL');
   readonly isLoading     = signal(true);
   readonly requests      = signal<ChangeRequest[]>([]);
+  readonly total         = signal(0);
+  readonly totalPages    = signal(1);
+  readonly page          = signal(1);
+  readonly pageSize      = PAGE_SIZE;
   readonly statusChips   = STATUS_FILTER_CHIPS;
 
   readonly loadError     = signal('');
@@ -141,26 +148,42 @@ export class RequestsAdmin {
   readonly rejectTarget  = signal<string | null>(null);
   readonly rejectReason  = new FormControl('');
   readonly isProcessing  = signal(false);
+  readonly searchCtrl    = new FormControl('');
 
-  readonly filtered = computed(() => {
-    const s = this.statusFilter();
-    const all = this.requests();
-    return s === 'ALL' ? all : all.filter(r => r.status === s);
-  });
+  readonly pendingCount  = signal(0);
 
-  readonly pendingCount = computed(() => this.requests().filter(r => r.status === 'PENDING').length);
+  ngOnInit(): void {
+    this.searchCtrl.valueChanges.pipe(
+      debounceTime(350),
+      distinctUntilChanged(),
+      takeUntilDestroyed(this.destroyRef),
+    ).subscribe(() => { this.page.set(1); this.loadAll(); });
 
-  constructor() { this.loadAll(); }
+    this.loadAll();
+  }
 
   private loadAll(): void {
     this.isLoading.set(true);
-    this.svc.getAll().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: list => { this.requests.set(list); this.isLoading.set(false); },
-      error: err  => { this.isLoading.set(false); this.loadError.set(err?.error?.message ?? 'Error al cargar las solicitudes.'); },
+    const status = this.statusFilter() === 'ALL' ? undefined : this.statusFilter();
+    this.svc.getAll({
+      page:   this.page(),
+      limit:  PAGE_SIZE,
+      status,
+      search: this.searchCtrl.value ?? '',
+    }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: result => {
+        this.requests.set(result.data);
+        this.total.set(result.total);
+        this.totalPages.set(result.totalPages);
+        this.isLoading.set(false);
+        if (!status) this.pendingCount.set(result.data.filter(r => r.status === 'PENDING').length);
+      },
+      error: err => { this.isLoading.set(false); this.loadError.set(err?.error?.message ?? 'Error al cargar las solicitudes.'); },
     });
   }
 
-  onFilterChange(id: string): void { this.statusFilter.set(id); }
+  onFilterChange(id: string): void { this.statusFilter.set(id); this.page.set(1); this.loadAll(); }
+  onPageChange(p: number): void    { this.page.set(p); this.loadAll(); }
 
   approve(id: string): void {
     this.isProcessing.set(true);

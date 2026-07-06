@@ -21,21 +21,28 @@
       [active]="statusFilter()"
       (activeChange)="onFilterChange($event)">
     </app-filter-chips>
+    <div style="min-width:240px;">
+      <app-input
+        label="Buscar colaborador..."
+        placeholder="Nombre o documento"
+        [formControl]="searchCtrl">
+      </app-input>
+    </div>
   </div>
 
   <app-section-card title="Listado">
 
     @if (isLoading()) {
       <app-loading-skeleton variant="card" [lines]="5"></app-loading-skeleton>
-    } @else if (filtered().length === 0) {
+    } @else if (requests().length === 0) {
       <app-empty-state
         icon="check_circle"
         title="Sin solicitudes"
-        description="No hay solicitudes en esta categoría.">
+        description="No hay solicitudes que coincidan con los filtros seleccionados.">
       </app-empty-state>
     } @else {
       <div class="sreq-list">
-        @for (req of filtered(); track req.id) {
+        @for (req of requests(); track req.id) {
           <div class="sreq-card" [class.sreq-card--pending]="req.status === 'PENDING'">
 
             <div class="sreq-header">
@@ -119,7 +126,14 @@
         }
       </div>
 
-      <p class="colabs-count">{{ filtered().length }} solicitud{{ filtered().length !== 1 ? 'es' : '' }}</p>
+      <div style="display:flex;justify-content:flex-end;padding:1rem 0 0;">
+        <app-pagination
+          [page]="page()"
+          [total]="total()"
+          [pageSize]="pageSize"
+          (pageChange)="onPageChange($event)">
+        </app-pagination>
+      </div>
     }
 
   </app-section-card>

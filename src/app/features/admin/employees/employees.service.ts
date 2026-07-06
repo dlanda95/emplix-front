@@ -36,13 +36,32 @@ export interface EmployeeDetail extends EmployeeSummary {
   } | null;
 }
 
+export interface PagedResult<T> {
+  data:       T[];
+  total:      number;
+  page:       number;
+  totalPages: number;
+}
+
+export interface EmployeeListParams {
+  page?:         number;
+  limit?:        number;
+  search?:       string;
+  departmentId?: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class EmployeesAdminService {
   private readonly http = inject(HttpClient);
   private readonly base = `${environment.apiUrl}/employees`;
 
-  list(): Observable<EmployeeSummary[]> {
-    return this.http.get<EmployeeSummary[]>(this.base);
+  list(params: EmployeeListParams = {}): Observable<PagedResult<EmployeeSummary>> {
+    const p: Record<string, string> = {};
+    if (params.page)         p['page']         = String(params.page);
+    if (params.limit)        p['limit']        = String(params.limit);
+    if (params.search?.trim()) p['search']     = params.search.trim();
+    if (params.departmentId) p['departmentId'] = params.departmentId;
+    return this.http.get<PagedResult<EmployeeSummary>>(this.base, { params: p });
   }
 
   getById(id: string): Observable<EmployeeDetail> {

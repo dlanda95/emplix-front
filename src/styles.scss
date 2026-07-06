@@ -68,12 +68,35 @@
   flex-wrap: wrap;
 
   &__search {
-    flex: 0 0 280px;
+    flex: 1 1 280px;
     min-width: 0;
 
     @media (max-width: 640px) {
       flex: 1 1 100%;
     }
+  }
+
+  &__filter {
+    flex: 0 0 220px;
+    min-width: 0;
+
+    @media (max-width: 640px) {
+      flex: 1 1 100%;
+    }
+  }
+}
+
+.colabs-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  padding-top: 1.25rem;
+
+  &__info {
+    font-size: var(--text-sm);
+    color: var(--text-muted);
   }
 }
 

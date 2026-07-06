@@ -3,90 +3,102 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { Avatar, Badge, Banner, Button, EmptyState, FilterChips, LoadingSkeleton, PageHeader, SectionCard, StatCard, AppInput } from '@shared/ui';
+import { debounceTime, distinctUntilChanged } from 'rxjs';
+import {
+  Avatar, Badge, Banner, Button, EmptyState, LoadingSkeleton,
+  PageHeader, Pagination, SectionCard, StatCard, AppInput, AppSelect,
+} from '@shared/ui';
 import { EmployeesAdminService, EmployeeSummary } from '../employees.service';
-import type { FilterChipItem } from '@shared/ui';
+import { CandidatesService } from '../../services/candidates.service';
+import type { SelectOption } from '@shared/ui';
+
+const PAGE_SIZE = 25;
 
 @Component({
   selector: 'app-employees-list',
-  imports: [CommonModule, ReactiveFormsModule, Avatar, Badge, Banner, Button, EmptyState, FilterChips, LoadingSkeleton, PageHeader, SectionCard, StatCard, AppInput],
+  imports: [
+    CommonModule, ReactiveFormsModule,
+    Avatar, Badge, Banner, Button, EmptyState, LoadingSkeleton,
+    PageHeader, Pagination, SectionCard, StatCard, AppInput, AppSelect,
+  ],
   templateUrl: './employees-list.html',
 })
 export class EmployeesList implements OnInit {
   private readonly svc        = inject(EmployeesAdminService);
+  private readonly orgSvc     = inject(CandidatesService);
   private readonly router     = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
 
   readonly employees    = signal<EmployeeSummary[]>([]);
+  readonly total        = signal(0);
+  readonly totalPages   = signal(1);
+  readonly page         = signal(1);
+  readonly pageSize     = PAGE_SIZE;
   readonly isLoading    = signal(true);
   readonly loadError    = signal('');
-  readonly search       = signal('');
-  readonly activeFilter = signal('all');
+
+  readonly deptOptions  = signal<SelectOption[]>([]);
   readonly searchCtrl   = new FormControl('');
+  readonly deptCtrl     = new FormControl('');
 
-  readonly deptChips = computed((): FilterChipItem[] => {
-    const counts = new Map<string, number>();
-    for (const e of this.employees()) {
-      const name = e.department?.name ?? 'Sin área';
-      counts.set(name, (counts.get(name) ?? 0) + 1);
-    }
-    const chips: FilterChipItem[] = [
-      { id: 'all', label: 'Todos', icon: 'groups', count: this.employees().length },
-    ];
-    for (const [label, count] of counts) {
-      chips.push({ id: label, label, count });
-    }
-    return chips;
+  readonly showRange = computed(() => {
+    const from = (this.page() - 1) * PAGE_SIZE + 1;
+    const to   = Math.min(this.page() * PAGE_SIZE, this.total());
+    return `${from}–${to} de ${this.total()}`;
   });
-
-  readonly filtered = computed(() => {
-    let list = this.employees();
-    const q   = this.search().toLowerCase().trim();
-    const act = this.activeFilter();
-
-    if (q) {
-      list = list.filter(e =>
-        `${e.firstName} ${e.lastName}`.toLowerCase().includes(q) ||
-        (e.position?.name?.toLowerCase().includes(q) ?? false) ||
-        (e.department?.name?.toLowerCase().includes(q) ?? false) ||
-        (e.user?.email?.toLowerCase().includes(q) ?? false) ||
-        (e.documentId?.includes(q) ?? false),
-      );
-    }
-    if (act !== 'all') {
-      list = list.filter(e => (e.department?.name ?? 'Sin área') === act);
-    }
-    return list;
-  });
-
-  readonly totalDepts = computed(() =>
-    new Set(this.employees().map(e => e.department?.id).filter(Boolean)).size,
-  );
-
-  readonly totalWithSupervisor = computed(() =>
-    this.employees().filter(e => !!e.supervisor).length,
-  );
 
   ngOnInit(): void {
-    this.searchCtrl.valueChanges
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(q => this.search.set(q ?? ''));
-    this.svc.list().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next:  list => { this.employees.set(list); this.isLoading.set(false); },
-      error: err  => { this.isLoading.set(false); this.loadError.set(err?.error?.message ?? 'Error al cargar los colaboradores.'); },
+    this.orgSvc.listDepartments().pipe(takeUntilDestroyed(this.destroyRef)).subscribe(depts => {
+      this.deptOptions.set([
+        { value: '', label: 'Todos los departamentos' },
+        ...depts.map(d => ({ value: d.id, label: d.name })),
+      ]);
+    });
+
+    this.searchCtrl.valueChanges.pipe(
+      debounceTime(350),
+      distinctUntilChanged(),
+      takeUntilDestroyed(this.destroyRef),
+    ).subscribe(() => { this.page.set(1); this.load(); });
+
+    this.deptCtrl.valueChanges.pipe(
+      takeUntilDestroyed(this.destroyRef),
+    ).subscribe(() => { this.page.set(1); this.load(); });
+
+    this.load();
+  }
+
+  load(): void {
+    this.isLoading.set(true);
+    this.svc.list({
+      page:         this.page(),
+      limit:        PAGE_SIZE,
+      search:       this.searchCtrl.value ?? '',
+      departmentId: this.deptCtrl.value ?? '',
+    }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: result => {
+        this.employees.set(result.data);
+        this.total.set(result.total);
+        this.totalPages.set(result.totalPages);
+        this.isLoading.set(false);
+      },
+      error: err => {
+        this.isLoading.set(false);
+        this.loadError.set(err?.error?.message ?? 'Error al cargar los colaboradores.');
+      },
     });
   }
 
-  fullName(e: EmployeeSummary): string {
-    return `${e.firstName} ${e.lastName}`;
+  onPageChange(p: number): void {
+    this.page.set(p);
+    this.load();
   }
 
+  fullName(e: EmployeeSummary): string { return `${e.firstName} ${e.lastName}`; }
   supervisorName(e: EmployeeSummary): string {
     const s = e.supervisor;
     return s ? `${s.firstName} ${s.lastName}` : '—';
   }
 
-  openProfile(id: string): void {
-    this.router.navigate(['/admin/colaboradores', id]);
-  }
+  openProfile(id: string): void { this.router.navigate(['/admin/colaboradores', id]); }
 }
