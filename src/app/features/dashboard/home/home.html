@@ -5,54 +5,101 @@
       <h1>Hola, {{ currentUser()?.firstName }}</h1>
       <p>Aquí tienes el resumen de lo que pasa hoy en tu organización.</p>
     </div>
-    <div class="actions">
-      <app-primary-btn>
-        <span class="material-icons-round btn-icon-sm">add</span>
-        Nueva Solicitud
-      </app-primary-btn>
+    <div class="header-links">
+      <a class="header-link" routerLink="/admin/solicitudes">
+        <span class="material-icons-round">open_in_new</span>
+        Ver solicitudes
+      </a>
+      <a class="header-link" routerLink="/admin/candidatos">
+        <span class="material-icons-round">open_in_new</span>
+        Ver candidatos
+      </a>
     </div>
   </header>
 
-  <section class="stats-grid">
-    @for (stat of stats; track stat.label) {
-      <app-stat-card
-        [label]="stat.label"
-        [value]="stat.value"
-        [icon]="stat.icon"
-        [variant]="stat.variant">
-      </app-stat-card>
-    }
-  </section>
+  @if (loadError()) {
+    <app-banner variant="error" icon="error" [title]="loadError()"></app-banner>
+  }
+
+  <!-- Stats -->
+  @if (isLoading()) {
+    <div class="stats-grid">
+      <app-loading-skeleton variant="card"></app-loading-skeleton>
+      <app-loading-skeleton variant="card"></app-loading-skeleton>
+      <app-loading-skeleton variant="card"></app-loading-skeleton>
+      <app-loading-skeleton variant="card"></app-loading-skeleton>
+    </div>
+  } @else {
+    <section class="stats-grid">
+      @for (stat of statCards(); track stat.label) {
+        <app-stat-card
+          [label]="stat.label"
+          [value]="stat.value"
+          [icon]="stat.icon"
+          [variant]="stat.variant">
+        </app-stat-card>
+      }
+    </section>
+  }
 
   <div class="content-grid">
 
+    <!-- Solicitudes pendientes recientes -->
     <div class="card recent-activity">
       <div class="card-header">
-        <h3>Actividad Reciente</h3>
-        <button class="link-btn">Ver todo</button>
+        <h3>Solicitudes pendientes</h3>
+        <a class="link-btn" routerLink="/admin/solicitudes">Ver todas</a>
       </div>
 
-      <div class="activity-list">
-        @for (act of activities; track act.user) {
-          <div class="activity-item">
-            <app-avatar [name]="act.user" size="sm"></app-avatar>
-            <div class="details">
-              <span class="user-name">{{ act.user }}</span>
-              <span class="action-text">{{ act.action }}</span>
+      @if (isLoading()) {
+        <app-loading-skeleton variant="text" [lines]="4"></app-loading-skeleton>
+      } @else if (recent().length === 0) {
+        <div class="empty-activity">
+          <span class="material-icons-round">task_alt</span>
+          <p>Sin solicitudes pendientes</p>
+        </div>
+      } @else {
+        <div class="activity-list">
+          @for (req of recent(); track req.id) {
+            <div class="activity-item">
+              <app-avatar [name]="req.userName" size="sm"></app-avatar>
+              <div class="details">
+                <span class="user-name">{{ req.userName }}</span>
+                <span class="action-text">{{ typeLabel(req.type) }}</span>
+              </div>
+              <span class="time">{{ timeAgo(req.createdAt) }}</span>
             </div>
-            <span class="time">{{ act.time }}</span>
-          </div>
-        }
-      </div>
+          }
+        </div>
+      }
     </div>
 
-    <div class="card placeholder-chart">
+    <!-- Accesos rápidos -->
+    <div class="card quick-links">
       <div class="card-header">
-        <h3>Resumen Semanal</h3>
+        <h3>Accesos rápidos</h3>
       </div>
-      <div class="chart-area">
-        <span class="material-icons-round chart-placeholder-icon">bar_chart</span>
-        <p>Próximamente: Gráficos de Asistencia</p>
+      <div class="quick-links__list">
+        <a class="quick-link" routerLink="/admin/colaboradores">
+          <span class="material-icons-round">badge</span>
+          <span>Colaboradores</span>
+        </a>
+        <a class="quick-link" routerLink="/admin/candidatos">
+          <span class="material-icons-round">how_to_reg</span>
+          <span>Candidatos</span>
+        </a>
+        <a class="quick-link" routerLink="/admin/organizacion">
+          <span class="material-icons-round">account_tree</span>
+          <span>Organización</span>
+        </a>
+        <a class="quick-link" routerLink="/admin/usuarios">
+          <span class="material-icons-round">manage_accounts</span>
+          <span>Usuarios</span>
+        </a>
+        <a class="quick-link" routerLink="/admin/configuracion/tipos-usuario">
+          <span class="material-icons-round">tune</span>
+          <span>Configuración</span>
+        </a>
       </div>
     </div>
 

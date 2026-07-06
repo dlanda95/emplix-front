@@ -1,0 +1,121 @@
+@use 'abstracts/variables' as *;
+
+// ── User info card ────────────────────────────────────────────────────────────
+.user-info-card {
+  background: var(--bg-body);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
+
+  &__row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+  }
+
+  &__label {
+    font-size: var(--text-xs);
+    font-weight: var(--font-semibold);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-secondary);
+    white-space: nowrap;
+  }
+
+  &__value {
+    font-size: var(--text-sm);
+    color: var(--text-main);
+    text-align: right;
+    word-break: break-all;
+  }
+
+  &__current-type {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-size: var(--text-sm);
+    font-weight: var(--font-medium);
+  }
+}
+
+.type-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+// ── Type preview ──────────────────────────────────────────────────────────────
+.type-preview {
+  margin-top: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-left: 3px solid;
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  background: var(--bg-body);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+
+  &__name {
+    font-size: var(--text-sm);
+    font-weight: var(--font-semibold);
+  }
+
+  &__desc {
+    font-size: var(--text-xs);
+    color: var(--text-secondary);
+    margin: 0;
+    line-height: var(--leading-relaxed);
+  }
+
+  &__perms {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin-top: var(--space-1);
+  }
+}
+
+.perm {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: var(--text-xs);
+  padding: 2px 8px;
+  border-radius: 100px;
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+  opacity: 0.4;
+
+  .material-icons-round { font-size: 12px; }
+
+  &--on {
+    opacity: 1;
+    background: var(--color-success-soft);
+    color: var(--color-success);
+  }
+}
+
+// ── Footer ────────────────────────────────────────────────────────────────────
+.drawer-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  width: 100%;
+}
+
+.hint {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  margin: 0;
+
+  .material-icons-round { font-size: 16px; }
+}

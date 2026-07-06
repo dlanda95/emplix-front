@@ -100,7 +100,7 @@
                   variant="ghost"
                   icon="close"
                   size="sm"
-                  [disabled]="isProcessing()"
+                  [disabled]="isProcessing() || !perms.canApprove()"
                   (clicked)="openRejectModal(req.id)">
                   Rechazar
                 </app-button>
@@ -108,7 +108,7 @@
                   variant="primary"
                   icon="check"
                   size="sm"
-                  [disabled]="isProcessing()"
+                  [disabled]="isProcessing() || !perms.canApprove()"
                   (clicked)="approve(req.id)">
                   Aprobar cambio
                 </app-button>

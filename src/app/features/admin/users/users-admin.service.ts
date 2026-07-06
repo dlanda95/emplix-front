@@ -31,6 +31,8 @@ export interface UserListItem {
   id:             string;
   email:          string;
   role:           UserRole;
+  firstName:      string | null;
+  lastName:       string | null;
   isActive:       boolean;
   isSystemUser:   boolean;
   createdAt:      string;

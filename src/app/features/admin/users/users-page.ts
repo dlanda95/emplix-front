@@ -10,6 +10,8 @@ import type { FilterChipItem } from '@shared/ui';
 import { UsersAdminService, UserListItem, ROLE_LABELS, ROLE_VARIANTS, UserRole } from './users-admin.service';
 import { CreateEmployeeDrawer } from './create-employee-drawer/create-employee-drawer';
 import { CreateUserDrawer } from './create-user-drawer/create-user-drawer';
+import { EditUserDrawer } from './edit-user-drawer/edit-user-drawer';
+import { PermissionsService } from '@core/auth/permissions.service';
 
 @Component({
   selector: 'app-users-page',
@@ -17,7 +19,7 @@ import { CreateUserDrawer } from './create-user-drawer/create-user-drawer';
     CommonModule, ReactiveFormsModule,
     Avatar, Badge, Banner, Button, EmptyState, FilterChips,
     LoadingSkeleton, PageHeader, SectionCard, StatCard, AppInput,
-    CreateEmployeeDrawer, CreateUserDrawer,
+    CreateEmployeeDrawer, CreateUserDrawer, EditUserDrawer,
   ],
   templateUrl: './users-page.html',
   styleUrl: './users-page.scss',
@@ -25,6 +27,7 @@ import { CreateUserDrawer } from './create-user-drawer/create-user-drawer';
 export class UsersPage implements OnInit {
   private readonly svc        = inject(UsersAdminService);
   private readonly destroyRef = inject(DestroyRef);
+  readonly perms              = inject(PermissionsService);
 
   readonly users        = signal<UserListItem[]>([]);
   readonly isLoading    = signal(true);
@@ -35,6 +38,8 @@ export class UsersPage implements OnInit {
 
   showEmployeeDrawer = signal(false);
   showUserDrawer     = signal(false);
+  showEditDrawer     = signal(false);
+  editTarget         = signal<UserListItem | null>(null);
 
   readonly filterChips = computed((): FilterChipItem[] => [
     { id: 'all',       label: 'Todos',             icon: 'people',         count: this.users().length },
@@ -98,8 +103,20 @@ export class UsersPage implements OnInit {
     this.loadUsers();
   }
 
+  openEdit(u: UserListItem): void {
+    this.editTarget.set(u);
+    this.showEditDrawer.set(true);
+  }
+
+  onUserUpdated(): void {
+    this.showEditDrawer.set(false);
+    this.loadUsers();
+  }
+
   displayName(u: UserListItem): string {
-    return u.employee ? `${u.employee.firstName} ${u.employee.lastName}` : u.email.split('@')[0];
+    if (u.employee) return `${u.employee.firstName} ${u.employee.lastName}`;
+    if (u.firstName) return `${u.firstName} ${u.lastName ?? ''}`.trim();
+    return u.email.split('@')[0];
   }
 
   roleLabel(role: UserRole): string  { return ROLE_LABELS[role]; }

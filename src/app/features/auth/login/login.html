@@ -123,13 +123,86 @@
         <!-- Formulario -->
         <form [formGroup]="loginForm" (ngSubmit)="onLogin()" class="login-form fade-in">
 
-          <app-input-field
-            [label]="fieldLabel()"
-            [placeholder]="fieldPlaceholder()"
-            [type]="fieldType()"
-            [icon]="fieldIcon()"
-            [control]="getControl(loginForm, 'email')">
-          </app-input-field>
+          <!-- Campo de usuario con selector de dominio (solo colaboradores con dominios configurados) -->
+          @if (!isCandidate() && hasDomains()) {
+            <div class="email-split-field">
+              <label class="email-split-field__label">
+                <span class="material-icons-round">person</span>
+                Usuario
+              </label>
+              <div class="email-split-field__row">
+                <input
+                  class="email-split-field__input"
+                  type="text"
+                  placeholder="nombre.apellido"
+                  autocomplete="username"
+                  [formControl]="getControl(loginForm, 'email')"
+                  (keydown.enter)="$event.preventDefault()">
+                <span class="email-split-field__at">@</span>
+
+                <!-- Dominio único: no clickeable -->
+                @if (!multiDomain()) {
+                  <span class="domain-chip domain-chip--static">
+                    {{ selectedDomain()?.domain }}
+                  </span>
+                }
+
+                <!-- Multi-dominio: dropdown -->
+                @if (multiDomain()) {
+                  <div class="domain-picker">
+                    <button
+                      class="domain-chip domain-chip--select"
+                      type="button"
+                      (click)="toggleDomainMenu()">
+                      {{ selectedDomain()?.domain ?? 'Seleccionar' }}
+                      <span class="material-icons-round domain-chip__caret">
+                        {{ domainOpen() ? 'expand_less' : 'expand_more' }}
+                      </span>
+                    </button>
+
+                    @if (domainOpen()) {
+                      <div class="domain-menu">
+                        @for (d of domains(); track d.id) {
+                          <button
+                            class="domain-menu__item"
+                            [class.domain-menu__item--active]="d.id === selectedDomain()?.id"
+                            type="button"
+                            (click)="selectDomain(d)">
+                            <span class="domain-menu__domain">{{ d.domain }}</span>
+                            @if (d.label) {
+                              <span class="domain-menu__label">{{ d.label }}</span>
+                            }
+                            @if (d.isPrimary) {
+                              <span class="domain-menu__badge">Principal</span>
+                            }
+                          </button>
+                        }
+                      </div>
+                    }
+                  </div>
+                }
+
+              </div>
+              @if (getControl(loginForm, 'email').invalid && getControl(loginForm, 'email').touched) {
+                <span class="email-split-field__error">
+                  @if (getControl(loginForm, 'email').errors?.['required']) { Este campo es obligatorio }
+                  @if (getControl(loginForm, 'email').errors?.['serverError']) {
+                    {{ getControl(loginForm, 'email').errors?.['serverError'] }}
+                  }
+                </span>
+              }
+            </div>
+
+          } @else {
+            <!-- Fallback: email completo (sin dominios configurados, o candidato) -->
+            <app-input-field
+              [label]="fieldLabel()"
+              [placeholder]="fieldPlaceholder()"
+              [type]="fieldType()"
+              [icon]="fieldIcon()"
+              [control]="getControl(loginForm, 'email')">
+            </app-input-field>
+          }
 
           <app-input-field
             label="Contraseña"

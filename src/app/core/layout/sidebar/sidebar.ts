@@ -7,11 +7,13 @@ import { AuthService } from '@core/auth/auth';
 import { isHR } from '@core/auth/models/user.model';
 
 export interface MenuItem {
-  label: string;
-  icon: string;
-  route?: string;
+  label:    string;
+  icon?:    string;
+  route?:   string;
   children?: MenuItem[];
   expanded?: boolean;
+  /** Renderiza como cabecera de sección (no clickeable) */
+  type?: 'section';
 }
 
 @Component({
@@ -29,63 +31,66 @@ export class Sidebar implements OnInit {
   readonly expandedSet = signal<Set<string>>(new Set());
 
   readonly menuItems = computed<MenuItem[]>(() => {
-    const expanded      = this.expandedSet();
-    const user          = this.auth.currentUser();
-    const hrUser        = isHR(user?.role);
-    const isCandidate   = user?.employeeStatus === 'SELECTED';
+    const expanded    = this.expandedSet();
+    const user        = this.auth.currentUser();
+    const hrUser      = isHR(user?.role);
+    const isSystemUser = !!user?.isSystemUser;
+    const isCandidate  = user?.employeeStatus === 'SELECTED';
 
     // Candidato en proceso de onboarding → menú simplificado
     if (isCandidate) {
-      return [
-        { label: 'Mi Incorporación', icon: 'assignment_ind', route: '/onboarding/identidad' },
-        { label: 'Configuración',    icon: 'settings',       route: '/settings'             },
-      ];
+      return [{ label: 'Mi Incorporación', icon: 'assignment_ind', route: '/onboarding/identidad' }];
     }
 
-    const isSystemUser = !!user?.isSystemUser;
+    const items: MenuItem[] = [
+      { label: 'Dashboard', icon: 'dashboard', route: '/dashboard' },
+    ];
 
-    const hrSection: MenuItem[] = hrUser ? [
-      {
+    // ── Sección RRHH ────────────────────────────────────────────────────────
+    if (hrUser || isSystemUser) {
+      items.push({ label: 'RRHH', type: 'section' });
+      items.push({
         label: 'RRHH', icon: 'corporate_fare', expanded: expanded.has('RRHH'),
         children: [
-          { label: 'Candidatos',    icon: 'group_add',       route: '/admin/candidatos'               },
-          { label: 'Colaboradores', icon: 'badge',           route: '/admin/colaboradores'             },
-          { label: 'Solicitudes',   icon: 'approval',        route: '/admin/solicitudes'               },
-          { label: 'Organización',  icon: 'account_tree',    route: '/admin/organizacion'              },
-          { label: 'Usuarios',      icon: 'manage_accounts', route: '/admin/usuarios'                  },
-          { label: 'Configuración', icon: 'tune',            route: '/admin/configuracion/tipos-usuario'},
+          { label: 'Candidatos',    icon: 'group_add',    route: '/admin/candidatos'    },
+          { label: 'Colaboradores', icon: 'badge',        route: '/admin/colaboradores' },
+          { label: 'Solicitudes',   icon: 'approval',     route: '/admin/solicitudes'   },
+          { label: 'Organización',  icon: 'account_tree', route: '/admin/organizacion'  },
         ],
-      },
-    ] : [];
+      });
 
-    // Mi Portal solo para usuarios con ficha de empleado
-    const portalSection: MenuItem[] = !isSystemUser ? [
-      {
+      // ── Sección Configuración ──────────────────────────────────────────────
+      items.push({ label: 'Configuración', type: 'section' });
+      items.push({
+        label: 'Configuración', icon: 'admin_panel_settings', expanded: expanded.has('Configuración'),
+        children: [
+          { label: 'Usuarios',        icon: 'manage_accounts', route: '/admin/usuarios'                     },
+          { label: 'Tipos de acceso', icon: 'tune',            route: '/admin/configuracion/tipos-usuario'  },
+          { label: 'Dominios',        icon: 'domain',          route: '/admin/configuracion/dominios'        },
+        ],
+      });
+    }
+
+    // ── Sección Portal (solo empleados con ficha) ────────────────────────────
+    if (!isSystemUser) {
+      items.push({ label: 'Mi espacio', type: 'section' });
+      items.push({
         label: 'Mi Portal', icon: 'account_circle', expanded: expanded.has('Mi Portal'),
         children: [
           { label: 'Mi Ficha',        icon: 'badge',         route: '/portal/ficha'           },
           { label: 'Reconocimientos', icon: 'military_tech', route: '/portal/reconocimientos' },
           { label: 'Mi Equipo',       icon: 'groups',        route: '/portal/equipo'          },
         ],
-      },
-    ] : [];
+      });
+    }
 
-    return [
-      { label: 'Dashboard', icon: 'dashboard', route: '/dashboard' },
-      ...hrSection,
-      ...portalSection,
-      { label: 'Configuración', icon: 'settings', route: '/settings' },
-    ];
+    return items;
   });
 
-  ngOnInit(): void {
-    this.checkScreenSize();
-  }
+  ngOnInit(): void { this.checkScreenSize(); }
 
   @HostListener('window:resize')
-  onResize(): void {
-    this.checkScreenSize();
-  }
+  onResize(): void { this.checkScreenSize(); }
 
   toggleSubmenu(item: MenuItem): void {
     if (!item.children) return;
@@ -103,8 +108,6 @@ export class Sidebar implements OnInit {
   }
 
   private checkScreenSize(): void {
-    if (window.innerWidth < 1024) {
-      this.layoutService.expandSidebar();
-    }
+    if (window.innerWidth < 1024) this.layoutService.expandSidebar();
   }
 }

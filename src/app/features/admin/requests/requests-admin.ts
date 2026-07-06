@@ -8,6 +8,7 @@ import {
 } from '@shared/ui';
 import type { FilterChipItem } from '@shared/ui';
 import { RequestsAdminService, ChangeRequest, RequestStatus } from '../services/requests-admin.service';
+import { PermissionsService } from '@core/auth/permissions.service';
 import {
   GENDER_OPTIONS, MARITAL_STATUS_OPTIONS, ACADEMIC_LEVEL_OPTIONS,
   DOCUMENT_TYPE_OPTIONS, AFP_TYPE_OPTIONS, AFP_ENTITY_OPTIONS, AFP_COMMISSION_OPTIONS,
@@ -128,6 +129,7 @@ const STATUS_FILTER_CHIPS: FilterChipItem[] = [
 export class RequestsAdmin {
   private readonly svc        = inject(RequestsAdminService);
   private readonly destroyRef = inject(DestroyRef);
+  readonly perms              = inject(PermissionsService);
 
   readonly statusFilter  = signal<string>('ALL');
   readonly isLoading     = signal(true);

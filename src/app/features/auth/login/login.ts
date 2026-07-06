@@ -1,13 +1,14 @@
-import { Component, inject, signal, computed } from '@angular/core';
+import { Component, inject, signal, computed, OnInit, HostListener, ElementRef } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators, FormControl, FormGroup } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { MsalService } from '@azure/msal-angular';
 import { finalize } from 'rxjs';
 
-import { AuthService }   from '@core/auth/auth';
-import { TenantService } from '@core/services/tenant.service';
+import { AuthService }         from '@core/auth/auth';
+import { TenantService }       from '@core/services/tenant.service';
 import { InputField, PrimaryBtn } from '@shared/ui';
+import { DomainsConfigService, PublicDomain } from '@features/admin/config/domains/domains.service';
 import { environment } from '@env';
 
 type AuthErrorCode =
@@ -27,12 +28,14 @@ type AuthErrorCode =
   templateUrl: './login.html',
   styleUrl: './login.scss',
 })
-export class Login {
+export class Login implements OnInit {
   private readonly fb            = inject(FormBuilder);
   private readonly tenantService = inject(TenantService);
   readonly authService           = inject(AuthService);
   private readonly router        = inject(Router);
   private readonly msalService   = inject(MsalService);
+  private readonly domainsSvc    = inject(DomainsConfigService);
+  private readonly elRef         = inject(ElementRef);
 
   readonly step          = signal<1 | 2>(1);
   readonly loginMode     = signal<'colaborador' | 'candidato'>('colaborador');
@@ -40,22 +43,29 @@ export class Login {
   readonly isMsalLoading = signal(false);
   readonly errorMessage  = signal('');
 
-  // Refleja si la empresa tiene SSO de Microsoft configurado
-  readonly hasMicrosoftSSO = computed(() => this.authService.hasMicrosoftSSO());
+  // Dominios del tenant
+  readonly domains        = signal<PublicDomain[]>([]);
+  readonly selectedDomain = signal<PublicDomain | null>(null);
+  readonly domainOpen     = signal(false);
 
-  readonly isCandidate  = computed(() => this.loginMode() === 'candidato');
-  readonly fieldLabel   = computed(() => this.isCandidate() ? 'Número de Documento' : 'Correo Corporativo');
-  readonly fieldPlaceholder = computed(() => this.isCandidate() ? 'Ej. 12345678' : 'nombre@empresa.com');
-  readonly fieldIcon    = computed(() => this.isCandidate() ? 'badge' : 'email');
-  readonly fieldType    = computed(() => this.isCandidate() ? 'text' : 'email');
-  readonly passwordHint = computed(() => this.isCandidate() ? 'Tu contraseña inicial es tu número de documento' : '');
+  readonly hasDomains    = computed(() => this.domains().length > 0);
+  readonly multiDomain   = computed(() => this.domains().length > 1);
+  readonly primaryDomain = computed(() => this.domains().find(d => d.isPrimary) ?? this.domains()[0] ?? null);
+
+  readonly hasMicrosoftSSO = computed(() => this.authService.hasMicrosoftSSO());
+  readonly isCandidate     = computed(() => this.loginMode() === 'candidato');
+  readonly fieldLabel      = computed(() => this.isCandidate() ? 'Número de Documento' : (this.hasDomains() ? 'Usuario' : 'Correo Corporativo'));
+  readonly fieldPlaceholder = computed(() => this.isCandidate() ? 'Ej. 12345678' : (this.hasDomains() ? 'nombre.apellido' : 'nombre@empresa.com'));
+  readonly fieldIcon       = computed(() => this.isCandidate() ? 'badge' : (this.hasDomains() ? 'person' : 'email'));
+  readonly fieldType       = computed(() => this.isCandidate() ? 'text' : (this.hasDomains() ? 'text' : 'email'));
+  readonly passwordHint    = computed(() => this.isCandidate() ? 'Tu contraseña inicial es tu número de documento' : '');
 
   tenantForm = this.fb.group({
     slug: [this.authService.currentTenant() || '', [Validators.required, Validators.minLength(3)]],
   });
 
   loginForm = this.fb.group({
-    email:    ['', [Validators.required]],   // acepta email o número de documento
+    email:    ['', [Validators.required]],
     password: ['', [Validators.required, Validators.minLength(6)]],
   });
 
@@ -67,6 +77,13 @@ export class Login {
     if (state?.email) {
       this.loginForm.patchValue({ email: state.email });
       if (savedTenant) this.step.set(2);
+    }
+  }
+
+  ngOnInit(): void {
+    // Si ya hay un tenant guardado, cargamos sus dominios en background
+    if (this.tenantService.getTenant()) {
+      this.loadDomains();
     }
   }
 
@@ -85,14 +102,26 @@ export class Login {
 
     this.authService.checkTenantAvailability(slug).subscribe({
       next: () => {
-        this.isLoading.set(false);
         this.tenantService.setTenant(slug);
+        this.loadDomains();
+        this.isLoading.set(false);
         this.step.set(2);
       },
       error: (err: Error) => {
         this.isLoading.set(false);
         this.errorMessage.set(err.message);
       },
+    });
+  }
+
+  private loadDomains(): void {
+    this.domainsSvc.getPublicDomains().subscribe({
+      next: (list) => {
+        this.domains.set(list);
+        const primary = list.find(d => d.isPrimary) ?? list[0] ?? null;
+        this.selectedDomain.set(primary);
+      },
+      // Error silencioso: si no hay dominios configurados, el campo de email se muestra completo
     });
   }
 
@@ -105,8 +134,15 @@ export class Login {
     this.isLoading.set(true);
     this.errorMessage.set('');
 
-    const { email, password } = this.loginForm.value;
-    this.authService.login({ email: email!, password: password! }).subscribe({
+    const rawValue = this.loginForm.value.email!;
+    const password = this.loginForm.value.password!;
+
+    // Si hay dominios y el usuario está en modo colaborador, construimos el email completo
+    const email = (!this.isCandidate() && this.hasDomains() && this.selectedDomain())
+      ? `${rawValue}@${this.selectedDomain()!.domain}`
+      : rawValue;
+
+    this.authService.login({ email, password }).subscribe({
       next: () => {
         this.isLoading.set(false);
         this.router.navigate(this.authService.getPostLoginRoute());
@@ -116,6 +152,26 @@ export class Login {
         this.handleLoginError(err);
       },
     });
+  }
+
+  // ── Selector de dominio ───────────────────────────────────────────────────
+
+  toggleDomainMenu(): void {
+    if (this.multiDomain()) this.domainOpen.update(v => !v);
+  }
+
+  selectDomain(d: PublicDomain): void {
+    this.selectedDomain.set(d);
+    this.domainOpen.set(false);
+  }
+
+  closeDomainMenu(): void { this.domainOpen.set(false); }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    if (this.domainOpen() && !this.elRef.nativeElement.contains(event.target)) {
+      this.domainOpen.set(false);
+    }
   }
 
   // ── PASO 2-B: Login con Microsoft ─────────────────────────────────────────
@@ -156,6 +212,7 @@ export class Login {
     this.loginMode.set(mode);
     this.errorMessage.set('');
     this.loginForm.reset();
+    this.domainOpen.set(false);
   }
 
   goBack(): void {
@@ -164,6 +221,8 @@ export class Login {
     this.errorMessage.set('');
     this.loginForm.reset();
     this.tenantForm.reset();
+    this.domains.set([]);
+    this.selectedDomain.set(null);
   }
 
   // ── Manejo de errores ─────────────────────────────────────────────────────
@@ -177,7 +236,7 @@ export class Login {
         this.getControl(this.loginForm, 'email').setErrors({
           serverError: this.isCandidate()
             ? (message ?? 'El número de documento no está registrado. Contacta a RRHH.')
-            : (message ?? 'El correo no está registrado en esta empresa.'),
+            : (message ?? 'El usuario no está registrado en esta empresa.'),
         });
         break;
       case 'WRONG_PASSWORD':

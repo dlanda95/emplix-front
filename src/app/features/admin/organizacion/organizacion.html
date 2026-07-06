@@ -26,7 +26,7 @@
         [active]="typeFilter()"
         (activeChange)="typeFilter.set($event)">
       </app-filter-chips>
-      <app-button variant="primary" icon="add" (clicked)="openNewArea()">
+      <app-button variant="primary" icon="add" [disabled]="!perms.canCreate()" (clicked)="openNewArea()">
         Nueva Área
       </app-button>
     </div>
@@ -84,13 +84,13 @@
               </div>
 
               <div class="area-card__actions" (click)="$event.stopPropagation()">
-                <app-button variant="ghost" icon="add" size="sm" (clicked)="openNewSubarea(area)">
+                <app-button variant="ghost" icon="add" size="sm" [disabled]="!perms.canCreate()" (clicked)="openNewSubarea(area)">
                   Subárea
                 </app-button>
-                <app-button variant="ghost" icon="edit" size="sm" (clicked)="openEditArea(area)">
+                <app-button variant="ghost" icon="edit" size="sm" [disabled]="!perms.canEdit()" (clicked)="openEditArea(area)">
                   Editar
                 </app-button>
-                <app-button variant="ghost" icon="delete" size="sm" (clicked)="requestDeleteArea(area)">
+                <app-button variant="ghost" icon="delete" size="sm" [disabled]="!perms.canDelete()" (clicked)="requestDeleteArea(area)">
                 </app-button>
               </div>
             </div>
@@ -123,9 +123,9 @@
                         {{ sub._count.employees }}
                       </div>
                       <div class="subarea-row__actions">
-                        <app-button variant="ghost" icon="edit" size="sm" (clicked)="openEditSubarea(sub)">
+                        <app-button variant="ghost" icon="edit" size="sm" [disabled]="!perms.canEdit()" (clicked)="openEditSubarea(sub)">
                         </app-button>
-                        <app-button variant="ghost" icon="delete" size="sm" (clicked)="requestDeleteArea(sub)">
+                        <app-button variant="ghost" icon="delete" size="sm" [disabled]="!perms.canDelete()" (clicked)="requestDeleteArea(sub)">
                         </app-button>
                       </div>
                     </div>
@@ -149,7 +149,7 @@
       <p class="org-toolbar__count">
         {{ positions().length }} cargo{{ positions().length !== 1 ? 's' : '' }}
       </p>
-      <app-button variant="primary" icon="add" (clicked)="openNewPosition()">
+      <app-button variant="primary" icon="add" [disabled]="!perms.canCreate()" (clicked)="openNewPosition()">
         Nuevo Cargo
       </app-button>
     </div>
@@ -205,9 +205,9 @@
               </div>
 
               <div class="pos-table__actions">
-                <app-button variant="ghost" icon="edit" size="sm" (clicked)="openEditPosition(pos)">
+                <app-button variant="ghost" icon="edit" size="sm" [disabled]="!perms.canEdit()" (clicked)="openEditPosition(pos)">
                 </app-button>
-                <app-button variant="ghost" icon="delete" size="sm" (clicked)="requestDeletePosition(pos)">
+                <app-button variant="ghost" icon="delete" size="sm" [disabled]="!perms.canDelete()" (clicked)="requestDeletePosition(pos)">
                 </app-button>
               </div>
 

@@ -14,6 +14,7 @@ import {
   AREA_TYPE_LABELS, AREA_TYPE_VARIANTS, ROLE_TYPE_LABELS,
   AreaType, RoleType,
 } from '../services/organization.service';
+import { PermissionsService } from '@core/auth/permissions.service';
 
 const AREA_TABS: TabItem[] = [
   { id: 'areas',     label: 'Áreas',   icon: 'account_tree' },
@@ -58,6 +59,7 @@ export class Organizacion {
   private readonly svc        = inject(OrganizationAdminService);
   private readonly fb         = inject(FormBuilder);
   private readonly destroyRef = inject(DestroyRef);
+  readonly perms              = inject(PermissionsService);
 
   // ── Estado ────────────────────────────────────────────────────────────────
   readonly activeTab     = signal<string>('areas');

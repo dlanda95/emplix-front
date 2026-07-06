@@ -3,7 +3,7 @@
   <app-page-header
     title="Tipos de Usuario del Sistema"
     subtitle="Define roles y permisos para los usuarios sin ficha de empleado">
-    <app-button icon="add" variant="primary" (clicked)="startNew()">Nuevo tipo</app-button>
+    <app-button icon="add" variant="primary" [disabled]="!perms.canManageConfig()" (clicked)="startNew()">Nuevo tipo</app-button>
   </app-page-header>
 
   @if (loadError()) {
@@ -115,14 +115,15 @@
           </div>
 
           <div class="type-card__actions">
-            <app-button variant="ghost" size="sm" icon="edit" (clicked)="startEdit(t)">Editar</app-button>
+            <app-button variant="ghost" size="sm" icon="edit" [disabled]="!perms.canManageConfig()" (clicked)="startEdit(t)">Editar</app-button>
             <app-button variant="ghost" size="sm"
               [icon]="t.isActive ? 'block' : 'check_circle'"
+              [disabled]="!perms.canManageConfig()"
               (clicked)="toggleActive(t)">
               {{ t.isActive ? 'Desactivar' : 'Activar' }}
             </app-button>
             @if (!t.isSystem) {
-              <app-button variant="danger" size="sm" icon="delete" (clicked)="delete(t)">Eliminar</app-button>
+              <app-button variant="danger" size="sm" icon="delete" [disabled]="!perms.canDelete()" (clicked)="delete(t)">Eliminar</app-button>
             }
           </div>
 

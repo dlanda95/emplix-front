@@ -7,6 +7,7 @@ import { AppInput, AppSelect, Badge, Banner, Button, EmptyState, LoadingSkeleton
 import { CandidatesService, CandidateSummary } from '../../services/candidates.service';
 import { OnboardingLabelPipe, OnboardingVariantPipe } from '../onboarding-status.pipe';
 import { DOCUMENT_TYPE_OPTIONS } from '@features/portal/models/catalog.model';
+import { PermissionsService } from '@core/auth/permissions.service';
 
 @Component({
   selector: 'app-candidates-list',
@@ -19,6 +20,7 @@ export class CandidatesList implements OnInit {
   private readonly router     = inject(Router);
   private readonly fb         = inject(FormBuilder);
   private readonly destroyRef = inject(DestroyRef);
+  readonly perms              = inject(PermissionsService);
 
   readonly candidates   = signal<CandidateSummary[]>([]);
   readonly isLoading    = signal(true);

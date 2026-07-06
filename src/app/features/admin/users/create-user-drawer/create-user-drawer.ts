@@ -21,15 +21,15 @@ export class CreateUserDrawer implements OnChanges {
   private readonly svc        = inject(UsersAdminService);
   private readonly destroyRef = inject(DestroyRef);
 
-  saving      = false;
-  loadingTypes = false;
-  errorMsg    = '';
-  success     = false;
-  createdEmail = '';
+  readonly saving       = signal(false);
+  readonly loadingTypes = signal(false);
+  readonly errorMsg     = signal('');
+  readonly success      = signal(false);
+  readonly createdEmail = signal('');
 
-  readonly userTypes    = signal<SystemUserType[]>([]);
-  readonly typeOptions  = signal<SelectOption[]>([]);
-  selectedType          = signal<SystemUserType | null>(null);
+  readonly userTypes   = signal<SystemUserType[]>([]);
+  readonly typeOptions = signal<SelectOption[]>([]);
+  readonly selectedType = signal<SystemUserType | null>(null);
 
   form = this.fb.group({
     firstName:        ['', Validators.required],
@@ -46,23 +46,22 @@ export class CreateUserDrawer implements OnChanges {
   }
 
   private loadTypes(): void {
-    this.loadingTypes = true;
+    this.loadingTypes.set(true);
     this.svc.listSystemUserTypes()
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: types => {
-          this.loadingTypes = false;
+          this.loadingTypes.set(false);
           const active = types.filter(t => t.isActive);
           this.userTypes.set(active);
           this.typeOptions.set(active.map(t => ({ value: t.id, label: t.name })));
-          // listen to form control changes to update preview
           this.form.get('systemUserTypeId')!.valueChanges
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe(id => {
               this.selectedType.set(active.find(t => t.id === id) ?? null);
             });
         },
-        error: () => { this.loadingTypes = false; },
+        error: () => { this.loadingTypes.set(false); },
       });
   }
 
@@ -73,8 +72,8 @@ export class CreateUserDrawer implements OnChanges {
 
   submit(): void {
     if (this.form.invalid) { this.form.markAllAsTouched(); return; }
-    this.saving   = true;
-    this.errorMsg = '';
+    this.saving.set(true);
+    this.errorMsg.set('');
 
     const v = this.form.value;
     this.svc.createSystemUser({
@@ -85,19 +84,19 @@ export class CreateUserDrawer implements OnChanges {
       password:         v.password!,
     }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: res => {
-        this.saving = false;
-        this.success = true;
-        this.createdEmail = res.email;
+        this.saving.set(false);
+        this.success.set(true);
+        this.createdEmail.set(res.email);
       },
       error: err => {
-        this.saving   = false;
-        this.errorMsg = err?.error?.message ?? 'Error al crear el usuario.';
+        this.saving.set(false);
+        this.errorMsg.set(err?.error?.message ?? 'Error al crear el usuario.');
       },
     });
   }
 
   confirmSuccess(): void {
-    this.success = false;
+    this.success.set(false);
     this.created.emit();
     this.reset();
   }
@@ -108,8 +107,8 @@ export class CreateUserDrawer implements OnChanges {
   }
 
   private reset(): void {
-    this.errorMsg = '';
-    this.success  = false;
+    this.errorMsg.set('');
+    this.success.set(false);
     this.selectedType.set(null);
     this.form.reset();
   }

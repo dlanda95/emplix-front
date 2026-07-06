@@ -6,6 +6,7 @@ import {
   PageHeader, Button, Banner, Badge, EmptyState, LoadingSkeleton, SectionCard,
 } from '@shared/ui';
 import { UsersAdminService, SystemUserType, PermissionSet } from '../../users/users-admin.service';
+import { PermissionsService } from '@core/auth/permissions.service';
 
 const PERM_LABELS: Array<{ key: keyof PermissionSet; label: string; icon: string }> = [
   { key: 'canRead',          label: 'Leer',          icon: 'visibility'      },
@@ -27,6 +28,7 @@ export class UserTypesPage implements OnInit {
   private readonly svc        = inject(UsersAdminService);
   private readonly fb         = inject(FormBuilder);
   private readonly destroyRef = inject(DestroyRef);
+  readonly perms              = inject(PermissionsService);
 
   readonly permLabels = PERM_LABELS;
 

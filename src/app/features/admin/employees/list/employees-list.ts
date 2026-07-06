@@ -2,6 +2,7 @@ import { Component, DestroyRef, inject, signal, computed, OnInit } from '@angula
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { Avatar, Badge, Banner, Button, EmptyState, FilterChips, LoadingSkeleton, PageHeader, SectionCard, StatCard, AppInput } from '@shared/ui';
 import { EmployeesAdminService, EmployeeSummary } from '../employees.service';
 import type { FilterChipItem } from '@shared/ui';
@@ -13,6 +14,7 @@ import type { FilterChipItem } from '@shared/ui';
 })
 export class EmployeesList implements OnInit {
   private readonly svc        = inject(EmployeesAdminService);
+  private readonly router     = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
 
   readonly employees    = signal<EmployeeSummary[]>([]);
@@ -82,5 +84,9 @@ export class EmployeesList implements OnInit {
   supervisorName(e: EmployeeSummary): string {
     const s = e.supervisor;
     return s ? `${s.firstName} ${s.lastName}` : '—';
+  }
+
+  openProfile(id: string): void {
+    this.router.navigate(['/admin/colaboradores', id]);
   }
 }
