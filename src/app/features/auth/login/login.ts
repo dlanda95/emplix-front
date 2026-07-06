@@ -98,7 +98,7 @@ export class Login implements OnInit {
 
     this.isLoading.set(true);
     this.errorMessage.set('');
-    const slug = this.tenantForm.get('slug')!.value!;
+    const slug = this.tenantForm.get('slug')!.value!.toLowerCase().trim();
 
     this.authService.checkTenantAvailability(slug).subscribe({
       next: () => {
@@ -138,9 +138,9 @@ export class Login implements OnInit {
     const password = this.loginForm.value.password!;
 
     // Si hay dominios y el usuario está en modo colaborador, construimos el email completo
-    const email = (!this.isCandidate() && this.hasDomains() && this.selectedDomain())
+    const email = ((!this.isCandidate() && this.hasDomains() && this.selectedDomain())
       ? `${rawValue}@${this.selectedDomain()!.domain}`
-      : rawValue;
+      : rawValue).toLowerCase().trim();
 
     this.authService.login({ email, password }).subscribe({
       next: () => {
