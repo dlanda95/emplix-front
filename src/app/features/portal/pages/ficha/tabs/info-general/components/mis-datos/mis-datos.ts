@@ -1,6 +1,7 @@
 import { Component, inject, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { pastDateValidator } from '@shared/validators/date-range.validator';
 import { AppInput, AppSelect, ChangeRequestBar, Field, SectionCard } from '@shared/ui';
 import { CollaboratorService } from '@features/portal/services/collaborator.service';
 import { CollaboratorProfile } from '@features/portal/models/collaborator.model';
@@ -28,6 +29,7 @@ export class MisDatos {
   readonly isPending         = signal(false);
   readonly profile           = signal<CollaboratorProfile | undefined>(undefined);
 
+  readonly today                = new Date().toISOString().slice(0, 10);
   readonly genderOptions        = GENDER_OPTIONS;
   readonly maritalStatusOptions = MARITAL_STATUS_OPTIONS;
   readonly academicLevelOptions = ACADEMIC_LEVEL_OPTIONS;
@@ -40,7 +42,7 @@ export class MisDatos {
     secondLastName:[''],
     documentType:  ['DNI'],
     documentId:    [''],
-    birthDate:     [''],
+    birthDate:     ['', pastDateValidator],
     gender:        [''],
     maritalStatus: [''],
     nationality:   [''],

@@ -107,7 +107,15 @@
         <app-select label="Tipo de Documento *" formControlName="documentType" [options]="documentTypes"></app-select>
         <app-input  label="Nro. de Documento *" formControlName="documentId"   placeholder="Ej. 12345678"></app-input>
       </div>
-      <app-input label="Fecha de Ingreso Estimada *" type="date" formControlName="hireDate"></app-input>
+      <app-input label="Fecha de Ingreso Estimada *" type="date" formControlName="hireDate"
+        min="1900-01-01" max="2100-12-31"></app-input>
+      @if (form.get('hireDate')?.touched && form.get('hireDate')?.errors) {
+        <span class="field-error">
+          @if (form.get('hireDate')?.hasError('required')) { Campo obligatorio }
+          @else if (form.get('hireDate')?.hasError('dateOutOfRange')) { El año debe estar entre 1900 y 2100 }
+          @else if (form.get('hireDate')?.hasError('invalidDate'))    { La fecha no es válida }
+        </span>
+      }
       <app-banner variant="info" icon="key" title="Credenciales temporales">
         <p>El candidato podrá ingresar con su número de documento como usuario y contraseña temporal.</p>
       </app-banner>

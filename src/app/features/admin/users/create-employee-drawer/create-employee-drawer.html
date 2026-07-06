@@ -68,7 +68,15 @@
             <app-input label="Documento de identidad" formControlName="documentId" placeholder="DNI, CE, Pasaporte..."></app-input>
           </app-form-row>
           <app-form-row>
-            <app-input label="Fecha de ingreso *" formControlName="hireDate" type="date"></app-input>
+            <app-input label="Fecha de ingreso *" formControlName="hireDate" type="date"
+              min="1900-01-01" max="2100-12-31"></app-input>
+            @if (step1.get('hireDate')?.touched && step1.get('hireDate')?.errors) {
+              <span class="field-error">
+                @if (step1.get('hireDate')?.hasError('required'))      { Campo obligatorio }
+                @else if (step1.get('hireDate')?.hasError('dateOutOfRange')) { El año debe estar entre 1900 y 2100 }
+                @else if (step1.get('hireDate')?.hasError('invalidDate'))    { La fecha no es válida }
+              </span>
+            }
           </app-form-row>
         </app-form-section>
       </form>

@@ -2,6 +2,7 @@ import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges, injec
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { dateRangeValidator } from '@shared/validators/date-range.validator';
 import { HttpClient } from '@angular/common/http';
 import { forkJoin } from 'rxjs';
 import { Drawer, AppInput, AppSelect, Button, Banner, FormRow, FormSection, Badge } from '@shared/ui';
@@ -48,7 +49,7 @@ export class CreateEmployeeDrawer implements OnChanges {
     lastName:   ['', Validators.required],
     email:      ['', [Validators.required, Validators.email]],
     documentId: [''],
-    hireDate:   ['', Validators.required],
+    hireDate:   ['', [Validators.required, dateRangeValidator]],
   });
 
   step2 = this.fb.group({

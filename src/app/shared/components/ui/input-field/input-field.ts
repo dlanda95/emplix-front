@@ -23,6 +23,8 @@ export class InputField {
   icon        = input('');
   hint        = input('');
   readonly    = input(false);
+  min         = input<string | undefined>(undefined);
+  max         = input<string | undefined>(undefined);
 
   readonly focused = signal(false);
 

@@ -61,6 +61,13 @@
   }
 }
 
+.field-error {
+  display: block;
+  margin-top: 4px;
+  font-size: var(--text-xs, 0.75rem);
+  color: var(--color-error, #ef4444);
+}
+
 .colabs-toolbar {
   display: flex;
   align-items: flex-start;

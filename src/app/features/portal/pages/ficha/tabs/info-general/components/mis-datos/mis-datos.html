@@ -30,7 +30,7 @@
         <app-input label="Segundo Nombre"      formControlName="middleName"></app-input>
         <app-input label="Apellido Paterno"    formControlName="lastName"></app-input>
         <app-input label="Apellido Materno"    formControlName="secondLastName"></app-input>
-        <app-input label="Fecha de Nacimiento" type="date" formControlName="birthDate"></app-input>
+        <app-input label="Fecha de Nacimiento" type="date" formControlName="birthDate" min="1900-01-01" [max]="today"></app-input>
         <app-select label="Género"             formControlName="gender" [options]="genderOptions"></app-select>
       }
     </app-section-card>

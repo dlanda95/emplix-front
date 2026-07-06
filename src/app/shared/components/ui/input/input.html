@@ -8,5 +8,7 @@
         (ngModelChange)="onChange($event)"
         (blur)="onTouched()"
         [disabled]="disabled"
+        [attr.min]="min"
+        [attr.max]="max"
       >
     </div>

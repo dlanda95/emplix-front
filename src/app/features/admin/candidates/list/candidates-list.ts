@@ -3,6 +3,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
+import { dateRangeValidator } from '@shared/validators/date-range.validator';
 import { debounceTime, distinctUntilChanged } from 'rxjs';
 import {
   AppInput, AppSelect, Badge, Banner, Button, EmptyState,
@@ -64,7 +65,7 @@ export class CandidatesList implements OnInit {
     middleName:   [''],
     documentType: ['DNI', Validators.required],
     documentId:   ['', Validators.required],
-    hireDate:     ['', Validators.required],
+    hireDate:     ['', [Validators.required, dateRangeValidator]],
   });
 
   ngOnInit(): void {

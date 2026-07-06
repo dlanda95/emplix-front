@@ -20,6 +20,8 @@ export class AppInput implements ControlValueAccessor {
   @Input() type: string = 'text';
   @Input() placeholder: string = '';
   @Input() disabled: boolean = false;
+  @Input() min?: string;
+  @Input() max?: string;
 
   value: string = '';
   onChange: any = () => {};

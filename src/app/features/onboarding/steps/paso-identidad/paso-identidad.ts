@@ -1,6 +1,7 @@
 import { Component, inject, signal, effect, computed } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { pastDateValidator } from '@shared/validators/date-range.validator';
 import { AppInput, AppSelect, Banner, Button, SectionCard } from '@shared/ui';
 import { OnboardingService } from '../../services/onboarding.service';
 import { DOCUMENT_TYPE_OPTIONS, GENDER_OPTIONS, MARITAL_STATUS_OPTIONS,
@@ -17,6 +18,7 @@ export class PasoIdentidad {
   readonly svc             = inject(OnboardingService);
   readonly isSaving    = signal(false);
   readonly saved       = signal(false);
+  readonly today       = new Date().toISOString().slice(0, 10);
   readonly saveError   = signal('');
 
   readonly isDirty   = computed(() => this.svc.isDirty(this.STEP_KEY));
@@ -34,7 +36,7 @@ export class PasoIdentidad {
     secondLastName:[''],
     documentType:  ['DNI', Validators.required],
     documentId:    ['', Validators.required],
-    birthDate:     [''],
+    birthDate:     ['', pastDateValidator],
     gender:        [''],
     maritalStatus: [''],
     nationality:   ['Peruana'],
