@@ -49,7 +49,7 @@ export class CreateEmployeeDrawer implements OnChanges {
     lastName:   ['', Validators.required],
     email:      ['', [Validators.required, Validators.email]],
     documentId: [''],
-    hireDate:   ['', [Validators.required, dateRangeValidator]],
+    hireDate:   [new Date().toISOString().slice(0, 10), [Validators.required, dateRangeValidator]],
   });
 
   step2 = this.fb.group({

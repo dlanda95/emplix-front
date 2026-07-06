@@ -16,6 +16,7 @@ import { PermissionsService } from '@core/auth/permissions.service';
 import type { SelectOption } from '@shared/ui';
 
 const PAGE_SIZE = 25;
+const TODAY = new Date().toISOString().slice(0, 10);
 
 const ONBOARDING_OPTIONS: SelectOption[] = [
   { value: '',           label: 'Todos los estados' },
@@ -65,7 +66,7 @@ export class CandidatesList implements OnInit {
     middleName:   [''],
     documentType: ['DNI', Validators.required],
     documentId:   ['', Validators.required],
-    hireDate:     ['', [Validators.required, dateRangeValidator]],
+    hireDate:     [TODAY, [Validators.required, dateRangeValidator]],
   });
 
   ngOnInit(): void {
@@ -105,7 +106,7 @@ export class CandidatesList implements OnInit {
 
   onPageChange(p: number): void { this.page.set(p); this.load(); }
 
-  openCreate(): void  { this.isModalOpen.set(true); this.form.reset({ documentType: 'DNI' }); }
+  openCreate(): void  { this.isModalOpen.set(true); this.form.reset({ documentType: 'DNI', hireDate: TODAY }); }
   closeCreate(): void { this.isModalOpen.set(false); this.createError.set(''); }
 
   createCandidate(): void {

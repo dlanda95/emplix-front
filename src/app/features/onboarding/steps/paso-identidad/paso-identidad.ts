@@ -36,7 +36,7 @@ export class PasoIdentidad {
     secondLastName:[''],
     documentType:  ['DNI', Validators.required],
     documentId:    ['', Validators.required],
-    birthDate:     ['', pastDateValidator],
+    birthDate:     ['2000-01-01', pastDateValidator],
     gender:        [''],
     maritalStatus: [''],
     nationality:   ['Peruana'],
@@ -59,7 +59,7 @@ export class PasoIdentidad {
       const p = this.svc.profile();
       if (!p) return;
       const draft = this.svc.getDraft(this.STEP_KEY);
-      const values = draft ?? { ...p, birthDate: p.birthDate?.slice(0, 10) ?? '' };
+      const values = draft ?? { ...p, birthDate: p.birthDate?.slice(0, 10) || '2000-01-01' };
       this.form.patchValue(values as any, { emitEvent: false });
     });
 

@@ -42,7 +42,7 @@ export class MisDatos {
     secondLastName:[''],
     documentType:  ['DNI'],
     documentId:    [''],
-    birthDate:     ['', pastDateValidator],
+    birthDate:     ['2000-01-01', pastDateValidator],
     gender:        [''],
     maritalStatus: [''],
     nationality:   [''],
@@ -62,14 +62,21 @@ export class MisDatos {
     this.loadProfile();
     effect(() => {
       const data = this.profile();
-      if (data) this.editForm.patchValue(data);
+      if (data) this.patchWithDefaults(data);
+    });
+  }
+
+  private patchWithDefaults(data: Record<string, unknown>): void {
+    this.editForm.patchValue({
+      ...data,
+      birthDate: (data['birthDate'] as string | null)?.slice(0, 10) || '2000-01-01',
     });
   }
 
   cancelEdit(): void {
     this.isEditing.set(false);
     const data = this.profile();
-    if (data) this.editForm.patchValue(data);
+    if (data) this.patchWithDefaults(data as Record<string, unknown>);
   }
 
   submitRequest(): void {
