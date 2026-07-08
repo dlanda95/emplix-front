@@ -43,7 +43,8 @@ export class Login implements OnInit {
   readonly isLoading      = signal(false);
   readonly isMsalLoading  = signal(false);
   readonly errorMessage   = signal('');
-  readonly sessionExpired = signal(false);
+  readonly sessionExpired    = signal(false);
+  readonly passwordResetDone = signal(false);
 
   // Dominios del tenant
   readonly domains        = signal<PublicDomain[]>([]);
@@ -85,6 +86,9 @@ export class Login implements OnInit {
   ngOnInit(): void {
     if (this.route.snapshot.queryParams['reason'] === 'session_expired') {
       this.sessionExpired.set(true);
+    }
+    if (this.route.snapshot.queryParams['success'] === 'password_reset') {
+      this.passwordResetDone.set(true);
     }
     if (this.tenantService.getTenant()) {
       this.loadDomains();

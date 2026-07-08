@@ -4,12 +4,15 @@ const base = environment.apiUrl;
 
 export const API_ENDPOINTS = {
   auth: {
-    login:        `${base}/auth/login`,
-    register:     `${base}/auth/register`,
-    checkEmail:   `${base}/auth/check-email`,
-    me:           `${base}/auth/me`,
-    microsoft:    `${base}/auth/microsoft`,
-    verifytenant: `${base}/auth/verify-tenant`,
+    login:              `${base}/auth/login`,
+    register:           `${base}/auth/register`,
+    checkEmail:         `${base}/auth/check-email`,
+    me:                 `${base}/auth/me`,
+    microsoft:          `${base}/auth/microsoft`,
+    verifytenant:       `${base}/auth/verify-tenant`,
+    forgotPassword:     `${base}/auth/forgot-password`,
+    verifyResetToken:   `${base}/auth/verify-reset-token`,
+    resetPassword:      `${base}/auth/reset-password`,
   },
   employees: {
     me:   `${base}/employees/me`,

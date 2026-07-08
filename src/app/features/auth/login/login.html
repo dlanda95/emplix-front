@@ -40,6 +40,14 @@
         </div>
       }
 
+      <!-- Contraseña restablecida correctamente -->
+      @if (passwordResetDone()) {
+        <div class="password-reset-banner">
+          <span class="material-icons-round">check_circle</span>
+          Contraseña actualizada correctamente. Ya puedes iniciar sesión.
+        </div>
+      }
+
       <!-- Banner de error global -->
       @if (errorMessage()) {
         <div class="error-banner">

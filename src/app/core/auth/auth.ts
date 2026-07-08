@@ -84,6 +84,24 @@ export class AuthService {
     );
   }
 
+  forgotPassword(email: string): Observable<{ message: string }> {
+    return this.http.post<any>(API_ENDPOINTS.auth.forgotPassword, { email }).pipe(
+      map(res => res?.data ?? res),
+    );
+  }
+
+  verifyResetToken(token: string): Observable<{ valid: boolean }> {
+    return this.http.get<any>(`${API_ENDPOINTS.auth.verifyResetToken}?token=${encodeURIComponent(token)}`).pipe(
+      map(res => res?.data ?? res),
+    );
+  }
+
+  resetPassword(token: string, password: string): Observable<{ message: string }> {
+    return this.http.post<any>(API_ENDPOINTS.auth.resetPassword, { token, password }).pipe(
+      map(res => res?.data ?? res),
+    );
+  }
+
   checkEmailAvailability(email: string): Observable<boolean> {
     return this.http.post<any>(API_ENDPOINTS.auth.checkEmail, { email }).pipe(
       map(res => !!(res?.data ?? res).exists),

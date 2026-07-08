@@ -17,8 +17,10 @@ export const routes: Routes = [
     canActivate: [publicGuard],
     children: [
       { path: '',         redirectTo: 'login', pathMatch: 'full' },
-      { path: 'login',    component: Login    },
-      { path: 'register', component: Register },
+      { path: 'login',            component: Login    },
+      { path: 'register',         component: Register },
+      { path: 'forgot-password',  loadComponent: () => import('@features/auth/forgot-password/forgot-password').then(m => m.ForgotPassword) },
+      { path: 'reset-password',   loadComponent: () => import('@features/auth/reset-password/reset-password').then(m => m.ResetPassword)   },
     ],
   },
 
