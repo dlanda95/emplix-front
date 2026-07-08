@@ -5,10 +5,11 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Avatar, Badge, Banner, Button, LoadingSkeleton } from '@shared/ui';
 import { EmployeesAdminService, EmployeeDetail as EmployeeDetailData } from '../employees.service';
 import { PermissionsService } from '@core/auth/permissions.service';
+import { EditLaborDrawer } from '../edit-labor-drawer/edit-labor-drawer';
 
 @Component({
   selector: 'app-employee-detail',
-  imports: [CommonModule, RouterLink, Avatar, Badge, Banner, Button, LoadingSkeleton],
+  imports: [CommonModule, RouterLink, Avatar, Badge, Banner, Button, LoadingSkeleton, EditLaborDrawer],
   templateUrl: './employee-detail.html',
   styleUrl: './employee-detail.scss',
 })
@@ -19,9 +20,10 @@ export class EmployeeDetail implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
   readonly perms              = inject(PermissionsService);
 
-  readonly employee  = signal<EmployeeDetailData | null>(null);
-  readonly isLoading = signal(true);
-  readonly loadError = signal('');
+  readonly employee        = signal<EmployeeDetailData | null>(null);
+  readonly isLoading       = signal(true);
+  readonly loadError       = signal('');
+  readonly showLaborDrawer = signal(false);
 
   readonly fullName = computed(() => {
     const e = this.employee();
@@ -38,6 +40,16 @@ export class EmployeeDetail implements OnInit {
     this.svc.getById(id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next:  emp => { this.employee.set(emp); this.isLoading.set(false); },
       error: err => { this.loadError.set(err?.error?.message ?? 'No se pudo cargar el perfil.'); this.isLoading.set(false); },
+    });
+  }
+
+  openLaborDrawer(): void  { this.showLaborDrawer.set(true); }
+  closeLaborDrawer(): void { this.showLaborDrawer.set(false); }
+
+  onLaborSaved(): void {
+    const id = this.route.snapshot.paramMap.get('id')!;
+    this.svc.getById(id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: emp => this.employee.set(emp),
     });
   }
 

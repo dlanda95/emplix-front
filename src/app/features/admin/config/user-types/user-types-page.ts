@@ -37,7 +37,11 @@ export class UserTypesPage implements OnInit {
   readonly loadError  = signal('');
   readonly saving     = signal(false);
   readonly errorMsg   = signal('');
-  readonly editingId  = signal<string | null>(null);
+  readonly editingId    = signal<string | null>(null);
+  readonly visibleTypes = computed(() => {
+    const id = this.editingId();
+    return id ? this.types().filter(t => t.id !== id) : this.types();
+  });
 
   readonly COLOR_PALETTE = [
     '#7c3aed', '#0ea5e9', '#f59e0b', '#10b981',

@@ -1,0 +1,181 @@
+<div class="am-page">
+
+  <div class="am-page__header">
+    <app-page-header
+      title="Métodos de acceso"
+      subtitle="Configura cómo los usuarios de tu organización pueden iniciar sesión">
+    </app-page-header>
+  </div>
+
+  @if (!isAdmin()) {
+    <app-banner variant="warning" icon="lock"
+      title="Solo el Administrador de la empresa puede gestionar los métodos de acceso.">
+    </app-banner>
+  }
+
+  @if (loadError()) {
+    <app-banner variant="error" icon="error" [title]="loadError()"></app-banner>
+  }
+
+  @if (isLoading()) {
+    <app-loading-skeleton variant="card" [lines]="3"></app-loading-skeleton>
+  } @else {
+
+    <app-section-card title="Métodos de inicio de sesión" [columns]="1">
+
+      <!-- ── Fila: Email / Password ─────────────────────────────────────── -->
+      <div class="am-row" [class.am-row--inactive]="email()?.enabled === false">
+
+        <div class="am-row__icon am-row__icon--email">
+          <span class="material-icons-round">email</span>
+        </div>
+
+        <div class="am-row__body">
+          <p class="am-row__name">Correo electrónico y contraseña</p>
+          <p class="am-row__desc">
+            Inicio de sesión con email corporativo y contraseña. Método estándar para todos los usuarios.
+          </p>
+        </div>
+
+        <div class="am-row__meta">
+          <span class="am-badge" [class.am-badge--on]="email()?.enabled !== false" [class.am-badge--off]="email()?.enabled === false">
+            <span class="material-icons-round">{{ email()?.enabled !== false ? 'check_circle' : 'cancel' }}</span>
+            {{ email()?.enabled !== false ? 'Activo' : 'Inactivo' }}
+          </span>
+        </div>
+
+        @if (isAdmin()) {
+          <div class="am-row__actions">
+            @if (email()?.enabled !== false) {
+              <app-button variant="ghost" size="sm" [loading]="saving() === 'EMAIL'" (clicked)="toggleEmail()">
+                Desactivar
+              </app-button>
+            } @else {
+              <app-button variant="primary" size="sm" [loading]="saving() === 'EMAIL'" (clicked)="toggleEmail()">
+                Activar
+              </app-button>
+            }
+          </div>
+        }
+
+      </div>
+
+      <div class="am-separator"></div>
+
+      <!-- ── Fila: Microsoft SSO ───────────────────────────────────────── -->
+      <div class="am-row" [class.am-row--inactive]="!microsoft()?.enabled">
+
+        <div class="am-row__icon am-row__icon--ms">
+          <svg viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg">
+            <rect x="1"  y="1"  width="9" height="9" fill="#f25022"/>
+            <rect x="11" y="1"  width="9" height="9" fill="#7fba00"/>
+            <rect x="1"  y="11" width="9" height="9" fill="#00a4ef"/>
+            <rect x="11" y="11" width="9" height="9" fill="#ffb900"/>
+          </svg>
+        </div>
+
+        <div class="am-row__body">
+          <p class="am-row__name">Microsoft SSO <span class="am-row__tag">Entra ID</span></p>
+          <p class="am-row__desc">
+            Inicio de sesión con cuenta corporativa de Microsoft. Requiere Azure Tenant ID.
+          </p>
+          @if (microsoft()?.enabled && microsoft()?.azureTenantId && !msExpanded()) {
+            <p class="am-row__tenant">
+              <span class="material-icons-round">vpn_key</span>
+              <code>{{ microsoft()!.azureTenantId }}</code>
+              @if (isAdmin()) {
+                <button class="am-row__change" (click)="openMsForm()">Cambiar</button>
+              }
+            </p>
+          }
+        </div>
+
+        <div class="am-row__meta">
+          <span class="am-badge" [class.am-badge--on]="microsoft()?.enabled" [class.am-badge--off]="!microsoft()?.enabled">
+            <span class="material-icons-round">{{ microsoft()?.enabled ? 'check_circle' : 'cancel' }}</span>
+            {{ microsoft()?.enabled ? 'Activo' : 'Inactivo' }}
+          </span>
+        </div>
+
+        @if (isAdmin()) {
+          <div class="am-row__actions">
+            @if (microsoft()?.enabled) {
+              <app-button variant="ghost" size="sm" [loading]="saving() === 'MICROSOFT'"
+                (clicked)="requestDeactivateMicrosoft()">
+                Desactivar
+              </app-button>
+            } @else {
+              <app-button variant="primary" size="sm" (clicked)="openMsForm()">
+                Configurar
+              </app-button>
+            }
+          </div>
+        }
+
+      </div>
+
+      <!-- ── Formulario Tenant ID (expandible) ────────────────────────── -->
+      @if (msExpanded() && isAdmin()) {
+        <div class="am-config-panel" [formGroup]="msForm">
+          <div class="am-config-panel__inner">
+            <p class="am-config-panel__title">
+              <span class="material-icons-round">settings</span>
+              {{ microsoft()?.enabled ? 'Cambiar Tenant ID' : 'Configurar Microsoft SSO' }}
+            </p>
+            <div class="am-config-panel__field">
+              <label class="am-config-panel__label">
+                Azure Directory (Tenant) ID
+                <span class="am-config-panel__hint">portal.azure.com → Entra ID → Overview</span>
+              </label>
+              <input
+                class="am-config-panel__input"
+                [class.am-config-panel__input--error]="msForm.get('azureTenantId')?.invalid && msForm.get('azureTenantId')?.touched"
+                formControlName="azureTenantId"
+                placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+                spellcheck="false"
+                autocomplete="off">
+              @if (msForm.get('azureTenantId')?.invalid && msForm.get('azureTenantId')?.touched) {
+                <span class="am-config-panel__error">Ingresa un Tenant ID válido (formato GUID).</span>
+              }
+            </div>
+            <div class="am-config-panel__footer">
+              <app-button variant="ghost" size="sm" (clicked)="cancelMsForm()">Cancelar</app-button>
+              <app-button variant="primary" size="sm" [loading]="saving() === 'MICROSOFT'" (clicked)="saveMicrosoft()">
+                Guardar y activar
+              </app-button>
+            </div>
+          </div>
+        </div>
+      }
+
+    </app-section-card>
+
+  }
+
+</div>
+
+<!-- ── Modal: confirmar activación ───────────────────────────────────────── -->
+<app-confirm-modal
+  [isOpen]="showActivateConfirm()"
+  icon="security"
+  confirmVariant="primary"
+  title="¿Activar Microsoft SSO?"
+  message="Los usuarios podrán iniciar sesión con su cuenta corporativa de Microsoft usando el Tenant ID indicado."
+  confirmLabel="Sí, activar"
+  (confirmed)="confirmActivate()"
+  (cancelled)="cancelActivate()">
+</app-confirm-modal>
+
+<!-- ── Modal: confirmar desactivación ────────────────────────────────────── -->
+<app-confirm-modal
+  [isOpen]="showDeactivateConfirm() !== null"
+  icon="warning"
+  confirmVariant="danger"
+  [title]="showDeactivateConfirm() === 'MICROSOFT' ? '¿Desactivar Microsoft SSO?' : '¿Desactivar acceso por email?'"
+  [message]="showDeactivateConfirm() === 'MICROSOFT'
+    ? 'Los usuarios ya no podrán iniciar sesión con Microsoft. Asegúrate de que el acceso por email esté activo.'
+    : 'Los usuarios ya no podrán iniciar sesión con correo y contraseña. Asegúrate de que Microsoft SSO esté activo.'"
+  confirmLabel="Sí, desactivar"
+  (confirmed)="confirmDeactivate()"
+  (cancelled)="cancelDeactivate()">
+</app-confirm-modal>

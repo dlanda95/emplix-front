@@ -96,6 +96,10 @@ export class UsersAdminService {
     return this.http.get<UserListItem[]>(`${this.base}/users`);
   }
 
+  listSystemUsers(): Observable<UserListItem[]> {
+    return this.http.get<UserListItem[]>(`${this.base}/users?systemOnly=true`);
+  }
+
   createSystemUser(payload: CreateSystemUserPayload): Observable<UserListItem> {
     return this.http.post<UserListItem>(`${this.base}/users`, payload);
   }

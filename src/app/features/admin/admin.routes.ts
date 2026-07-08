@@ -45,6 +45,10 @@ export const ADMIN_ROUTES: Routes = [
         path: 'dominios',
         loadComponent: () => import('./config/domains/domains-page').then(m => m.DomainsPage),
       },
+      {
+        path: 'metodos-acceso',
+        loadComponent: () => import('./config/auth-methods/auth-methods-page').then(m => m.AuthMethodsPage),
+      },
     ],
   },
 ];

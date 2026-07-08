@@ -94,6 +94,52 @@
   z-index: 1; // Base
 }
 
+// ── Session expiry warning bar ────────────────────────────────────────────────
+.session-warning {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.625rem 1.25rem;
+  background: color-mix(in srgb, #f59e0b 12%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, #f59e0b 35%, transparent);
+  flex-shrink: 0;
+
+  &__icon {
+    font-size: 1.125rem;
+    color: #b45309;
+    flex-shrink: 0;
+  }
+
+  &__text {
+    flex: 1;
+    font-size: 0.825rem;
+    color: #92400e;
+
+    strong { font-weight: 700; }
+  }
+
+  &__dismiss {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 50%;
+    color: #92400e;
+    opacity: 0.7;
+    transition: opacity 0.15s, background 0.15s;
+
+    &:hover {
+      opacity: 1;
+      background: color-mix(in srgb, #f59e0b 20%, transparent);
+    }
+
+    .material-icons-round { font-size: 1rem; }
+  }
+}
+
 .content-scrollable {
   flex: 1;
   overflow-y: auto;

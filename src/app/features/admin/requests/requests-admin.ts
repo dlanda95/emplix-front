@@ -10,6 +10,7 @@ import {
 import type { FilterChipItem } from '@shared/ui';
 import { RequestsAdminService, ChangeRequest, RequestStatus } from '../services/requests-admin.service';
 import { PermissionsService } from '@core/auth/permissions.service';
+import { ToastService } from '@core/services/toast.service';
 import {
   GENDER_OPTIONS, MARITAL_STATUS_OPTIONS, ACADEMIC_LEVEL_OPTIONS,
   DOCUMENT_TYPE_OPTIONS, AFP_TYPE_OPTIONS, AFP_ENTITY_OPTIONS, AFP_COMMISSION_OPTIONS,
@@ -132,6 +133,7 @@ const PAGE_SIZE = 25;
 export class RequestsAdmin implements OnInit {
   private readonly svc        = inject(RequestsAdminService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly toast      = inject(ToastService);
   readonly perms              = inject(PermissionsService);
 
   readonly statusFilter  = signal<string>('ALL');
@@ -191,8 +193,12 @@ export class RequestsAdmin implements OnInit {
       next: () => {
         this.updateStatus(id, 'APPROVED');
         this.isProcessing.set(false);
+        this.toast.success('Solicitud aprobada correctamente.');
       },
-      error: () => this.isProcessing.set(false),
+      error: () => {
+        this.isProcessing.set(false);
+        this.toast.error('Error al aprobar la solicitud. Intenta nuevamente.');
+      },
     });
   }
 
@@ -212,8 +218,12 @@ export class RequestsAdmin implements OnInit {
         this.updateStatus(id, 'REJECTED');
         this.rejectModal.set(false);
         this.isProcessing.set(false);
+        this.toast.info('Solicitud rechazada.');
       },
-      error: () => this.isProcessing.set(false),
+      error: () => {
+        this.isProcessing.set(false);
+        this.toast.error('Error al rechazar la solicitud. Intenta nuevamente.');
+      },
     });
   }
 

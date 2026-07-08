@@ -4,22 +4,22 @@ import { CommonModule } from '@angular/common';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import {
   Avatar, Badge, Banner, Button, EmptyState, FilterChips,
-  LoadingSkeleton, PageHeader, SectionCard, StatCard, AppInput,
+  LoadingSkeleton, PageHeader, SectionCard, StatCard, AppInput, ConfirmModal,
 } from '@shared/ui';
 import type { FilterChipItem } from '@shared/ui';
-import { UsersAdminService, UserListItem, ROLE_LABELS, ROLE_VARIANTS, UserRole } from './users-admin.service';
-import { CreateEmployeeDrawer } from './create-employee-drawer/create-employee-drawer';
+import { UsersAdminService, UserListItem, UserRole } from './users-admin.service';
 import { CreateUserDrawer } from './create-user-drawer/create-user-drawer';
 import { EditUserDrawer } from './edit-user-drawer/edit-user-drawer';
 import { PermissionsService } from '@core/auth/permissions.service';
+import { ToastService } from '@core/services/toast.service';
 
 @Component({
   selector: 'app-users-page',
   imports: [
     CommonModule, ReactiveFormsModule,
-    Avatar, Badge, Banner, Button, EmptyState, FilterChips,
+    Avatar, Badge, Banner, Button, EmptyState, FilterChips, ConfirmModal,
     LoadingSkeleton, PageHeader, SectionCard, StatCard, AppInput,
-    CreateEmployeeDrawer, CreateUserDrawer, EditUserDrawer,
+    CreateUserDrawer, EditUserDrawer,
   ],
   templateUrl: './users-page.html',
   styleUrl: './users-page.scss',
@@ -27,25 +27,25 @@ import { PermissionsService } from '@core/auth/permissions.service';
 export class UsersPage implements OnInit {
   private readonly svc        = inject(UsersAdminService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly toast      = inject(ToastService);
   readonly perms              = inject(PermissionsService);
 
   readonly users        = signal<UserListItem[]>([]);
   readonly isLoading    = signal(true);
   readonly loadError    = signal('');
   readonly search       = signal('');
-  readonly activeFilter = signal<'all' | 'employees' | 'system' | 'inactive'>('all');
+  readonly activeFilter = signal<'all' | 'active' | 'inactive'>('all');
   readonly searchCtrl   = new FormControl('');
 
-  showEmployeeDrawer = signal(false);
   showUserDrawer     = signal(false);
   showEditDrawer     = signal(false);
   editTarget         = signal<UserListItem | null>(null);
+  confirmToggleUser  = signal<UserListItem | null>(null);
 
   readonly filterChips = computed((): FilterChipItem[] => [
-    { id: 'all',       label: 'Todos',             icon: 'people',         count: this.users().length },
-    { id: 'employees', label: 'Con ficha',          icon: 'badge',          count: this.users().filter(u => !!u.employee).length },
-    { id: 'system',    label: 'Solo sistema',       icon: 'manage_accounts',count: this.users().filter(u => !u.employee).length },
-    { id: 'inactive',  label: 'Inactivos',          icon: 'block',          count: this.users().filter(u => !u.isActive).length },
+    { id: 'all',      label: 'Todos',     icon: 'people', count: this.users().length },
+    { id: 'active',   label: 'Activos',   icon: 'check_circle', count: this.users().filter(u => u.isActive).length },
+    { id: 'inactive', label: 'Inactivos', icon: 'block',        count: this.users().filter(u => !u.isActive).length },
   ]);
 
   readonly filtered = computed(() => {
@@ -53,24 +53,21 @@ export class UsersPage implements OnInit {
     const q = this.search().toLowerCase().trim();
     const f = this.activeFilter();
 
-    if (f === 'employees') list = list.filter(u => !!u.employee);
-    if (f === 'system')    list = list.filter(u => !u.employee);
-    if (f === 'inactive')  list = list.filter(u => !u.isActive);
+    if (f === 'active')   list = list.filter(u => u.isActive);
+    if (f === 'inactive') list = list.filter(u => !u.isActive);
 
     if (q) {
       list = list.filter(u =>
         u.email.toLowerCase().includes(q) ||
-        (u.employee ? `${u.employee.firstName} ${u.employee.lastName}`.toLowerCase().includes(q) : false) ||
-        (u.employee?.position?.name?.toLowerCase().includes(q) ?? false) ||
-        (u.employee?.department?.name?.toLowerCase().includes(q) ?? false),
+        `${u.firstName ?? ''} ${u.lastName ?? ''}`.toLowerCase().includes(q) ||
+        (u.systemUserType?.name?.toLowerCase().includes(q) ?? false),
       );
     }
     return list;
   });
 
-  readonly totalActive   = computed(() => this.users().filter(u => u.isActive).length);
-  readonly totalAdmins   = computed(() => this.users().filter(u => u.role === 'COMPANY_ADMIN' || u.role === 'HR_MANAGER').length);
-  readonly totalSystem   = computed(() => this.users().filter(u => !u.employee).length);
+  readonly totalActive = computed(() => this.users().filter(u => u.isActive).length);
+  readonly totalTypes  = computed(() => new Set(this.users().map(u => u.systemUserType?.id).filter(Boolean)).size);
 
   ngOnInit(): void {
     this.searchCtrl.valueChanges
@@ -81,26 +78,33 @@ export class UsersPage implements OnInit {
 
   loadUsers(): void {
     this.isLoading.set(true);
-    this.svc.listUsers().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+    this.svc.listSystemUsers().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next:  list => { this.users.set(list); this.isLoading.set(false); },
       error: err  => { this.isLoading.set(false); this.loadError.set(err?.error?.message ?? 'Error al cargar los usuarios.'); },
     });
   }
 
-  toggleStatus(user: UserListItem): void {
-    this.svc.toggleStatus(user.id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: updated => this.users.update(list => list.map(u => u.id === updated.id ? { ...u, ...updated } : u)),
-    });
+  requestToggle(user: UserListItem): void {
+    this.confirmToggleUser.set(user);
   }
 
-  onEmployeeCreated(): void {
-    this.showEmployeeDrawer.set(false);
-    this.loadUsers();
+  confirmToggle(): void {
+    const user = this.confirmToggleUser();
+    if (!user) return;
+    this.confirmToggleUser.set(null);
+    this.svc.toggleStatus(user.id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: updated => {
+        this.users.update(list => list.map(u => u.id === updated.id ? { ...u, ...updated } : u));
+        this.toast.info(updated.isActive ? 'Usuario activado.' : 'Usuario desactivado.');
+      },
+      error: () => this.toast.error('Error al cambiar el estado del usuario.'),
+    });
   }
 
   onUserCreated(): void {
     this.showUserDrawer.set(false);
     this.loadUsers();
+    this.toast.success('Usuario creado correctamente.');
   }
 
   openEdit(u: UserListItem): void {
@@ -111,16 +115,11 @@ export class UsersPage implements OnInit {
   onUserUpdated(): void {
     this.showEditDrawer.set(false);
     this.loadUsers();
+    this.toast.success('Tipo de acceso actualizado correctamente.');
   }
 
   displayName(u: UserListItem): string {
-    if (u.employee) return `${u.employee.firstName} ${u.employee.lastName}`;
     if (u.firstName) return `${u.firstName} ${u.lastName ?? ''}`.trim();
     return u.email.split('@')[0];
-  }
-
-  roleLabel(role: UserRole): string  { return ROLE_LABELS[role]; }
-  roleVariant(role: UserRole): 'primary' | 'success' | 'warning' | 'neutral' | 'error' {
-    return ROLE_VARIANTS[role];
   }
 }

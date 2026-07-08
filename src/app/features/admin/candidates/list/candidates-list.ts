@@ -13,6 +13,7 @@ import { CandidatesService, CandidateSummary } from '../../services/candidates.s
 import { OnboardingLabelPipe, OnboardingVariantPipe } from '../onboarding-status.pipe';
 import { DOCUMENT_TYPE_OPTIONS } from '@features/portal/models/catalog.model';
 import { PermissionsService } from '@core/auth/permissions.service';
+import { ToastService } from '@core/services/toast.service';
 import type { SelectOption } from '@shared/ui';
 
 const PAGE_SIZE = 25;
@@ -41,6 +42,7 @@ export class CandidatesList implements OnInit {
   private readonly router     = inject(Router);
   private readonly fb         = inject(FormBuilder);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly toast      = inject(ToastService);
   readonly perms              = inject(PermissionsService);
 
   readonly candidates    = signal<CandidateSummary[]>([]);
@@ -114,8 +116,17 @@ export class CandidatesList implements OnInit {
     this.isCreating.set(true);
     this.createError.set('');
     this.svc.create(this.form.value as any).subscribe({
-      next: () => { this.isCreating.set(false); this.closeCreate(); this.page.set(1); this.load(); },
-      error: err => { this.isCreating.set(false); this.createError.set(err?.error?.message ?? 'Error al registrar el candidato.'); },
+      next: () => {
+        this.isCreating.set(false);
+        this.closeCreate();
+        this.page.set(1);
+        this.load();
+        this.toast.success('Candidato registrado correctamente.');
+      },
+      error: err => {
+        this.isCreating.set(false);
+        this.createError.set(err?.error?.message ?? 'Error al registrar el candidato.');
+      },
     });
   }
 

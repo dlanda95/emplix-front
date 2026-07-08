@@ -52,6 +52,15 @@ export class ConfigIndex {
       tags:        ['Login simplificado', 'Multi-dominio', 'Dominio principal'],
       adminOnly:   true,
     },
+    {
+      title:       'Métodos de acceso',
+      description: 'Configura cómo los usuarios inician sesión: email/contraseña y/o Microsoft SSO (Entra ID). Solo para administradores.',
+      icon:        'security',
+      route:       '/admin/configuracion/metodos-acceso',
+      color:       '#0ea5e9',
+      tags:        ['Email', 'Microsoft SSO', 'Azure Entra ID'],
+      adminOnly:   true,
+    },
   ];
 
   navigate(route: string): void {

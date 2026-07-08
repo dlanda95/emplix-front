@@ -1,6 +1,6 @@
 import { Component, inject, signal, computed, OnInit, HostListener, ElementRef } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators, FormControl, FormGroup } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { MsalService } from '@azure/msal-angular';
 import { finalize } from 'rxjs';
@@ -31,17 +31,19 @@ type AuthErrorCode =
 export class Login implements OnInit {
   private readonly fb            = inject(FormBuilder);
   private readonly tenantService = inject(TenantService);
+  private readonly route         = inject(ActivatedRoute);
   readonly authService           = inject(AuthService);
   private readonly router        = inject(Router);
   private readonly msalService   = inject(MsalService);
   private readonly domainsSvc    = inject(DomainsConfigService);
   private readonly elRef         = inject(ElementRef);
 
-  readonly step          = signal<1 | 2>(1);
-  readonly loginMode     = signal<'colaborador' | 'candidato'>('colaborador');
-  readonly isLoading     = signal(false);
-  readonly isMsalLoading = signal(false);
-  readonly errorMessage  = signal('');
+  readonly step           = signal<1 | 2>(1);
+  readonly loginMode      = signal<'colaborador' | 'candidato'>('colaborador');
+  readonly isLoading      = signal(false);
+  readonly isMsalLoading  = signal(false);
+  readonly errorMessage   = signal('');
+  readonly sessionExpired = signal(false);
 
   // Dominios del tenant
   readonly domains        = signal<PublicDomain[]>([]);
@@ -81,7 +83,9 @@ export class Login implements OnInit {
   }
 
   ngOnInit(): void {
-    // Si ya hay un tenant guardado, cargamos sus dominios en background
+    if (this.route.snapshot.queryParams['reason'] === 'session_expired') {
+      this.sessionExpired.set(true);
+    }
     if (this.tenantService.getTenant()) {
       this.loadDomains();
     }

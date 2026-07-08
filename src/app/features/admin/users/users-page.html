@@ -2,17 +2,12 @@
 
   <div class="users-page__header">
     <app-page-header
-      title="Usuarios y Accesos"
-      subtitle="Gestión centralizada de cuentas de empleados y usuarios del sistema">
+      title="Usuarios del Sistema"
+      subtitle="Cuentas con acceso al panel de administración sin ficha de empleado">
     </app-page-header>
-    <div class="users-page__actions">
-      <app-button icon="badge" variant="secondary" [disabled]="!perms.canCreate()" (clicked)="showEmployeeDrawer.set(true)">
-        Empleado directo
-      </app-button>
-      <app-button icon="person_add" variant="primary" [disabled]="!perms.canCreate()" (clicked)="showUserDrawer.set(true)">
-        Usuario del sistema
-      </app-button>
-    </div>
+    <app-button icon="person_add" variant="primary" [disabled]="!perms.canCreate()" (clicked)="showUserDrawer.set(true)">
+      Nuevo usuario
+    </app-button>
   </div>
 
   @if (loadError()) {
@@ -23,7 +18,6 @@
     <div class="users-stats-skeleton">
       <app-loading-skeleton variant="card"></app-loading-skeleton>
       <app-loading-skeleton variant="card"></app-loading-skeleton>
-      <app-loading-skeleton variant="card"></app-loading-skeleton>
     </div>
     <app-loading-skeleton variant="card" [lines]="6"></app-loading-skeleton>
 
@@ -31,9 +25,8 @@
 
     <!-- Stats -->
     <div class="users-stats">
-      <app-stat-card label="Usuarios activos"     [value]="totalActive().toString()" icon="verified_user"   variant="primary"></app-stat-card>
-      <app-stat-card label="Administradores / RH" [value]="totalAdmins().toString()" icon="shield_person"   variant="warning"></app-stat-card>
-      <app-stat-card label="Solo sistema"         [value]="totalSystem().toString()" icon="manage_accounts" variant="info"></app-stat-card>
+      <app-stat-card label="Usuarios activos" [value]="totalActive().toString()" icon="verified_user"   variant="primary"></app-stat-card>
+      <app-stat-card label="Tipos de acceso"  [value]="totalTypes().toString()"  icon="manage_accounts" variant="info"></app-stat-card>
     </div>
 
     <!-- Toolbar -->
@@ -41,7 +34,7 @@
       <div class="users-toolbar__search">
         <app-input
           label="Buscar usuario..."
-          placeholder="Nombre, email, cargo o área"
+          placeholder="Nombre, email o tipo de acceso"
           [formControl]="searchCtrl">
         </app-input>
       </div>
@@ -68,7 +61,6 @@
               <tr>
                 <th>Usuario</th>
                 <th>Tipo de acceso</th>
-                <th>Cargo / Área</th>
                 <th>Estado</th>
                 <th>Alta</th>
                 <th></th>
@@ -81,11 +73,7 @@
                   <!-- Identidad -->
                   <td>
                     <div class="users-cell">
-                      <app-avatar
-                        [name]="displayName(u)"
-                        [src]="u.employee?.photoUrl ?? undefined"
-                        size="sm">
-                      </app-avatar>
+                      <app-avatar [name]="displayName(u)" size="sm"></app-avatar>
                       <div class="users-cell__info">
                         <span class="users-cell__name">{{ displayName(u) }}</span>
                         <span class="users-cell__email">{{ u.email }}</span>
@@ -95,32 +83,15 @@
 
                   <!-- Tipo de acceso -->
                   <td>
-                    @if (u.isSystemUser && u.systemUserType) {
+                    @if (u.systemUserType) {
                       <div class="type-access">
                         <span class="type-access__dot" [style.background]="u.systemUserType.color"></span>
-                        <div class="type-access__info">
-                          <span class="type-access__name" [style.color]="u.systemUserType.color">
-                            {{ u.systemUserType.name }}
-                          </span>
-                          <span class="type-access__sub">Usuario de sistema</span>
-                        </div>
+                        <span class="type-access__name" [style.color]="u.systemUserType.color">
+                          {{ u.systemUserType.name }}
+                        </span>
                       </div>
-                    } @else if (u.isSystemUser) {
+                    } @else {
                       <app-badge variant="neutral">Sin tipo asignado</app-badge>
-                    } @else {
-                      <app-badge [variant]="roleVariant(u.role)">{{ roleLabel(u.role) }}</app-badge>
-                    }
-                  </td>
-
-                  <!-- Cargo / Área -->
-                  <td class="users-table__text">
-                    @if (u.employee && (u.employee.position || u.employee.department)) {
-                      <span class="users-cell__pos">{{ u.employee.position?.name ?? '—' }}</span>
-                      @if (u.employee.department) {
-                        <span class="users-cell__dept">{{ u.employee.department.name }}</span>
-                      }
-                    } @else {
-                      <span class="users-table__muted">—</span>
                     }
                   </td>
 
@@ -138,22 +109,15 @@
 
                   <!-- Acciones -->
                   <td class="users-table__actions">
-                    @if (u.isSystemUser) {
-                      <app-button
-                        variant="ghost"
-                        size="sm"
-                        icon="edit"
-                        [disabled]="!perms.canManageUsers()"
-                        (clicked)="openEdit(u)">
-                        Editar
-                      </app-button>
-                    }
-                    <app-button
-                      variant="ghost"
-                      size="sm"
+                    <app-button variant="ghost" size="sm" icon="edit"
+                      [disabled]="!perms.canManageUsers()"
+                      (clicked)="openEdit(u)">
+                      Editar
+                    </app-button>
+                    <app-button variant="ghost" size="sm"
                       [icon]="u.isActive ? 'block' : 'check_circle'"
                       [disabled]="!perms.canEdit()"
-                      (clicked)="toggleStatus(u)">
+                      (clicked)="requestToggle(u)">
                       {{ u.isActive ? 'Desactivar' : 'Activar' }}
                     </app-button>
                   </td>
@@ -174,12 +138,6 @@
 </div>
 
 <!-- Drawers -->
-<app-create-employee-drawer
-  [isOpen]="showEmployeeDrawer()"
-  (close)="showEmployeeDrawer.set(false)"
-  (created)="onEmployeeCreated()">
-</app-create-employee-drawer>
-
 <app-create-user-drawer
   [isOpen]="showUserDrawer()"
   (close)="showUserDrawer.set(false)"
@@ -192,3 +150,17 @@
   (close)="showEditDrawer.set(false)"
   (updated)="onUserUpdated()">
 </app-edit-user-drawer>
+
+<!-- Confirmación toggle estado -->
+<app-confirm-modal
+  [isOpen]="confirmToggleUser() !== null"
+  icon="warning"
+  confirmVariant="danger"
+  [title]="confirmToggleUser()?.isActive ? 'Desactivar usuario' : 'Activar usuario'"
+  [message]="confirmToggleUser()?.isActive
+    ? 'El usuario perderá acceso inmediatamente al panel de administración.'
+    : 'El usuario recuperará acceso al panel de administración.'"
+  [confirmLabel]="confirmToggleUser()?.isActive ? 'Sí, desactivar' : 'Sí, activar'"
+  (confirmed)="confirmToggle()"
+  (cancelled)="confirmToggleUser.set(null)">
+</app-confirm-modal>

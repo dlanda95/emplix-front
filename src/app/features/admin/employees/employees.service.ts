@@ -67,4 +67,8 @@ export class EmployeesAdminService {
   getById(id: string): Observable<EmployeeDetail> {
     return this.http.get<EmployeeDetail>(`${this.base}/${id}`);
   }
+
+  updateAdministrative(id: string, data: Record<string, unknown>): Observable<EmployeeDetail> {
+    return this.http.patch<EmployeeDetail>(`${this.base}/${id}/administrative`, data);
+  }
 }

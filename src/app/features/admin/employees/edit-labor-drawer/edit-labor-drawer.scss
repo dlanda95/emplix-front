@@ -1,0 +1,22 @@
+.edit-labor-drawer {
+  &__loading {
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    padding: 1rem 0;
+  }
+
+  &__form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  &__footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    padding: 1rem 1.5rem;
+    border-top: 1px solid var(--border-color);
+  }
+}

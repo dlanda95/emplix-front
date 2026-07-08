@@ -6,6 +6,7 @@ import { catchError, map } from 'rxjs/operators';
 import { throwError } from 'rxjs';
 import { API_ENDPOINTS } from '@core/config/api.config';
 import { User, AuthResponse } from './models/user.model';
+import { SessionService } from './session.service';
 
 export type AuthMethod = 'EMAIL' | 'MICROSOFT' | 'GOOGLE';
 
@@ -19,8 +20,9 @@ export interface TenantInfo {
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private readonly http   = inject(HttpClient);
-  private readonly router = inject(Router);
+  private readonly http    = inject(HttpClient);
+  private readonly router  = inject(Router);
+  private readonly session = inject(SessionService);
 
   private readonly _currentUser       = signal<User | null>(this.loadUserFromStorage());
   private readonly _currentTenant     = signal<string | null>(localStorage.getItem('saved_tenant'));
@@ -70,17 +72,9 @@ export class AuthService {
     );
   }
 
-  /** Ruta inicial después de autenticarse, según el rol y estado del empleado */
+  /** Ruta inicial después de autenticarse */
   getPostLoginRoute(): string[] {
-    const user = this._currentUser();
-    if (!user) return ['/auth/login'];
-    if (user.role === 'COMPANY_ADMIN' || user.role === 'HR_MANAGER' || user.role === 'HR_ANALYST') {
-      return ['/admin/candidatos'];
-    }
-    if (user.employeeStatus === 'SELECTED') {
-      return ['/onboarding'];
-    }
-    return ['/portal'];
+    return this.isAuthenticated() ? ['/dashboard'] : ['/auth/login'];
   }
 
   register(userData: any): Observable<any> {
@@ -110,6 +104,7 @@ export class AuthService {
   }
 
   logout(): void {
+    this.session.clear();
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     this._currentUser.set(null);
@@ -119,7 +114,6 @@ export class AuthService {
 
   private saveSession(data: AuthResponse): void {
     if (!data?.token) return;
-    // Combinar status del empleado en el objeto user para disponibilizarlo en guards
     const user = {
       ...data.user,
       employeeStatus:   data.employeeStatus   ?? data.user.employeeStatus   ?? null,
@@ -128,6 +122,7 @@ export class AuthService {
     localStorage.setItem('token', data.token);
     localStorage.setItem('user', JSON.stringify(user));
     this._currentUser.set(user);
+    this.session.init();
   }
 
   private loadUserFromStorage(): User | null {

@@ -131,8 +131,11 @@
     <!-- Acciones admin -->
     @if (perms.canEdit()) {
       <div class="emp-actions">
-        <app-button variant="secondary" icon="edit" (clicked)="openCandidate(emp.id)">
-          Editar asignación
+        <app-button variant="secondary" icon="work" (clicked)="openLaborDrawer()">
+          Editar datos laborales
+        </app-button>
+        <app-button variant="ghost" icon="edit" (clicked)="openCandidate(emp.id)">
+          Ver ficha candidato
         </app-button>
       </div>
     }
@@ -140,3 +143,12 @@
   }
 
 </div>
+
+@if (employee()) {
+  <app-edit-labor-drawer
+    [isOpen]="showLaborDrawer()"
+    [employee]="employee()"
+    (close)="closeLaborDrawer()"
+    (saved)="onLaborSaved()">
+  </app-edit-labor-drawer>
+}

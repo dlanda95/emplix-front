@@ -50,7 +50,7 @@
         <div class="perms-grid">
           <p class="perms-grid__label">Permisos</p>
           @for (p of permLabels; track p.key) {
-            <label class="perm-toggle" [formControlName]="p.key">
+            <label class="perm-toggle">
               <input type="checkbox" [formControlName]="p.key">
               <span class="perm-toggle__box">
                 <span class="material-icons-round">{{ p.icon }}</span>
@@ -73,13 +73,15 @@
   <!-- Lista de tipos -->
   @if (isLoading()) {
     <app-loading-skeleton variant="card" [lines]="4"></app-loading-skeleton>
-  } @else if (types().length === 0) {
-    <app-empty-state icon="shield_person" title="Sin tipos definidos"
-      description="Crea el primer tipo de usuario del sistema.">
-    </app-empty-state>
+  } @else if (visibleTypes().length === 0) {
+    @if (!showForm()) {
+      <app-empty-state icon="shield_person" title="Sin tipos definidos"
+        description="Crea el primer tipo de usuario del sistema.">
+      </app-empty-state>
+    }
   } @else {
     <div class="types-grid">
-      @for (t of types(); track t.id) {
+      @for (t of visibleTypes(); track t.id) {
         <div class="type-card" [class.type-card--inactive]="!t.isActive">
 
           <div class="type-card__header">

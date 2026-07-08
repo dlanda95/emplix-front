@@ -61,13 +61,17 @@ export class Sidebar implements OnInit {
 
       // ── Sección Configuración ──────────────────────────────────────────────
       items.push({ label: 'Configuración', type: 'section' });
+      const configChildren: MenuItem[] = [
+        { label: 'Usuarios',        icon: 'manage_accounts', route: '/admin/usuarios'                     },
+        { label: 'Tipos de acceso', icon: 'tune',            route: '/admin/configuracion/tipos-usuario'  },
+        { label: 'Dominios',        icon: 'domain',          route: '/admin/configuracion/dominios'       },
+      ];
+      if (user?.role === 'COMPANY_ADMIN') {
+        configChildren.push({ label: 'Métodos de acceso', icon: 'security', route: '/admin/configuracion/metodos-acceso' });
+      }
       items.push({
         label: 'Configuración', icon: 'admin_panel_settings', expanded: expanded.has('Configuración'),
-        children: [
-          { label: 'Usuarios',        icon: 'manage_accounts', route: '/admin/usuarios'                     },
-          { label: 'Tipos de acceso', icon: 'tune',            route: '/admin/configuracion/tipos-usuario'  },
-          { label: 'Dominios',        icon: 'domain',          route: '/admin/configuracion/dominios'        },
-        ],
+        children: configChildren,
       });
     }
 
