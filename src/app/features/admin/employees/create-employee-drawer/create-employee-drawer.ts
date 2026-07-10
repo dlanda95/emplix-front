@@ -5,7 +5,8 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angula
 import { dateRangeValidator } from '@shared/validators/date-range.validator';
 import { HttpClient } from '@angular/common/http';
 import { forkJoin } from 'rxjs';
-import { Drawer, AppInput, AppSelect, Button, Banner, FormRow, FormSection } from '@shared/ui';
+import { Drawer, AppInput, AppSelect, Button, Banner, FormRow, FormSection,
+  DrawerStepper, ToggleRow, SuccessScreen } from '@shared/ui';
 import type { SelectOption } from '@shared/ui';
 import { UsersAdminService, ROLE_LABELS, UserRole } from '../../users/users-admin.service';
 import { environment } from '@env';
@@ -14,9 +15,9 @@ type Step = 1 | 2 | 3;
 
 @Component({
   selector: 'app-create-employee-drawer',
-  imports: [CommonModule, ReactiveFormsModule, Drawer, AppInput, AppSelect, Button, Banner, FormRow, FormSection],
+  imports: [CommonModule, ReactiveFormsModule, Drawer, AppInput, AppSelect, Button, Banner, FormRow, FormSection,
+    DrawerStepper, ToggleRow, SuccessScreen],
   templateUrl: './create-employee-drawer.html',
-  styleUrl: './create-employee-drawer.scss',
 })
 export class CreateEmployeeDrawer implements OnChanges {
   @Input({ required: true }) isOpen = false;
@@ -95,7 +96,7 @@ export class CreateEmployeeDrawer implements OnChanges {
     });
   }
 
-  goTo(s: Step): void { this.step = s; }
+  goTo(s: number): void { this.step = s as Step; }
 
   nextStep(): void {
     if (this.step === 1 && this.step1.invalid) { this.step1.markAllAsTouched(); return; }

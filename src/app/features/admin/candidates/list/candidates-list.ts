@@ -35,7 +35,6 @@ const ONBOARDING_OPTIONS: SelectOption[] = [
     OnboardingLabelPipe, OnboardingVariantPipe,
   ],
   templateUrl: './candidates-list.html',
-  styleUrl: './candidates-list.scss',
 })
 export class CandidatesList implements OnInit {
   private readonly svc        = inject(CandidatesService);

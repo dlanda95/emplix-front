@@ -16,18 +16,27 @@
   } @else {
     <form [formGroup]="form">
 
-      <!-- Info del usuario -->
-      <div class="user-info-card">
-        <div class="user-info-card__row">
-          <span class="user-info-card__label">Correo</span>
-          <span class="user-info-card__value">{{ user!.email }}</span>
+      <div style="
+        background:var(--bg-body);
+        border:1px solid var(--border-color);
+        border-radius:var(--radius-md);
+        padding:var(--space-4);
+        display:flex;
+        flex-direction:column;
+        gap:var(--space-3);
+        margin-bottom:var(--space-5);
+      ">
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:var(--space-3);">
+          <span style="font-size:var(--text-xs); font-weight:var(--font-semibold); text-transform:uppercase; letter-spacing:.05em; color:var(--text-secondary); white-space:nowrap;">Correo</span>
+          <span style="font-size:var(--text-sm); color:var(--text-main); text-align:right; word-break:break-all;">{{ user!.email }}</span>
         </div>
         @if (user!.systemUserType) {
-          <div class="user-info-card__row">
-            <span class="user-info-card__label">Tipo actual</span>
-            <span class="user-info-card__current-type"
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:var(--space-3);">
+            <span style="font-size:var(--text-xs); font-weight:var(--font-semibold); text-transform:uppercase; letter-spacing:.05em; color:var(--text-secondary); white-space:nowrap;">Tipo actual</span>
+            <span style="display:inline-flex; align-items:center; gap:var(--space-2); font-size:var(--text-sm); font-weight:var(--font-medium);"
               [style.color]="user!.systemUserType.color">
-              <span class="type-dot" [style.background]="user!.systemUserType.color"></span>
+              <span style="width:8px; height:8px; border-radius:50%; flex-shrink:0;"
+                [style.background]="user!.systemUserType.color"></span>
               {{ user!.systemUserType.name }}
             </span>
           </div>
@@ -36,7 +45,7 @@
 
       <app-form-section title="Cambiar tipo de acceso" icon="swap_horiz">
         @if (loadingTypes()) {
-          <p class="hint"><span class="material-icons-round">hourglass_empty</span> Cargando tipos...</p>
+          <app-loading-skeleton variant="text" [lines]="2"></app-loading-skeleton>
         } @else {
           <app-select
             label="Nuevo tipo de usuario"
@@ -46,23 +55,12 @@
           </app-select>
 
           @if (selectedType()) {
-            <div class="type-preview" [style.border-left-color]="selectedType()!.color">
-              <span class="type-preview__name" [style.color]="selectedType()!.color">
-                {{ selectedType()!.name }}
-              </span>
-              @if (selectedType()!.description) {
-                <p class="type-preview__desc">{{ selectedType()!.description }}</p>
-              }
-              <div class="type-preview__perms">
-                @let p = selectedType()!.permissions;
-                <span class="perm" [class.perm--on]="p.canRead"><span class="material-icons-round">visibility</span>Leer</span>
-                <span class="perm" [class.perm--on]="p.canCreate"><span class="material-icons-round">add_circle</span>Crear</span>
-                <span class="perm" [class.perm--on]="p.canEdit"><span class="material-icons-round">edit</span>Editar</span>
-                <span class="perm" [class.perm--on]="p.canDelete"><span class="material-icons-round">delete</span>Eliminar</span>
-                <span class="perm" [class.perm--on]="p.canApprove"><span class="material-icons-round">task_alt</span>Aprobar</span>
-                <span class="perm" [class.perm--on]="p.canManageConfig"><span class="material-icons-round">settings</span>Config</span>
-              </div>
-            </div>
+            <app-type-preview
+              [color]="selectedType()!.color"
+              [name]="selectedType()!.name"
+              [description]="selectedType()!.description ?? ''"
+              [permissions]="selectedType()!.permissions">
+            </app-type-preview>
           }
         }
       </app-form-section>
@@ -71,7 +69,7 @@
   }
 
   <div drawer-footer>
-    <div class="drawer-actions">
+    <div style="display:flex; align-items:center; justify-content:flex-end; gap:var(--space-3); width:100%;">
       <app-button variant="ghost" (clicked)="onClose()">Cancelar</app-button>
       @if (user?.isSystemUser) {
         <app-button

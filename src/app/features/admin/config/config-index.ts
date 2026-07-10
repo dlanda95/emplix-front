@@ -1,7 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { PageHeader } from '@shared/ui';
+import { PageHeader, NavCard, ColGrid } from '@shared/ui';
 import { PermissionsService } from '@core/auth/permissions.service';
 
 interface ConfigCard {
@@ -16,9 +16,8 @@ interface ConfigCard {
 
 @Component({
   selector: 'app-config-index',
-  imports: [CommonModule, PageHeader],
+  imports: [CommonModule, PageHeader, NavCard, ColGrid],
   templateUrl: './config-index.html',
-  styleUrl:    './config-index.scss',
 })
 export class ConfigIndex {
   private readonly router = inject(Router);

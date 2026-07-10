@@ -5,6 +5,7 @@ import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import {
   Avatar, Badge, Banner, Button, EmptyState, FilterChips,
   LoadingSkeleton, PageHeader, SectionCard, StatCard, AppInput, ConfirmModal,
+  DataTable, ColGrid,
 } from '@shared/ui';
 import type { FilterChipItem } from '@shared/ui';
 import { UsersAdminService, UserListItem, UserRole } from './users-admin.service';
@@ -19,10 +20,10 @@ import { ToastService } from '@core/services/toast.service';
     CommonModule, ReactiveFormsModule,
     Avatar, Badge, Banner, Button, EmptyState, FilterChips, ConfirmModal,
     LoadingSkeleton, PageHeader, SectionCard, StatCard, AppInput,
+    DataTable, ColGrid,
     CreateUserDrawer, EditUserDrawer,
   ],
   templateUrl: './users-page.html',
-  styleUrl: './users-page.scss',
 })
 export class UsersPage implements OnInit {
   private readonly svc        = inject(UsersAdminService);

@@ -1,136 +1,111 @@
-<div class="emp-detail">
+<div style="display:flex; flex-direction:column; gap:var(--space-6); padding-bottom:var(--space-8);">
 
-  <!-- Back -->
-  <a class="back-link" routerLink="/admin/colaboradores">
-    <span class="material-icons-round">arrow_back</span>
-    Volver a colaboradores
-  </a>
+  <app-back-link [to]="'/admin/colaboradores'">Volver a colaboradores</app-back-link>
 
   @if (loadError()) {
     <app-banner variant="error" icon="error" [title]="loadError()"></app-banner>
   }
 
   @if (isLoading()) {
-    <div class="emp-detail__hero-skeleton">
+    <div style="display:flex; align-items:center; gap:var(--space-5);">
       <app-loading-skeleton variant="avatar"></app-loading-skeleton>
       <app-loading-skeleton variant="text" [lines]="3"></app-loading-skeleton>
     </div>
-    <div class="emp-detail__cards-skeleton">
+    <app-col-grid>
       <app-loading-skeleton variant="card" [lines]="4"></app-loading-skeleton>
       <app-loading-skeleton variant="card" [lines]="4"></app-loading-skeleton>
-    </div>
+    </app-col-grid>
 
   } @else if (employee()) {
     @let emp = employee()!;
 
-    <!-- Hero -->
-    <div class="emp-hero">
-      <app-avatar [name]="fullName()" [src]="emp.photoUrl ?? undefined" size="xl"></app-avatar>
-      <div class="emp-hero__info">
-        <h1 class="emp-hero__name">{{ fullName() }}</h1>
-        <p class="emp-hero__role">{{ emp.position?.name ?? 'Sin cargo asignado' }}</p>
-        <div class="emp-hero__tags">
-          @if (emp.department) {
-            <app-badge variant="neutral" icon="apartment">{{ emp.department.name }}</app-badge>
-          }
-          <app-badge [variant]="emp.status === 'ACTIVE' ? 'success' : 'neutral'">
-            {{ emp.status === 'ACTIVE' ? 'Activo' : emp.status }}
-          </app-badge>
-          @if (emp.user) {
-            <app-badge variant="primary" icon="email">{{ emp.user.email }}</app-badge>
-          }
+    <app-profile-hero
+      [name]="fullName()"
+      [role]="emp.position?.name ?? 'Sin cargo asignado'"
+      [avatarSrc]="emp.photoUrl ?? undefined">
+      @if (emp.department) {
+        <app-badge variant="neutral" icon="apartment">{{ emp.department.name }}</app-badge>
+      }
+      <app-badge [variant]="emp.status === 'ACTIVE' ? 'success' : 'neutral'">
+        {{ emp.status === 'ACTIVE' ? 'Activo' : emp.status }}
+      </app-badge>
+      @if (emp.user) {
+        <app-badge variant="primary" icon="email">{{ emp.user.email }}</app-badge>
+      }
+    </app-profile-hero>
+
+    <app-col-grid>
+
+      <app-detail-card icon="person" title="Información personal">
+        <div>
+          <dt>Documento</dt>
+          <dd>{{ emp.documentType ?? '' }} {{ emp.documentId ?? '—' }}</dd>
         </div>
-      </div>
-    </div>
+        @if (emp.birthDate) {
+          <div>
+            <dt>Fecha de nacimiento</dt>
+            <dd>{{ emp.birthDate | date:'dd/MM/yyyy' }}</dd>
+          </div>
+        }
+        @if (emp.cellPhone || emp.phone) {
+          <div>
+            <dt>Teléfono</dt>
+            <dd>{{ emp.cellPhone ?? emp.phone }}</dd>
+          </div>
+        }
+        @if (emp.personalEmail) {
+          <div>
+            <dt>Email personal</dt>
+            <dd>{{ emp.personalEmail }}</dd>
+          </div>
+        }
+        @if (emp.address) {
+          <div>
+            <dt>Dirección</dt>
+            <dd>{{ emp.address }}{{ emp.district ? ', ' + emp.district : '' }}{{ emp.province ? ', ' + emp.province : '' }}</dd>
+          </div>
+        }
+      </app-detail-card>
 
-    <!-- Cards grid -->
-    <div class="emp-grid">
-
-      <!-- Info personal -->
-      <div class="emp-card">
-        <div class="emp-card__header">
-          <span class="material-icons-round">person</span>
-          <h3>Información personal</h3>
+      <app-detail-card icon="work" title="Datos laborales">
+        <div>
+          <dt>Fecha de ingreso</dt>
+          <dd>{{ emp.hireDate ? (emp.hireDate | date:'dd/MM/yyyy') : '—' }}</dd>
         </div>
-        <dl class="emp-card__dl">
-          <div class="emp-card__row">
-            <dt>Documento</dt>
-            <dd>{{ emp.documentType ?? '' }} {{ emp.documentId ?? '—' }}</dd>
+        @if (supervisorName()) {
+          <div>
+            <dt>Supervisor</dt>
+            <dd>{{ supervisorName() }}</dd>
           </div>
-          @if (emp.birthDate) {
-            <div class="emp-card__row">
-              <dt>Fecha de nacimiento</dt>
-              <dd>{{ emp.birthDate | date:'dd/MM/yyyy' }}</dd>
-            </div>
-          }
-          @if (emp.cellPhone || emp.phone) {
-            <div class="emp-card__row">
-              <dt>Teléfono</dt>
-              <dd>{{ emp.cellPhone ?? emp.phone }}</dd>
-            </div>
-          }
-          @if (emp.personalEmail) {
-            <div class="emp-card__row">
-              <dt>Email personal</dt>
-              <dd>{{ emp.personalEmail }}</dd>
-            </div>
-          }
-          @if (emp.address) {
-            <div class="emp-card__row">
-              <dt>Dirección</dt>
-              <dd>{{ emp.address }}{{ emp.district ? ', ' + emp.district : '' }}{{ emp.province ? ', ' + emp.province : '' }}</dd>
-            </div>
-          }
-        </dl>
-      </div>
-
-      <!-- Info laboral -->
-      <div class="emp-card">
-        <div class="emp-card__header">
-          <span class="material-icons-round">work</span>
-          <h3>Datos laborales</h3>
+        }
+        @if (emp.laborData?.contractType) {
+          <div>
+            <dt>Tipo de contrato</dt>
+            <dd>{{ emp.laborData!.contractType!.name }}</dd>
+          </div>
+        }
+        @if (emp.laborData?.workShift) {
+          <div>
+            <dt>Turno</dt>
+            <dd>{{ emp.laborData!.workShift!.name }}</dd>
+          </div>
+        }
+        @if (emp.laborData?.hierarchyLevel) {
+          <div>
+            <dt>Nivel jerárquico</dt>
+            <dd>{{ emp.laborData!.hierarchyLevel }}</dd>
+          </div>
+        }
+        <div>
+          <dt>Salario</dt>
+          <dd class="dc-salary">{{ salary() }}</dd>
         </div>
-        <dl class="emp-card__dl">
-          <div class="emp-card__row">
-            <dt>Fecha de ingreso</dt>
-            <dd>{{ emp.hireDate ? (emp.hireDate | date:'dd/MM/yyyy') : '—' }}</dd>
-          </div>
-          @if (supervisorName()) {
-            <div class="emp-card__row">
-              <dt>Supervisor</dt>
-              <dd>{{ supervisorName() }}</dd>
-            </div>
-          }
-          @if (emp.laborData?.contractType) {
-            <div class="emp-card__row">
-              <dt>Tipo de contrato</dt>
-              <dd>{{ emp.laborData!.contractType!.name }}</dd>
-            </div>
-          }
-          @if (emp.laborData?.workShift) {
-            <div class="emp-card__row">
-              <dt>Turno</dt>
-              <dd>{{ emp.laborData!.workShift!.name }}</dd>
-            </div>
-          }
-          @if (emp.laborData?.hierarchyLevel) {
-            <div class="emp-card__row">
-              <dt>Nivel jerárquico</dt>
-              <dd>{{ emp.laborData!.hierarchyLevel }}</dd>
-            </div>
-          }
-          <div class="emp-card__row">
-            <dt>Salario</dt>
-            <dd class="emp-card__salary">{{ salary() }}</dd>
-          </div>
-        </dl>
-      </div>
+      </app-detail-card>
 
-    </div>
+    </app-col-grid>
 
-    <!-- Acciones admin -->
     @if (perms.canEdit()) {
-      <div class="emp-actions">
+      <div style="display:flex; justify-content:flex-end; gap:var(--space-3);">
         <app-button variant="secondary" icon="work" (clicked)="openLaborDrawer()">
           Editar datos laborales
         </app-button>

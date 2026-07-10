@@ -6,23 +6,12 @@
   (close)="onClose()">
 
   @if (success()) {
-    <div class="success-screen">
-      <div class="success-icon">
-        <span class="material-icons-round">how_to_reg</span>
-      </div>
-      <h3 class="success-title">¡Usuario creado!</h3>
-      <p class="success-desc">El usuario ya puede ingresar al sistema.</p>
-      <div class="credentials-card">
-        <div class="credentials-row">
-          <span class="credentials-label">Correo</span>
-          <span class="credentials-value">{{ createdEmail() }}</span>
-        </div>
-      </div>
-    </div>
-    <div drawer-footer>
-      <app-button variant="primary" (clicked)="confirmSuccess()">Entendido</app-button>
-    </div>
-
+    <app-success-screen
+      icon="how_to_reg"
+      title="¡Usuario creado!"
+      description="El usuario ya puede ingresar al sistema."
+      [email]="createdEmail()">
+    </app-success-screen>
   } @else {
     <form [formGroup]="form">
       @if (errorMsg()) {
@@ -42,7 +31,7 @@
 
       <app-form-section title="Tipo de acceso al sistema" icon="shield_person">
         @if (loadingTypes()) {
-          <p class="hint"><span class="material-icons-round">hourglass_empty</span> Cargando tipos...</p>
+          <app-loading-skeleton variant="text" [lines]="2"></app-loading-skeleton>
         } @else {
           <app-select
             label="Tipo de usuario *"
@@ -52,54 +41,35 @@
           </app-select>
 
           @if (selectedType()) {
-            <div class="type-preview" [style.border-left-color]="selectedType()!.color">
-              <span class="type-preview__name" [style.color]="selectedType()!.color">
-                {{ selectedType()!.name }}
-              </span>
-              @if (selectedType()!.description) {
-                <p class="type-preview__desc">{{ selectedType()!.description }}</p>
-              }
-              <div class="type-preview__perms">
-                @let p = selectedType()!.permissions;
-                <span class="perm" [class.perm--on]="p.canRead">
-                  <span class="material-icons-round">visibility</span>Leer
-                </span>
-                <span class="perm" [class.perm--on]="p.canCreate">
-                  <span class="material-icons-round">add_circle</span>Crear
-                </span>
-                <span class="perm" [class.perm--on]="p.canEdit">
-                  <span class="material-icons-round">edit</span>Editar
-                </span>
-                <span class="perm" [class.perm--on]="p.canDelete">
-                  <span class="material-icons-round">delete</span>Eliminar
-                </span>
-                <span class="perm" [class.perm--on]="p.canApprove">
-                  <span class="material-icons-round">task_alt</span>Aprobar
-                </span>
-                <span class="perm" [class.perm--on]="p.canManageConfig">
-                  <span class="material-icons-round">settings</span>Config
-                </span>
-              </div>
-            </div>
+            <app-type-preview
+              [color]="selectedType()!.color"
+              [name]="selectedType()!.name"
+              [description]="selectedType()!.description ?? ''"
+              [permissions]="selectedType()!.permissions">
+            </app-type-preview>
           }
 
-          <p class="hint">
-            <span class="material-icons-round">info</span>
+          <p style="display:flex; align-items:flex-start; gap:.5rem; font-size:var(--text-sm); color:var(--text-secondary); margin:.5rem 0 0;">
+            <span class="material-icons-round" style="font-size:16px; color:var(--color-info); flex-shrink:0; margin-top:1px;">info</span>
             Sin acceso al portal de empleados. Gestiona los tipos en
             <strong>Configuración → Tipos de usuario</strong>.
           </p>
         }
       </app-form-section>
     </form>
+  }
 
-    <div drawer-footer>
-      <div class="drawer-actions">
+  <div drawer-footer>
+    @if (success()) {
+      <app-button variant="primary" (clicked)="confirmSuccess()">Entendido</app-button>
+    } @else {
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:var(--space-3); width:100%;">
         <app-button variant="ghost" (clicked)="onClose()">Cancelar</app-button>
         <app-button variant="primary" icon="person_add" [loading]="saving()" (clicked)="submit()">
           Crear usuario
         </app-button>
       </div>
-    </div>
-  }
+    }
+  </div>
 
 </app-drawer>

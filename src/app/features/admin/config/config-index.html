@@ -1,40 +1,23 @@
-<div class="config-index">
+<div style="display:flex; flex-direction:column; gap:var(--space-8); padding-bottom:var(--space-8);">
 
   <app-page-header
     title="Configuración"
     subtitle="Administra el acceso, los permisos y la identidad corporativa de tu plataforma">
   </app-page-header>
 
-  <div class="config-grid">
+  <app-col-grid [cols]="3">
     @for (card of cards; track card.route) {
       @if (!card.adminOnly || perms.canManageConfig()) {
-        <button class="config-card" (click)="navigate(card.route)">
-
-          <div class="config-card__header">
-            <div class="config-card__icon" [style.background]="card.color + '18'" [style.color]="card.color">
-              <span class="material-icons-round">{{ card.icon }}</span>
-            </div>
-            <span class="material-icons-round config-card__arrow">arrow_forward</span>
-          </div>
-
-          <div class="config-card__body">
-            <h3 class="config-card__title">{{ card.title }}</h3>
-            <p class="config-card__desc">{{ card.description }}</p>
-          </div>
-
-          <div class="config-card__tags">
-            @for (tag of card.tags; track tag) {
-              <span class="config-tag" [style.color]="card.color" [style.background]="card.color + '14'">
-                {{ tag }}
-              </span>
-            }
-          </div>
-
-          <div class="config-card__bar" [style.background]="card.color"></div>
-
-        </button>
+        <app-nav-card
+          [icon]="card.icon"
+          [color]="card.color"
+          [title]="card.title"
+          [description]="card.description"
+          [tags]="card.tags"
+          (clicked)="navigate(card.route)">
+        </app-nav-card>
       }
     }
-  </div>
+  </app-col-grid>
 
 </div>

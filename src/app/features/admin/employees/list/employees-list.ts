@@ -7,6 +7,7 @@ import { debounceTime, distinctUntilChanged } from 'rxjs';
 import {
   Avatar, Badge, Banner, Button, EmptyState, LoadingSkeleton,
   PageHeader, Pagination, SectionCard, StatCard, AppInput, AppSelect,
+  DataTable, EntityCard,
 } from '@shared/ui';
 import { EmployeesAdminService, EmployeeSummary } from '../employees.service';
 import { CandidatesService } from '../../services/candidates.service';
@@ -21,10 +22,10 @@ const PAGE_SIZE = 25;
     CommonModule, ReactiveFormsModule,
     Avatar, Badge, Banner, Button, EmptyState, LoadingSkeleton,
     PageHeader, Pagination, SectionCard, StatCard, AppInput, AppSelect,
+    DataTable, EntityCard,
     CreateEmployeeDrawer,
   ],
   templateUrl: './employees-list.html',
-  styleUrl:    './employees-list.scss',
 })
 export class EmployeesList implements OnInit {
   private readonly svc        = inject(EmployeesAdminService);

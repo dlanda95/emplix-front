@@ -1,25 +1,4 @@
-@use 'abstracts/variables' as *;
-@use 'abstracts/mixins' as *;
-
-.config-index {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-8);
-  padding-bottom: var(--space-8);
-}
-
-// ── Grid de cards ─────────────────────────────────────────────────────────────
-.config-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: var(--space-5);
-
-  @include respond-to('laptop') { grid-template-columns: repeat(2, 1fr); }
-  @include respond-to('tablet') { grid-template-columns: 1fr; }
-}
-
-// ── Card ──────────────────────────────────────────────────────────────────────
-.config-card {
+.nc {
   position: relative;
   display: flex;
   flex-direction: column;
@@ -33,16 +12,15 @@
   cursor: pointer;
   overflow: hidden;
   transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+  width: 100%;
 
   &:hover {
     transform: translateY(-3px);
     box-shadow: var(--shadow-md);
     border-color: var(--border-strong);
 
-    .config-card__arrow {
-      opacity: 1;
-      transform: translateX(3px);
-    }
+    .nc__arrow { opacity: 1; transform: translateX(3px); }
+    .nc__bar   { opacity: 1; }
   }
 
   &__header {
@@ -100,7 +78,16 @@
     margin-top: auto;
   }
 
-  // Barra de color en el bottom
+  &__tag {
+    display: inline-flex;
+    align-items: center;
+    font-size: var(--text-xs);
+    font-weight: var(--font-medium);
+    padding: 3px 10px;
+    border-radius: 100px;
+    white-space: nowrap;
+  }
+
   &__bar {
     position: absolute;
     bottom: 0;
@@ -110,17 +97,4 @@
     opacity: 0;
     transition: opacity 0.18s ease;
   }
-
-  &:hover &__bar { opacity: 1; }
-}
-
-// ── Tag ───────────────────────────────────────────────────────────────────────
-.config-tag {
-  display: inline-flex;
-  align-items: center;
-  font-size: var(--text-xs);
-  font-weight: var(--font-medium);
-  padding: 3px 10px;
-  border-radius: 100px;
-  white-space: nowrap;
 }

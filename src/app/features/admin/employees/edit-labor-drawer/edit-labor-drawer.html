@@ -1,9 +1,11 @@
 <app-drawer [isOpen]="isOpen" title="Editar datos laborales" (close)="onClose()">
 
   @if (loadingData()) {
-    <p class="edit-labor-drawer__loading">Cargando opciones...</p>
+    <p style="font-size:var(--text-sm); color:var(--text-secondary); padding:1rem 0; margin:0;">
+      Cargando opciones...
+    </p>
   } @else {
-    <form [formGroup]="form" (ngSubmit)="submit()" class="edit-labor-drawer__form">
+    <form [formGroup]="form" (ngSubmit)="submit()">
 
       @if (errorMsg()) {
         <app-banner variant="error" icon="error" [title]="errorMsg()"></app-banner>
@@ -36,11 +38,13 @@
     </form>
   }
 
-  <div drawer-footer class="edit-labor-drawer__footer">
-    <app-button variant="ghost" (clicked)="onClose()">Cancelar</app-button>
-    <app-button variant="primary" [loading]="saving()" [disabled]="loadingData()" (clicked)="submit()">
-      Guardar cambios
-    </app-button>
+  <div drawer-footer>
+    <div style="display:flex; align-items:center; justify-content:flex-end; gap:.75rem; width:100%;">
+      <app-button variant="ghost" (clicked)="onClose()">Cancelar</app-button>
+      <app-button variant="primary" [loading]="saving()" [disabled]="loadingData()" (clicked)="submit()">
+        Guardar cambios
+      </app-button>
+    </div>
   </div>
 
 </app-drawer>

@@ -1,37 +1,33 @@
-<div class="users-page">
+<div style="display:flex; flex-direction:column; gap:var(--space-6); padding-bottom:var(--space-8);">
 
-  <div class="users-page__header">
-    <app-page-header
-      title="Usuarios del Sistema"
-      subtitle="Cuentas con acceso al panel de administración sin ficha de empleado">
-    </app-page-header>
+  <app-page-header
+    title="Usuarios del Sistema"
+    subtitle="Cuentas con acceso al panel de administración sin ficha de empleado">
     <app-button icon="person_add" variant="primary" [disabled]="!perms.canCreate()" (clicked)="showUserDrawer.set(true)">
       Nuevo usuario
     </app-button>
-  </div>
+  </app-page-header>
 
   @if (loadError()) {
     <app-banner variant="error" icon="error" [title]="loadError()"></app-banner>
   }
 
   @if (isLoading()) {
-    <div class="users-stats-skeleton">
+    <app-col-grid>
       <app-loading-skeleton variant="card"></app-loading-skeleton>
       <app-loading-skeleton variant="card"></app-loading-skeleton>
-    </div>
+    </app-col-grid>
     <app-loading-skeleton variant="card" [lines]="6"></app-loading-skeleton>
 
   } @else if (!loadError()) {
 
-    <!-- Stats -->
-    <div class="users-stats">
+    <app-col-grid>
       <app-stat-card label="Usuarios activos" [value]="totalActive().toString()" icon="verified_user"   variant="primary"></app-stat-card>
       <app-stat-card label="Tipos de acceso"  [value]="totalTypes().toString()"  icon="manage_accounts" variant="info"></app-stat-card>
-    </div>
+    </app-col-grid>
 
-    <!-- Toolbar -->
-    <div class="users-toolbar">
-      <div class="users-toolbar__search">
+    <div style="display:flex; flex-direction:column; gap:var(--space-3);">
+      <div style="max-width:360px;">
         <app-input
           label="Buscar usuario..."
           placeholder="Nombre, email o tipo de acceso"
@@ -55,80 +51,71 @@
     } @else {
 
       <app-section-card title="Directorio de accesos" [columns]="1">
-        <div class="users-table-wrap">
-          <table class="users-table">
-            <thead>
-              <tr>
-                <th>Usuario</th>
-                <th>Tipo de acceso</th>
-                <th>Estado</th>
-                <th>Alta</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (u of filtered(); track u.id) {
-                <tr class="users-table__row" [class.users-table__row--inactive]="!u.isActive">
+        <app-data-table>
+          <thead>
+            <tr>
+              <th>Usuario</th>
+              <th>Tipo de acceso</th>
+              <th>Estado</th>
+              <th>Alta</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (u of filtered(); track u.id) {
+              <tr [style.opacity]="u.isActive ? '1' : '0.55'">
 
-                  <!-- Identidad -->
-                  <td>
-                    <div class="users-cell">
-                      <app-avatar [name]="displayName(u)" size="sm"></app-avatar>
-                      <div class="users-cell__info">
-                        <span class="users-cell__name">{{ displayName(u) }}</span>
-                        <span class="users-cell__email">{{ u.email }}</span>
-                      </div>
+                <td>
+                  <div style="display:flex; align-items:center; gap:var(--space-3);">
+                    <app-avatar [name]="displayName(u)" size="sm"></app-avatar>
+                    <div style="display:flex; flex-direction:column; gap:2px; min-width:0;">
+                      <span style="font-size:var(--text-base); font-weight:var(--font-medium); color:var(--text-main); white-space:nowrap;">{{ displayName(u) }}</span>
+                      <span style="font-size:var(--text-xs); color:var(--text-secondary); white-space:nowrap;">{{ u.email }}</span>
                     </div>
-                  </td>
+                  </div>
+                </td>
 
-                  <!-- Tipo de acceso -->
-                  <td>
-                    @if (u.systemUserType) {
-                      <div class="type-access">
-                        <span class="type-access__dot" [style.background]="u.systemUserType.color"></span>
-                        <span class="type-access__name" [style.color]="u.systemUserType.color">
-                          {{ u.systemUserType.name }}
-                        </span>
-                      </div>
-                    } @else {
-                      <app-badge variant="neutral">Sin tipo asignado</app-badge>
-                    }
-                  </td>
+                <td>
+                  @if (u.systemUserType) {
+                    <div style="display:flex; align-items:center; gap:var(--space-2);">
+                      <span style="width:8px; height:8px; border-radius:50%; flex-shrink:0;"
+                        [style.background]="u.systemUserType.color"></span>
+                      <span style="font-size:var(--text-sm); font-weight:var(--font-semibold);"
+                        [style.color]="u.systemUserType.color">{{ u.systemUserType.name }}</span>
+                    </div>
+                  } @else {
+                    <app-badge variant="neutral">Sin tipo asignado</app-badge>
+                  }
+                </td>
 
-                  <!-- Estado -->
-                  <td>
-                    <app-badge [variant]="u.isActive ? 'success' : 'neutral'">
-                      {{ u.isActive ? 'Activo' : 'Inactivo' }}
-                    </app-badge>
-                  </td>
+                <td>
+                  <app-badge [variant]="u.isActive ? 'success' : 'neutral'">
+                    {{ u.isActive ? 'Activo' : 'Inactivo' }}
+                  </app-badge>
+                </td>
 
-                  <!-- Fecha alta -->
-                  <td class="users-table__text users-table__muted">
-                    {{ u.createdAt | date:'dd/MM/yyyy' }}
-                  </td>
+                <td class="dt-muted">{{ u.createdAt | date:'dd/MM/yyyy' }}</td>
 
-                  <!-- Acciones -->
-                  <td class="users-table__actions">
-                    <app-button variant="ghost" size="sm" icon="edit"
-                      [disabled]="!perms.canManageUsers()"
-                      (clicked)="openEdit(u)">
-                      Editar
-                    </app-button>
-                    <app-button variant="ghost" size="sm"
-                      [icon]="u.isActive ? 'block' : 'check_circle'"
-                      [disabled]="!perms.canEdit()"
-                      (clicked)="requestToggle(u)">
-                      {{ u.isActive ? 'Desactivar' : 'Activar' }}
-                    </app-button>
-                  </td>
+                <td class="dt-actions">
+                  <app-button variant="ghost" size="sm" icon="edit"
+                    [disabled]="!perms.canManageUsers()"
+                    (clicked)="openEdit(u)">
+                    Editar
+                  </app-button>
+                  <app-button variant="ghost" size="sm"
+                    [icon]="u.isActive ? 'block' : 'check_circle'"
+                    [disabled]="!perms.canEdit()"
+                    (clicked)="requestToggle(u)">
+                    {{ u.isActive ? 'Desactivar' : 'Activar' }}
+                  </app-button>
+                </td>
 
-                </tr>
-              }
-            </tbody>
-          </table>
-        </div>
+              </tr>
+            }
+          </tbody>
+        </app-data-table>
 
-        <p class="users-count">
+        <p style="margin-top:var(--space-4); font-size:var(--text-sm); color:var(--text-secondary); text-align:right; margin-bottom:0;">
           Mostrando {{ filtered().length }} de {{ users().length }} usuarios
         </p>
       </app-section-card>
@@ -137,7 +124,6 @@
 
 </div>
 
-<!-- Drawers -->
 <app-create-user-drawer
   [isOpen]="showUserDrawer()"
   (close)="showUserDrawer.set(false)"
@@ -151,7 +137,6 @@
   (updated)="onUserUpdated()">
 </app-edit-user-drawer>
 
-<!-- Confirmación toggle estado -->
 <app-confirm-modal
   [isOpen]="confirmToggleUser() !== null"
   icon="warning"

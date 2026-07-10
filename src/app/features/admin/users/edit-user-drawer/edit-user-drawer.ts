@@ -2,15 +2,15 @@ import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges, injec
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, Validators, ReactiveFormsModule } from '@angular/forms';
-import { Drawer, AppSelect, Button, Banner, FormSection } from '@shared/ui';
+import { Drawer, AppSelect, Button, Banner, FormSection, TypePreview, LoadingSkeleton } from '@shared/ui';
 import type { SelectOption } from '@shared/ui';
 import { UsersAdminService, UserListItem, SystemUserType } from '../users-admin.service';
 
 @Component({
   selector: 'app-edit-user-drawer',
-  imports: [CommonModule, ReactiveFormsModule, Drawer, AppSelect, Button, Banner, FormSection],
+  imports: [CommonModule, ReactiveFormsModule, Drawer, AppSelect, Button, Banner, FormSection,
+    TypePreview, LoadingSkeleton],
   templateUrl: './edit-user-drawer.html',
-  styleUrl: './edit-user-drawer.scss',
 })
 export class EditUserDrawer implements OnChanges {
   @Input({ required: true }) isOpen = false;

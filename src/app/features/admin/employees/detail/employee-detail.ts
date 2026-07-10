@@ -1,17 +1,18 @@
 import { Component, DestroyRef, inject, signal, computed, OnInit } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { Avatar, Badge, Banner, Button, LoadingSkeleton } from '@shared/ui';
+import { ActivatedRoute, Router } from '@angular/router';
+import { Badge, Banner, Button, LoadingSkeleton,
+  ProfileHero, DetailCard, BackLink, ColGrid } from '@shared/ui';
 import { EmployeesAdminService, EmployeeDetail as EmployeeDetailData } from '../employees.service';
 import { PermissionsService } from '@core/auth/permissions.service';
 import { EditLaborDrawer } from '../edit-labor-drawer/edit-labor-drawer';
 
 @Component({
   selector: 'app-employee-detail',
-  imports: [CommonModule, RouterLink, Avatar, Badge, Banner, Button, LoadingSkeleton, EditLaborDrawer],
+  imports: [CommonModule, Badge, Banner, Button, LoadingSkeleton, EditLaborDrawer,
+    ProfileHero, DetailCard, BackLink, ColGrid],
   templateUrl: './employee-detail.html',
-  styleUrl: './employee-detail.scss',
 })
 export class EmployeeDetail implements OnInit {
   private readonly svc        = inject(EmployeesAdminService);

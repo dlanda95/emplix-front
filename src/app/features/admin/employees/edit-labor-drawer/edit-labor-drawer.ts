@@ -14,7 +14,6 @@ import { environment } from '@env';
   selector: 'app-edit-labor-drawer',
   imports: [CommonModule, ReactiveFormsModule, Drawer, AppInput, AppSelect, Button, Banner, FormRow, FormSection],
   templateUrl: './edit-labor-drawer.html',
-  styleUrl: './edit-labor-drawer.scss',
 })
 export class EditLaborDrawer implements OnChanges {
   @Input({ required: true }) isOpen = false;
