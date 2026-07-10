@@ -10,6 +10,7 @@ import {
 } from '@shared/ui';
 import { EmployeesAdminService, EmployeeSummary } from '../employees.service';
 import { CandidatesService } from '../../services/candidates.service';
+import { CreateEmployeeDrawer } from '../create-employee-drawer/create-employee-drawer';
 import type { SelectOption } from '@shared/ui';
 
 const PAGE_SIZE = 25;
@@ -20,8 +21,10 @@ const PAGE_SIZE = 25;
     CommonModule, ReactiveFormsModule,
     Avatar, Badge, Banner, Button, EmptyState, LoadingSkeleton,
     PageHeader, Pagination, SectionCard, StatCard, AppInput, AppSelect,
+    CreateEmployeeDrawer,
   ],
   templateUrl: './employees-list.html',
+  styleUrl:    './employees-list.scss',
 })
 export class EmployeesList implements OnInit {
   private readonly svc        = inject(EmployeesAdminService);
@@ -29,17 +32,19 @@ export class EmployeesList implements OnInit {
   private readonly router     = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
 
-  readonly employees    = signal<EmployeeSummary[]>([]);
-  readonly total        = signal(0);
-  readonly totalPages   = signal(1);
-  readonly page         = signal(1);
-  readonly pageSize     = PAGE_SIZE;
-  readonly isLoading    = signal(true);
-  readonly loadError    = signal('');
+  readonly employees  = signal<EmployeeSummary[]>([]);
+  readonly total      = signal(0);
+  readonly totalPages = signal(1);
+  readonly page       = signal(1);
+  readonly pageSize   = PAGE_SIZE;
+  readonly isLoading  = signal(true);
+  readonly loadError  = signal('');
 
-  readonly deptOptions  = signal<SelectOption[]>([]);
-  readonly searchCtrl   = new FormControl('');
-  readonly deptCtrl     = new FormControl('');
+  readonly showCreateDrawer = signal(false);
+
+  readonly deptOptions = signal<SelectOption[]>([]);
+  readonly searchCtrl  = new FormControl('');
+  readonly deptCtrl    = new FormControl('');
 
   readonly showRange = computed(() => {
     const from = (this.page() - 1) * PAGE_SIZE + 1;
@@ -74,7 +79,7 @@ export class EmployeesList implements OnInit {
       page:         this.page(),
       limit:        PAGE_SIZE,
       search:       this.searchCtrl.value ?? '',
-      departmentId: this.deptCtrl.value ?? '',
+      departmentId: this.deptCtrl.value   ?? '',
     }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: result => {
         this.employees.set(result.data);
@@ -94,7 +99,14 @@ export class EmployeesList implements OnInit {
     this.load();
   }
 
+  onEmployeeCreated(): void {
+    this.showCreateDrawer.set(false);
+    this.page.set(1);
+    this.load();
+  }
+
   fullName(e: EmployeeSummary): string { return `${e.firstName} ${e.lastName}`; }
+
   supervisorName(e: EmployeeSummary): string {
     const s = e.supervisor;
     return s ? `${s.firstName} ${s.lastName}` : '—';

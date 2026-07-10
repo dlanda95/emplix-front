@@ -1,18 +1,17 @@
 <app-drawer
   [isOpen]="isOpen"
-  title="Agregar Empleado Directo"
-  subtitle="El empleado puede completar su perfil desde el portal"
+  title="Nuevo colaborador"
+  subtitle="Completa los datos básicos. El colaborador puede actualizar su perfil desde el portal."
   width="lg"
   (close)="onClose()">
 
   @if (successData) {
-    <!-- Vista de éxito con credenciales -->
     <div class="success-screen">
       <div class="success-icon">
         <span class="material-icons-round">check_circle</span>
       </div>
-      <h3 class="success-title">¡Empleado creado!</h3>
-      <p class="success-desc">Comparte estas credenciales con el empleado para su primer acceso.</p>
+      <h3 class="success-title">¡Colaborador creado!</h3>
+      <p class="success-desc">Comparte estas credenciales con el colaborador para su primer acceso.</p>
       <div class="credentials-card">
         <div class="credentials-row">
           <span class="credentials-label">Correo</span>
@@ -25,7 +24,7 @@
       </div>
       <p class="success-note">
         <span class="material-icons-round">info</span>
-        El empleado deberá cambiar su contraseña al ingresar por primera vez.
+        El colaborador deberá cambiar su contraseña al ingresar por primera vez.
       </p>
     </div>
     <div drawer-footer>
@@ -64,7 +63,7 @@
             <app-input label="Apellidos *" formControlName="lastName" placeholder="Ej. García López"></app-input>
           </app-form-row>
           <app-form-row>
-            <app-input label="Correo electrónico *" formControlName="email" type="email" placeholder="empleado@empresa.com"></app-input>
+            <app-input label="Correo electrónico *" formControlName="email" type="email" placeholder="colaborador@empresa.com"></app-input>
             <app-input label="Documento de identidad" formControlName="documentId" placeholder="DNI, CE, Pasaporte..."></app-input>
           </app-form-row>
           <app-form-row>
@@ -72,7 +71,7 @@
               min="1900-01-01" max="2100-12-31"></app-input>
             @if (step1.get('hireDate')?.touched && step1.get('hireDate')?.errors) {
               <span class="field-error">
-                @if (step1.get('hireDate')?.hasError('required'))      { Campo obligatorio }
+                @if (step1.get('hireDate')?.hasError('required'))          { Campo obligatorio }
                 @else if (step1.get('hireDate')?.hasError('dateOutOfRange')) { El año debe estar entre 1900 y 2100 }
                 @else if (step1.get('hireDate')?.hasError('invalidDate'))    { La fecha no es válida }
               </span>
@@ -82,7 +81,7 @@
       </form>
     }
 
-    <!-- Paso 2: Posición laboral -->
+    <!-- Paso 2: Posición -->
     @if (step === 2) {
       <form [formGroup]="step2">
         <app-form-section title="Posición en la organización" icon="business_center">
@@ -112,7 +111,7 @@
       </form>
     }
 
-    <!-- Paso 3: Acceso al portal -->
+    <!-- Paso 3: Acceso -->
     @if (step === 3) {
       <form [formGroup]="step3">
         <app-form-section title="Acceso al portal" icon="lock_person">
@@ -120,7 +119,7 @@
             <div class="access-toggle__info">
               <span class="access-toggle__title">¿Habilitar acceso al portal?</span>
               <span class="access-toggle__desc">
-                Se generará una contraseña temporal que deberás compartir con el empleado.
+                Se generará una contraseña temporal que deberás compartir con el colaborador.
               </span>
             </div>
             <label class="toggle">
@@ -144,14 +143,13 @@
             <app-banner
               variant="info"
               icon="info"
-              title="El empleado se registrará en el sistema sin cuenta de acceso. Podrás habilitarla más adelante.">
+              title="El colaborador se registrará sin cuenta de acceso. Podrás habilitarla más adelante desde Usuarios.">
             </app-banner>
           }
         </app-form-section>
       </form>
     }
 
-    <!-- Footer -->
     <div drawer-footer>
       <div class="drawer-actions">
         <app-button variant="ghost" (clicked)="step === 1 ? onClose() : prevStep()">
@@ -164,7 +162,7 @@
             </app-button>
           } @else {
             <app-button variant="primary" icon="check" [loading]="saving" (clicked)="submit()">
-              Crear empleado
+              Crear colaborador
             </app-button>
           }
         </div>

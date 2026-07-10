@@ -3,13 +3,32 @@
   <app-page-header
     title="Colaboradores"
     subtitle="Directorio de empleados activos de la organización">
+    <app-button icon="person_add" (clicked)="showCreateDrawer.set(true)">
+      Nuevo colaborador
+    </app-button>
   </app-page-header>
 
   @if (loadError()) {
     <app-banner variant="error" icon="error" [title]="loadError()"></app-banner>
   }
 
-  <!-- Barra de búsqueda y filtros -->
+  <!-- Stats -->
+  @if (!isLoading() && !loadError()) {
+    <div class="colabs-stats">
+      <app-stat-card
+        label="Total colaboradores"
+        [value]="total().toString()"
+        icon="badge">
+      </app-stat-card>
+      <app-stat-card
+        label="En esta página"
+        [value]="employees().length.toString()"
+        icon="list">
+      </app-stat-card>
+    </div>
+  }
+
+  <!-- Filtros -->
   <div class="colabs-toolbar">
     <div class="colabs-toolbar__search">
       <app-input
@@ -109,3 +128,9 @@
   }
 
 </div>
+
+<app-create-employee-drawer
+  [isOpen]="showCreateDrawer()"
+  (close)="showCreateDrawer.set(false)"
+  (created)="onEmployeeCreated()">
+</app-create-employee-drawer>

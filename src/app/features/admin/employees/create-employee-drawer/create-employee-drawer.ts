@@ -5,16 +5,16 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angula
 import { dateRangeValidator } from '@shared/validators/date-range.validator';
 import { HttpClient } from '@angular/common/http';
 import { forkJoin } from 'rxjs';
-import { Drawer, AppInput, AppSelect, Button, Banner, FormRow, FormSection, Badge } from '@shared/ui';
+import { Drawer, AppInput, AppSelect, Button, Banner, FormRow, FormSection } from '@shared/ui';
 import type { SelectOption } from '@shared/ui';
-import { UsersAdminService, ROLE_LABELS, UserRole } from '../users-admin.service';
+import { UsersAdminService, ROLE_LABELS, UserRole } from '../../users/users-admin.service';
 import { environment } from '@env';
 
 type Step = 1 | 2 | 3;
 
 @Component({
   selector: 'app-create-employee-drawer',
-  imports: [CommonModule, ReactiveFormsModule, Drawer, AppInput, AppSelect, Button, Banner, FormRow, FormSection, Badge],
+  imports: [CommonModule, ReactiveFormsModule, Drawer, AppInput, AppSelect, Button, Banner, FormRow, FormSection],
   templateUrl: './create-employee-drawer.html',
   styleUrl: './create-employee-drawer.scss',
 })
@@ -34,11 +34,11 @@ export class CreateEmployeeDrawer implements OnChanges {
   successData: { email?: string; tempPassword?: string } | null = null;
   loadingForm = false;
 
-  deptOptions    = signal<SelectOption[]>([]);
-  posOptions     = signal<SelectOption[]>([]);
-  contractOptions= signal<SelectOption[]>([]);
-  shiftOptions   = signal<SelectOption[]>([]);
-  empOptions     = signal<SelectOption[]>([]);
+  deptOptions     = signal<SelectOption[]>([]);
+  posOptions      = signal<SelectOption[]>([]);
+  contractOptions = signal<SelectOption[]>([]);
+  shiftOptions    = signal<SelectOption[]>([]);
+  empOptions      = signal<SelectOption[]>([]);
 
   readonly roleOptions: SelectOption[] = Object.entries(ROLE_LABELS)
     .filter(([k]) => k !== 'COMPANY_ADMIN')
@@ -84,10 +84,7 @@ export class CreateEmployeeDrawer implements OnChanges {
     }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: ({ departments, positions, contracts, shifts, emps }) => {
         this.loadingForm = false;
-        const allDepts = departments.flatMap((a: any) => [
-          a,
-          ...(a.children ?? []),
-        ]);
+        const allDepts = departments.flatMap((a: any) => [a, ...(a.children ?? [])]);
         this.deptOptions.set(allDepts.map((d: any) => ({ value: d.id, label: d.name })));
         this.posOptions.set(positions.map((p: any) => ({ value: p.id, label: p.name })));
         this.contractOptions.set(contracts.map(c => ({ value: c.id, label: c.name })));
@@ -115,7 +112,7 @@ export class CreateEmployeeDrawer implements OnChanges {
   }
 
   submit(): void {
-    this.saving  = true;
+    this.saving   = true;
     this.errorMsg = '';
 
     const s1 = this.step1.value;
@@ -123,19 +120,19 @@ export class CreateEmployeeDrawer implements OnChanges {
     const s3 = this.step3.value;
 
     const payload = {
-      firstName:       s1.firstName!,
-      lastName:        s1.lastName!,
-      email:           s1.email!,
-      documentId:      s1.documentId || undefined,
-      hireDate:        s1.hireDate!,
-      departmentId:    s2.departmentId || undefined,
-      positionId:      s2.positionId   || undefined,
-      supervisorId:    s2.supervisorId  || undefined,
-      contractTypeId:  s2.contractTypeId || undefined,
-      workShiftId:     s2.workShiftId    || undefined,
-      salary:          Number(s2.salary) || 0,
-      grantAccess:     !!s3.grantAccess,
-      role:            (s3.role as UserRole) || 'EMPLOYEE',
+      firstName:      s1.firstName!,
+      lastName:       s1.lastName!,
+      email:          s1.email!,
+      documentId:     s1.documentId || undefined,
+      hireDate:       s1.hireDate!,
+      departmentId:   s2.departmentId   || undefined,
+      positionId:     s2.positionId     || undefined,
+      supervisorId:   s2.supervisorId   || undefined,
+      contractTypeId: s2.contractTypeId || undefined,
+      workShiftId:    s2.workShiftId    || undefined,
+      salary:         Number(s2.salary) || 0,
+      grantAccess:    !!s3.grantAccess,
+      role:           (s3.role as UserRole) || 'EMPLOYEE',
     };
 
     this.svc.createEmployeeDirect(payload).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
@@ -149,8 +146,8 @@ export class CreateEmployeeDrawer implements OnChanges {
         }
       },
       error: err => {
-        this.saving  = false;
-        this.errorMsg = err?.error?.message ?? 'Error al crear el empleado.';
+        this.saving   = false;
+        this.errorMsg = err?.error?.message ?? 'Error al crear el colaborador.';
       },
     });
   }
@@ -167,8 +164,8 @@ export class CreateEmployeeDrawer implements OnChanges {
   }
 
   private reset(): void {
-    this.step = 1;
-    this.errorMsg = '';
+    this.step        = 1;
+    this.errorMsg    = '';
     this.successData = null;
     this.step1.reset();
     this.step2.reset({ salary: 0 });
