@@ -7,7 +7,7 @@ import { finalize } from 'rxjs';
 
 import { AuthService }         from '@core/auth/auth';
 import { TenantService }       from '@core/services/tenant.service';
-import { InputField, PrimaryBtn } from '@shared/ui';
+import { AppInput, Button } from '@shared/ui';
 import { DomainsConfigService, PublicDomain } from '@features/admin/config/domains/domains.service';
 import { environment } from '@env';
 
@@ -24,7 +24,7 @@ type AuthErrorCode =
 
 @Component({
   selector: 'app-login',
-  imports: [ReactiveFormsModule, RouterLink, InputField, PrimaryBtn],
+  imports: [ReactiveFormsModule, RouterLink, AppInput, Button],
   templateUrl: './login.html',
   styleUrl: './login.scss',
 })

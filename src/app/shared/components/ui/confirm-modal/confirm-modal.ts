@@ -1,9 +1,10 @@
-import { Component, Input, Output, EventEmitter, HostListener } from '@angular/core';
+import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { Button } from '../button/button';
+import { Modal } from '../modal/modal';
 
 @Component({
   selector: 'app-confirm-modal',
-  imports: [Button],
+  imports: [Button, Modal],
   templateUrl: './confirm-modal.html',
   styleUrl: './confirm-modal.scss',
 })
@@ -17,9 +18,4 @@ export class ConfirmModal {
 
   @Output() confirmed = new EventEmitter<void>();
   @Output() cancelled = new EventEmitter<void>();
-
-  @HostListener('document:keydown.escape')
-  onEsc(): void {
-    if (this.isOpen) this.cancelled.emit();
-  }
 }

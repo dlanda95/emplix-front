@@ -29,15 +29,15 @@
     @if (step === 1) {
       <form [formGroup]="step1">
         <app-form-section title="Datos personales" icon="person">
-          <app-form-row>
+          <app-col-grid>
             <app-input label="Nombres *" formControlName="firstName" placeholder="Ej. María Fernanda"></app-input>
             <app-input label="Apellidos *" formControlName="lastName" placeholder="Ej. García López"></app-input>
-          </app-form-row>
-          <app-form-row>
+          </app-col-grid>
+          <app-col-grid>
             <app-input label="Correo electrónico *" formControlName="email" type="email" placeholder="colaborador@empresa.com"></app-input>
             <app-input label="Documento de identidad" formControlName="documentId" placeholder="DNI, CE, Pasaporte..."></app-input>
-          </app-form-row>
-          <app-form-row>
+          </app-col-grid>
+          <app-col-grid>
             <app-input label="Fecha de ingreso *" formControlName="hireDate" type="date"
               min="1900-01-01" max="2100-12-31"></app-input>
             @if (step1.get('hireDate')?.touched && step1.get('hireDate')?.errors) {
@@ -47,7 +47,7 @@
                 @else if (step1.get('hireDate')?.hasError('invalidDate'))    { La fecha no es válida }
               </span>
             }
-          </app-form-row>
+          </app-col-grid>
         </app-form-section>
       </form>
     }
@@ -55,28 +55,28 @@
     @if (step === 2) {
       <form [formGroup]="step2">
         <app-form-section title="Posición en la organización" icon="business_center">
-          <app-form-row>
+          <app-col-grid>
             <app-select label="Área / Departamento" formControlName="departmentId"
               [options]="deptOptions()" placeholder="Seleccionar área"></app-select>
             <app-select label="Cargo" formControlName="positionId"
               [options]="posOptions()" placeholder="Seleccionar cargo"></app-select>
-          </app-form-row>
-          <app-form-row>
+          </app-col-grid>
+          <app-col-grid>
             <app-select label="Supervisor directo" formControlName="supervisorId"
               [options]="empOptions()" placeholder="Sin supervisor"></app-select>
-          </app-form-row>
+          </app-col-grid>
         </app-form-section>
 
         <app-form-section title="Condiciones laborales" icon="description">
-          <app-form-row>
+          <app-col-grid>
             <app-select label="Tipo de contrato" formControlName="contractTypeId"
               [options]="contractOptions()" placeholder="Usar predeterminado"></app-select>
             <app-select label="Turno de trabajo" formControlName="workShiftId"
               [options]="shiftOptions()" placeholder="Usar predeterminado"></app-select>
-          </app-form-row>
-          <app-form-row>
+          </app-col-grid>
+          <app-col-grid>
             <app-input label="Salario mensual" formControlName="salary" type="number" placeholder="0.00"></app-input>
-          </app-form-row>
+          </app-col-grid>
         </app-form-section>
       </form>
     }

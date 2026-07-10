@@ -4,7 +4,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { forkJoin } from 'rxjs';
-import { Drawer, AppInput, AppSelect, Button, Banner, FormRow, FormSection } from '@shared/ui';
+import { Drawer, AppInput, AppSelect, Button, Banner, ColGrid, FormSection } from '@shared/ui';
 import type { SelectOption } from '@shared/ui';
 import { EmployeesAdminService, EmployeeDetail } from '../employees.service';
 import { ToastService } from '@core/services/toast.service';
@@ -12,7 +12,7 @@ import { environment } from '@env';
 
 @Component({
   selector: 'app-edit-labor-drawer',
-  imports: [CommonModule, ReactiveFormsModule, Drawer, AppInput, AppSelect, Button, Banner, FormRow, FormSection],
+  imports: [CommonModule, ReactiveFormsModule, Drawer, AppInput, AppSelect, Button, Banner, ColGrid, FormSection],
   templateUrl: './edit-labor-drawer.html',
 })
 export class EditLaborDrawer implements OnChanges {

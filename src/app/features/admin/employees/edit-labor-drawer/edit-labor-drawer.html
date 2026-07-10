@@ -12,27 +12,27 @@
       }
 
       <app-form-section title="Organización">
-        <app-form-row>
+        <app-col-grid>
           <app-select label="Área / Departamento" formControlName="departmentId" [options]="deptOptions()"></app-select>
-        </app-form-row>
-        <app-form-row>
+        </app-col-grid>
+        <app-col-grid>
           <app-select label="Cargo / Posición" formControlName="positionId" [options]="posOptions()"></app-select>
-        </app-form-row>
-        <app-form-row>
+        </app-col-grid>
+        <app-col-grid>
           <app-select label="Supervisor directo" formControlName="supervisorId" [options]="empOptions()"></app-select>
-        </app-form-row>
+        </app-col-grid>
       </app-form-section>
 
       <app-form-section title="Condiciones de empleo">
-        <app-form-row>
+        <app-col-grid>
           <app-select label="Tipo de contrato" formControlName="contractType" [options]="contractOptions()"></app-select>
-        </app-form-row>
-        <app-form-row>
+        </app-col-grid>
+        <app-col-grid>
           <app-select label="Turno de trabajo" formControlName="workShiftId" [options]="shiftOptions()"></app-select>
-        </app-form-row>
-        <app-form-row>
+        </app-col-grid>
+        <app-col-grid>
           <app-input label="Salario (S/.)" type="number" formControlName="salary" [min]="'0'"></app-input>
-        </app-form-row>
+        </app-col-grid>
       </app-form-section>
 
     </form>

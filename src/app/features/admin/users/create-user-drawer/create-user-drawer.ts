@@ -2,14 +2,14 @@ import { Component, Input, Output, EventEmitter, OnChanges, SimpleChanges, injec
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, Validators, ReactiveFormsModule } from '@angular/forms';
-import { Drawer, AppInput, AppSelect, Button, Banner, FormRow, FormSection,
+import { Drawer, AppInput, AppSelect, Button, Banner, ColGrid, FormSection,
   SuccessScreen, TypePreview, LoadingSkeleton } from '@shared/ui';
 import type { SelectOption } from '@shared/ui';
 import { UsersAdminService, SystemUserType } from '../users-admin.service';
 
 @Component({
   selector: 'app-create-user-drawer',
-  imports: [CommonModule, ReactiveFormsModule, Drawer, AppInput, AppSelect, Button, Banner, FormRow, FormSection,
+  imports: [CommonModule, ReactiveFormsModule, Drawer, AppInput, AppSelect, Button, Banner, ColGrid, FormSection,
     SuccessScreen, TypePreview, LoadingSkeleton],
   templateUrl: './create-user-drawer.html',
 })

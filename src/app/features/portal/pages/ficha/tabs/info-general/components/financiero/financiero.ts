@@ -1,7 +1,7 @@
 import { Component, inject, signal, computed, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { AppInput, AppSelect, Banner, Button, ChangeRequestBar, Field, FormRow, FormSection, Modal, SectionCard } from '@shared/ui';
+import { AppInput, AppSelect, Banner, Button, ChangeRequestBar, Field, ColGrid, FormSection, Modal, SectionCard } from '@shared/ui';
 import { CollaboratorService } from '@features/portal/services/collaborator.service';
 import { CollaboratorProfile } from '@features/portal/models/collaborator.model';
 import {
@@ -12,7 +12,7 @@ import {
   selector: 'app-financiero',
   imports: [
     CommonModule, ReactiveFormsModule,
-    AppInput, AppSelect, Banner, Button, ChangeRequestBar, Field, FormRow, FormSection, Modal, SectionCard,
+    AppInput, AppSelect, Banner, Button, ChangeRequestBar, Field, ColGrid, FormSection, Modal, SectionCard,
   ],
   templateUrl: './financiero.html',
   styleUrl: './financiero.scss',

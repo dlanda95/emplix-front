@@ -60,17 +60,17 @@
       @if (step() === 1) {
         <form [formGroup]="tenantForm" (ngSubmit)="onVerifyTenant()" class="login-form fade-in">
 
-          <app-input-field
+          <app-input
             label="Empresa"
             placeholder="ej. mi-empresa"
             icon="domain"
-            [control]="getControl(tenantForm, 'slug')"
+            formControlName="slug"
             hint="Es el identificador único de tu organización">
-          </app-input-field>
+          </app-input>
 
-          <app-primary-btn [fullWidth]="true" [loading]="isLoading()">
+          <app-button [fullWidth]="true" [loading]="isLoading()" type="submit">
             Continuar
-          </app-primary-btn>
+          </app-button>
 
         </form>
       }
@@ -211,23 +211,23 @@
 
           } @else {
             <!-- Fallback: email completo (sin dominios configurados, o candidato) -->
-            <app-input-field
+            <app-input
               [label]="fieldLabel()"
               [placeholder]="fieldPlaceholder()"
               [type]="fieldType()"
               [icon]="fieldIcon()"
-              [control]="getControl(loginForm, 'email')">
-            </app-input-field>
+              formControlName="email">
+            </app-input>
           }
 
-          <app-input-field
+          <app-input
             label="Contraseña"
             placeholder="••••••"
             type="password"
             icon="lock"
             [hint]="passwordHint()"
-            [control]="getControl(loginForm, 'password')">
-          </app-input-field>
+            formControlName="password">
+          </app-input>
 
           @if (!isCandidate()) {
             <div class="form-actions">
@@ -235,9 +235,9 @@
             </div>
           }
 
-          <app-primary-btn [fullWidth]="true" [loading]="isLoading()">
+          <app-button [fullWidth]="true" [loading]="isLoading()" type="submit">
             Iniciar Sesión
-          </app-primary-btn>
+          </app-button>
 
         </form>
 

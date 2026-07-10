@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import {
   AppInput, AppSelect, Badge, Button, ConfirmModal, EmptyState,
-  FormRow, ListItem, LoadingSkeleton, Modal, PageHeader, SectionCard,
+  ColGrid, ListItem, LoadingSkeleton, Modal, PageHeader, SectionCard,
 } from '@shared/ui';
 import { ToolbarLayout } from '@shared/layout';
 import { EducationService } from '@features/portal/services/education.service';
@@ -17,7 +17,7 @@ import { ACADEMIC_LEVEL_OPTIONS, catalogLabel } from '@features/portal/models/ca
   imports: [
     CommonModule, ReactiveFormsModule,
     AppInput, AppSelect, Badge, Button, ConfirmModal, EmptyState,
-    FormRow, ListItem, LoadingSkeleton, Modal, PageHeader, SectionCard, ToolbarLayout,
+    ColGrid, ListItem, LoadingSkeleton, Modal, PageHeader, SectionCard, ToolbarLayout,
   ],
   templateUrl: './estudios.html',
   styleUrl: './estudios.scss',

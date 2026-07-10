@@ -6,5 +6,5 @@ import { Component, input } from '@angular/core';
   styleUrl: './col-grid.scss',
 })
 export class ColGrid {
-  readonly cols = input<2 | 3>(2);
+  readonly cols = input<1 | 2 | 3>(2);
 }

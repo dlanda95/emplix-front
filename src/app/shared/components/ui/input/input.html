@@ -1,14 +1,54 @@
-<div class="input-group">
-      <label class="input-label">{{ label }}</label>
-      <input 
-        class="input-control" 
-        [type]="type" 
-        [placeholder]="placeholder"
-        [(ngModel)]="value"
-        (ngModelChange)="onChange($event)"
-        (blur)="onTouched()"
-        [disabled]="disabled"
-        [attr.min]="min"
-        [attr.max]="max"
-      >
+<div class="input-wrapper">
+
+  @if (label()) {
+    <label class="input-label">{{ label() }}</label>
+  }
+
+  <div class="input-container"
+      [class.has-error]="isInvalid"
+      [class.is-focused]="focused()"
+      [class.is-readonly]="readonly()">
+
+    @if (icon()) {
+      <span class="material-icons-round prefix-icon">{{ icon() }}</span>
+    }
+
+    <input
+      class="native-input"
+      [type]="type()"
+      [placeholder]="placeholder()"
+      [value]="_value ?? ''"
+      [disabled]="isDisabled"
+      [readonly]="readonly()"
+      [attr.min]="min()"
+      [attr.max]="max()"
+      (input)="onInput($any($event.target).value)"
+      (focus)="onFocus()"
+      (blur)="onBlur()">
+  </div>
+
+  @if (showErrorMessage) {
+    <div class="error-msg">
+      @if (control?.hasError('serverError')) {
+        <span>{{ control?.errors?.['serverError'] }}</span>
+      } @else if (control?.hasError('required')) {
+        <span>Campo obligatorio</span>
+      } @else if (control?.hasError('email')) {
+        <span>Correo inválido</span>
+      } @else if (control?.hasError('minlength')) {
+        <span>Mínimo {{ control?.errors?.['minlength'].requiredLength }} caracteres</span>
+      } @else if (control?.hasError('mismatch')) {
+        <span>Las contraseñas no coinciden</span>
+      } @else if (control?.hasError('invalidDate')) {
+        <span>{{ control?.errors?.['invalidDate']?.message ?? 'La fecha no es válida.' }}</span>
+      } @else if (control?.hasError('dateOutOfRange')) {
+        <span>{{ control?.errors?.['dateOutOfRange']?.message ?? 'El año debe estar entre 1900 y 2100.' }}</span>
+      } @else if (control?.hasError('futureDate')) {
+        <span>{{ control?.errors?.['futureDate']?.message ?? 'No puede ser una fecha futura.' }}</span>
+      }
     </div>
+  } @else if (hint() && !isInvalid) {
+    <div class="hint-msg">{{ hint() }}</div>
+  }
+
+</div>

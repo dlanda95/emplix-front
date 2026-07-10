@@ -5,7 +5,7 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angula
 import { dateRangeValidator } from '@shared/validators/date-range.validator';
 import { HttpClient } from '@angular/common/http';
 import { forkJoin } from 'rxjs';
-import { Drawer, AppInput, AppSelect, Button, Banner, FormRow, FormSection,
+import { Drawer, AppInput, AppSelect, Button, Banner, ColGrid, FormSection,
   DrawerStepper, ToggleRow, SuccessScreen } from '@shared/ui';
 import type { SelectOption } from '@shared/ui';
 import { UsersAdminService, ROLE_LABELS, UserRole } from '../../users/users-admin.service';
@@ -15,7 +15,7 @@ type Step = 1 | 2 | 3;
 
 @Component({
   selector: 'app-create-employee-drawer',
-  imports: [CommonModule, ReactiveFormsModule, Drawer, AppInput, AppSelect, Button, Banner, FormRow, FormSection,
+  imports: [CommonModule, ReactiveFormsModule, Drawer, AppInput, AppSelect, Button, Banner, ColGrid, FormSection,
     DrawerStepper, ToggleRow, SuccessScreen],
   templateUrl: './create-employee-drawer.html',
 })

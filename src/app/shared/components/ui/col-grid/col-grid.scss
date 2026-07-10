@@ -3,6 +3,11 @@
 .cg {
   display: grid;
 
+  &--1 {
+    grid-template-columns: 1fr;
+    gap: var(--space-4);
+  }
+
   &--2 {
     grid-template-columns: 1fr 1fr;
     gap: var(--space-5);
