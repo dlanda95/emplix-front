@@ -18,7 +18,6 @@ import {
     ColGrid, ListItem, LoadingSkeleton, Modal, SectionCard,
   ],
   templateUrl: './familia.html',
-  styleUrl: './familia.scss',
 })
 export class Familia {
   private readonly fb      = inject(FormBuilder);

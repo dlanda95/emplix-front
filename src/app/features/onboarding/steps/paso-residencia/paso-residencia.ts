@@ -8,7 +8,6 @@ import { OnboardingService } from '../../services/onboarding.service';
   selector: 'app-paso-residencia',
   imports: [ReactiveFormsModule, AppInput, Banner, Button, SectionCard],
   templateUrl: './paso-residencia.html',
-  styleUrl: './paso-residencia.scss',
 })
 export class PasoResidencia {
   private readonly fb = inject(FormBuilder);

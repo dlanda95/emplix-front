@@ -7,7 +7,6 @@ import { SidebarLayout, type SidebarLayoutItem } from '@shared/layout';
   selector: 'app-ficha',
   imports: [RouterOutlet, AppCard, SidebarLayout],
   templateUrl: './ficha.html',
-  styleUrl: './ficha.scss',
 })
 export class Ficha {
   readonly headerData: CardHeaderConfig = {

@@ -4,6 +4,7 @@ import { FormBuilder, Validators, ReactiveFormsModule, AbstractControl, Validati
 import { RouterLink, ActivatedRoute, Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AuthService } from '@core/auth/auth';
+import { AuthCardLayout } from '@shared/ui';
 
 function passwordStrength(ctrl: AbstractControl): ValidationErrors | null {
   const v = ctrl.value ?? '';
@@ -22,9 +23,8 @@ function passwordsMatch(group: AbstractControl): ValidationErrors | null {
 
 @Component({
   selector: 'app-reset-password',
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, AuthCardLayout],
   templateUrl: './reset-password.html',
-  styleUrl: './reset-password.scss',
 })
 export class ResetPassword implements OnInit {
   private readonly auth       = inject(AuthService);

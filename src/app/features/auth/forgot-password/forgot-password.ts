@@ -3,12 +3,12 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, Validators, ReactiveFormsModule } from '@angular/forms';
 import { RouterLink, ActivatedRoute } from '@angular/router';
 import { AuthService } from '@core/auth/auth';
+import { AuthCardLayout } from '@shared/ui';
 
 @Component({
   selector: 'app-forgot-password',
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, AuthCardLayout],
   templateUrl: './forgot-password.html',
-  styleUrl: './forgot-password.scss',
 })
 export class ForgotPassword implements OnInit {
   private readonly auth  = inject(AuthService);

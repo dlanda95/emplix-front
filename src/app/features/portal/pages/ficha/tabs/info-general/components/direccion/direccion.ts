@@ -12,7 +12,6 @@ import { CollaboratorProfile } from '@features/portal/models/collaborator.model'
     AppInput, Banner, Button, ChangeRequestBar, Field, MapWidget, Modal, SectionCard, SplitLayout,
   ],
   templateUrl: './direccion.html',
-  styleUrl: './direccion.scss',
 })
 export class Direccion {
   private readonly fb                  = inject(FormBuilder);

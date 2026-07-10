@@ -9,7 +9,6 @@ import { AFP_TYPE_OPTIONS, AFP_ENTITY_OPTIONS, AFP_COMMISSION_OPTIONS } from '@f
   selector: 'app-paso-financiero',
   imports: [ReactiveFormsModule, AppInput, AppSelect, Button, SectionCard],
   templateUrl: './paso-financiero.html',
-  styleUrl: './paso-financiero.scss',
 })
 export class PasoFinanciero {
   private readonly fb = inject(FormBuilder);

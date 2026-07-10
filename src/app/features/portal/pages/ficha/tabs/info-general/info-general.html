@@ -1,4 +1,4 @@
-<div class="ig-layout">
+<div style="display:flex; flex-direction:column; min-height:100%">
 
   <app-tabs-card
     [items]="tabItems()"
@@ -7,7 +7,7 @@
     align="fill">
   </app-tabs-card>
 
-  <div class="ig-content">
+  <div style="padding: 1.25rem 1.75rem; flex: 1">
 
     @switch (activeTab()) {
 

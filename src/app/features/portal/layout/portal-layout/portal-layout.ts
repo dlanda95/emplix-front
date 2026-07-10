@@ -5,6 +5,5 @@ import { RouterOutlet } from '@angular/router';
   selector: 'app-portal-layout',
   imports: [RouterOutlet],
   templateUrl: './portal-layout.html',
-  styleUrl: './portal-layout.scss',
 })
 export class PortalLayout {}

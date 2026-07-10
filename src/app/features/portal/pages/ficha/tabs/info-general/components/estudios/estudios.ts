@@ -20,7 +20,6 @@ import { ACADEMIC_LEVEL_OPTIONS, catalogLabel } from '@features/portal/models/ca
     ColGrid, ListItem, LoadingSkeleton, Modal, PageHeader, SectionCard, ToolbarLayout,
   ],
   templateUrl: './estudios.html',
-  styleUrl: './estudios.scss',
 })
 export class Estudios {
   private readonly fb      = inject(FormBuilder);

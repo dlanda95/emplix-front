@@ -15,7 +15,6 @@ import {
     AppInput, AppSelect, Banner, Button, ChangeRequestBar, Field, ColGrid, FormSection, Modal, SectionCard,
   ],
   templateUrl: './financiero.html',
-  styleUrl: './financiero.scss',
 })
 export class Financiero {
   private readonly fb                  = inject(FormBuilder);

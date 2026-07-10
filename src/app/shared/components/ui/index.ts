@@ -38,6 +38,9 @@ export { ProfileHero }        from './profile-hero/profile-hero';
 export { DetailCard }         from './detail-card/detail-card';
 export { BackLink }           from './back-link/back-link';
 export { ColGrid }            from './col-grid/col-grid';
+export { AuthSplitLayout }    from './auth-split-layout/auth-split-layout';
+export { AuthCardLayout }     from './auth-card-layout/auth-card-layout';
+export { OnboardingLayout }   from './onboarding-layout/onboarding-layout';
 export { NavCard }            from './nav-card/nav-card';
 
 export type { AvatarSize }       from './avatar/avatar';

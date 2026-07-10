@@ -18,7 +18,6 @@ const norm = (v: unknown): string | null =>
   selector: 'app-mis-datos',
   imports: [AppInput, AppSelect, ChangeRequestBar, CommonModule, Field, ReactiveFormsModule, SectionCard],
   templateUrl: './mis-datos.html',
-  styleUrl: './mis-datos.scss',
 })
 export class MisDatos {
   private readonly fb                  = inject(FormBuilder);

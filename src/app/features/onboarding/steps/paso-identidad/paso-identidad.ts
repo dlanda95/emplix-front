@@ -11,7 +11,6 @@ import { DOCUMENT_TYPE_OPTIONS, GENDER_OPTIONS, MARITAL_STATUS_OPTIONS,
   selector: 'app-paso-identidad',
   imports: [ReactiveFormsModule, AppInput, AppSelect, Banner, Button, SectionCard],
   templateUrl: './paso-identidad.html',
-  styleUrl: './paso-identidad.scss',
 })
 export class PasoIdentidad {
   private readonly fb      = inject(FormBuilder);

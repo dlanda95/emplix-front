@@ -13,7 +13,7 @@ import { HIGHER_EDUCATION_LEVELS } from '@features/portal/models/catalog.model';
   selector: 'app-info-general',
   imports: [TabsCard, MisDatos, Direccion, Familia, Contacto, Financiero, Estudios],
   templateUrl: './info-general.html',
-  styleUrl: './info-general.scss',
+  host: { style: 'display:block; height:100%' },
 })
 export class InfoGeneral {
   private readonly collaboratorService = inject(CollaboratorService);

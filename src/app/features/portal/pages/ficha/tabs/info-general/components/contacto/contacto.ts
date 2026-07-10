@@ -12,7 +12,6 @@ import { CollaboratorProfile } from '@features/portal/models/collaborator.model'
     AppInput, Button, ChangeRequestBar, Field, ColGrid, FormSection, Modal, SectionCard,
   ],
   templateUrl: './contacto.html',
-  styleUrl: './contacto.scss',
 })
 export class Contacto {
   private readonly fb                  = inject(FormBuilder);

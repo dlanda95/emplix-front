@@ -5,7 +5,7 @@ import { CommonModule } from '@angular/common';
 import { filter } from 'rxjs/operators';
 import { OnboardingService } from '../services/onboarding.service';
 import { AuthService } from '@core/auth/auth';
-import { Banner, Button, LoadingSkeleton } from '@shared/ui';
+import { Banner, Button, LoadingSkeleton, OnboardingLayout } from '@shared/ui';
 
 export interface OnboardingStep {
   path:        string;
@@ -26,9 +26,8 @@ export const ONBOARDING_STEPS: OnboardingStep[] = [
 
 @Component({
   selector: 'app-onboarding-shell',
-  imports: [RouterOutlet, CommonModule, Banner, Button, LoadingSkeleton],
+  imports: [RouterOutlet, CommonModule, Banner, Button, LoadingSkeleton, OnboardingLayout],
   templateUrl: './onboarding-shell.html',
-  styleUrl: './onboarding-shell.scss',
 })
 export class OnboardingShell implements OnInit {
   private readonly router            = inject(Router);
