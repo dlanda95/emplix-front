@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, input } from '@angular/core';
 
 @Component({
   selector: 'app-stat-card',
@@ -7,10 +7,8 @@ import { Component, Input } from '@angular/core';
   styleUrl: './stat-card.scss',
 })
 export class StatCard {
-
-  @Input() label = '';
-  @Input() value = '0';
-  @Input() icon = 'analytics';
-  @Input() variant: 'primary' | 'success' | 'warning' | 'info' = 'primary';
-
+  readonly label   = input('');
+  readonly value   = input('0');
+  readonly icon    = input('analytics');
+  readonly variant = input<'primary'|'success'|'warning'|'info'>('primary');
 }

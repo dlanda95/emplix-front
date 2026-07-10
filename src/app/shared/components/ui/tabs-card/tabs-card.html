@@ -1,15 +1,15 @@
 <div class="tabs-container" [class.has-overflow]="hasOverflow()" (window:resize)="onResize()">
-  <nav #navEl class="tabs-nav" [ngClass]="align" (scroll)="checkOverflow()">
+  <nav #navEl class="tabs-nav" [ngClass]="align()" (scroll)="checkOverflow()">
 
     <div class="sliding-indicator"
          [style.left]="indicatorLeft()"
          [style.width]="indicatorWidth()">
     </div>
 
-    @for (item of items; track item.id) {
+    @for (item of items(); track item.id) {
       <button #tabBtn
               class="tab-btn"
-              [class.active]="current === item.id"
+              [class.active]="isActive(item.id)"
               (click)="selectTab(item.id)">
 
         @if (item.icon) {

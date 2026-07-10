@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, input } from '@angular/core';
 
 @Component({
   selector: 'app-empty-state',
@@ -7,8 +7,8 @@ import { Component, Input } from '@angular/core';
   styleUrl: './empty-state.scss',
 })
 export class EmptyState {
-  @Input() icon        = 'inbox';
-  @Input() title       = 'Sin resultados';
-  @Input() description = '';
-  @Input() compact     = false;
+  readonly icon        = input('inbox');
+  readonly title       = input('Sin resultados');
+  readonly description = input('');
+  readonly compact     = input(false);
 }

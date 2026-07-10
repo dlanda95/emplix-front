@@ -1,14 +1,12 @@
-import { Component, Input } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, input } from '@angular/core';
+
 @Component({
   selector: 'app-map-widget',
-  imports: [CommonModule],
+  imports: [],
   templateUrl: './map-widget.html',
   styleUrl: './map-widget.scss',
 })
 export class MapWidget {
-
-  @Input() address!: string;
-  @Input() city!: string;
-
+  readonly address = input('');
+  readonly city    = input('');
 }

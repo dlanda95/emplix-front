@@ -1,10 +1,9 @@
-import { Component, Input, Output, EventEmitter, computed, input } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, computed, input, output } from '@angular/core';
 
 @Component({
   selector: 'app-pagination',
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   template: `
     @if (totalPages() > 1) {
       <div class="pagination">
@@ -38,12 +37,12 @@ import { CommonModule } from '@angular/common';
   styleUrl: './pagination.scss',
 })
 export class Pagination {
-  readonly page      = input.required<number>();
-  readonly total     = input.required<number>();
-  readonly pageSize  = input<number>(25);
+  readonly page       = input.required<number>();
+  readonly total      = input.required<number>();
+  readonly pageSize   = input<number>(25);
   readonly totalPages = computed(() => Math.ceil(this.total() / this.pageSize()));
 
-  @Output() pageChange = new EventEmitter<number>();
+  readonly pageChange = output<number>();
 
   readonly pages = computed(() => {
     const cur   = this.page();

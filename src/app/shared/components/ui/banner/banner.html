@@ -1,16 +1,16 @@
-<div class="banner-container fade-in" [ngClass]="variant">
-  @if (icon) {
-    <span class="material-icons-round banner-icon">{{ icon }}</span>
+<div class="banner-container fade-in" [ngClass]="variant()">
+  @if (icon()) {
+    <span class="material-icons-round banner-icon">{{ icon() }}</span>
   }
   <div class="banner-content">
-    @if (title) {
-      <strong class="banner-title">{{ title }}</strong>
+    @if (title()) {
+      <strong class="banner-title">{{ title() }}</strong>
     }
     <div class="banner-text">
       <ng-content></ng-content>
     </div>
   </div>
-  @if (dismissible) {
+  @if (dismissible()) {
     <button class="banner-dismiss" (click)="dismissed.emit()" aria-label="Cerrar">
       <span class="material-icons-round">close</span>
     </button>

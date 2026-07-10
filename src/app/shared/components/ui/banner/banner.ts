@@ -1,17 +1,17 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, input, output } from '@angular/core';
+import { NgClass } from '@angular/common';
 
 @Component({
   selector: 'app-banner',
-  imports: [CommonModule],
+  imports: [NgClass],
   templateUrl: './banner.html',
   styleUrl: './banner.scss',
 })
 export class Banner {
-  @Input() variant:    'warning' | 'info' | 'success' | 'error' = 'info';
-  @Input() icon?:      string;
-  @Input() title?:     string;
-  @Input() dismissible = false;
+  readonly variant     = input<'warning'|'info'|'success'|'error'>('info');
+  readonly icon        = input('');
+  readonly title       = input('');
+  readonly dismissible = input(false);
 
-  @Output() dismissed = new EventEmitter<void>();
+  readonly dismissed = output<void>();
 }

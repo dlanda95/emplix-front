@@ -1,13 +1,13 @@
 @if (visible()) {
   <div class="drawer-overlay" [class.drawer-overlay--in]="animating()" (click)="close.emit()"></div>
 
-  <div class="drawer" [class]="'drawer--' + width" [class.drawer--in]="animating()" role="dialog" aria-modal="true">
+  <div class="drawer" [class]="'drawer--' + width()" [class.drawer--in]="animating()" role="dialog" aria-modal="true">
 
     <div class="drawer__header">
       <div class="drawer__title-group">
-        <h2 class="drawer__title">{{ title }}</h2>
-        @if (subtitle) {
-          <p class="drawer__subtitle">{{ subtitle }}</p>
+        <h2 class="drawer__title">{{ title() }}</h2>
+        @if (subtitle()) {
+          <p class="drawer__subtitle">{{ subtitle() }}</p>
         }
       </div>
       <button class="drawer__close" (click)="close.emit()" aria-label="Cerrar">
