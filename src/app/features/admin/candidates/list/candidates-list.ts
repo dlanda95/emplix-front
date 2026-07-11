@@ -7,7 +7,7 @@ import { dateRangeValidator } from '@shared/validators/date-range.validator';
 import { debounceTime, distinctUntilChanged } from 'rxjs';
 import {
   AppInput, AppSelect, Badge, Banner, Button, EmptyState,
-  LoadingSkeleton, Modal, Pagination, SectionCard,
+  LoadingSkeleton, Modal, Pagination, PageHeader, SectionCard, DataTable,
 } from '@shared/ui';
 import { CandidatesService, CandidateSummary } from '../../services/candidates.service';
 import { OnboardingLabelPipe, OnboardingVariantPipe } from '../onboarding-status.pipe';
@@ -31,10 +31,11 @@ const ONBOARDING_OPTIONS: SelectOption[] = [
   imports: [
     CommonModule, ReactiveFormsModule,
     AppInput, AppSelect, Badge, Banner, Button, EmptyState,
-    LoadingSkeleton, Modal, Pagination, SectionCard,
+    LoadingSkeleton, Modal, Pagination, PageHeader, SectionCard, DataTable,
     OnboardingLabelPipe, OnboardingVariantPipe,
   ],
   templateUrl: './candidates-list.html',
+  host: { style: 'display:block' },
 })
 export class CandidatesList implements OnInit {
   private readonly svc        = inject(CandidatesService);

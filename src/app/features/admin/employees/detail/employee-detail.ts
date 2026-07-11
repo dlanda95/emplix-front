@@ -13,6 +13,7 @@ import { EditLaborDrawer } from '../edit-labor-drawer/edit-labor-drawer';
   imports: [CommonModule, Badge, Banner, Button, LoadingSkeleton, EditLaborDrawer,
     ProfileHero, DetailCard, BackLink, ColGrid],
   templateUrl: './employee-detail.html',
+  host: { style: 'display:block' },
 })
 export class EmployeeDetail implements OnInit {
   private readonly svc        = inject(EmployeesAdminService);

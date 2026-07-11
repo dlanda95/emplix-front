@@ -26,6 +26,7 @@ const PAGE_SIZE = 25;
     CreateEmployeeDrawer,
   ],
   templateUrl: './employees-list.html',
+  host: { style: 'display:block' },
 })
 export class EmployeesList implements OnInit {
   private readonly svc        = inject(EmployeesAdminService);

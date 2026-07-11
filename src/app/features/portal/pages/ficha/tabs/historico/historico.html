@@ -1,15 +1,10 @@
 <app-portal-tab-layout>
 <div class="historico-container">
 
-  <div class="historico-header">
-    <div class="header-icon">
-      <span class="material-icons-round">timeline</span>
-    </div>
-    <div class="header-text">
-      <h3 class="header-title">Trayectoria Laboral</h3>
-      <p class="header-subtitle">Historial de eventos desde tu incorporación a la empresa</p>
-    </div>
-  </div>
+  <app-page-header
+    title="Trayectoria Laboral"
+    subtitle="Historial de eventos desde tu incorporación a la empresa">
+  </app-page-header>
 
   @if (history() === undefined) {
     <!-- Skeleton de carga -->

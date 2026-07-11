@@ -1,33 +1,23 @@
-<div style="display:flex;flex-direction:column;gap:1.5rem;">
+<div style="display:flex; flex-direction:column; gap:1.25rem; padding-bottom:2rem;">
 
-  <!-- Header -->
-  <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;">
-    <div>
-      <h2 style="margin:0;font-size:1.25rem;font-weight:600;">Candidatos en Proceso</h2>
-      <p style="margin:0;color:var(--text-secondary);font-size:0.875rem;">Colaboradores en fase de onboarding.</p>
-    </div>
-    <app-button variant="primary" icon="person_add" [disabled]="!perms.canCreate()" (clicked)="openCreate()">Registrar candidato</app-button>
-  </div>
+  <app-page-header
+    title="Candidatos en Proceso"
+    subtitle="Colaboradores en fase de onboarding">
+    <app-button variant="primary" icon="person_add" [disabled]="!perms.canCreate()" (clicked)="openCreate()">
+      Registrar candidato
+    </app-button>
+  </app-page-header>
 
   @if (loadError()) {
     <app-banner variant="error" icon="error" [title]="loadError()"></app-banner>
   }
 
-  <!-- Barra de búsqueda y filtro de estado -->
-  <div style="display:flex;gap:1rem;flex-wrap:wrap;align-items:flex-end;">
-    <div style="flex:1;min-width:200px;">
-      <app-input
-        label="Buscar candidato..."
-        placeholder="Nombre o documento"
-        [formControl]="searchCtrl">
-      </app-input>
+  <div style="display:flex; gap:1rem; flex-wrap:wrap; align-items:flex-end;">
+    <div style="flex:1; min-width:200px;">
+      <app-input label="Buscar candidato..." placeholder="Nombre o documento" [formControl]="searchCtrl"></app-input>
     </div>
     <div style="min-width:200px;">
-      <app-select
-        label="Estado de onboarding"
-        [options]="onboardingOptions"
-        [formControl]="statusCtrl">
-      </app-select>
+      <app-select label="Estado de onboarding" [options]="onboardingOptions" [formControl]="statusCtrl"></app-select>
     </div>
   </div>
 
@@ -42,43 +32,44 @@
   } @else {
 
     <app-section-card title="Candidatos seleccionados" [columns]="1">
-      <table style="width:100%;border-collapse:collapse;">
+
+      <app-data-table>
         <thead>
-          <tr style="border-bottom:2px solid var(--border-color);text-align:left;">
-            <th style="padding:0.625rem 0.75rem;font-size:0.8rem;color:var(--text-secondary);font-weight:600;">Nombre</th>
-            <th style="padding:0.625rem 0.75rem;font-size:0.8rem;color:var(--text-secondary);font-weight:600;">Documento</th>
-            <th style="padding:0.625rem 0.75rem;font-size:0.8rem;color:var(--text-secondary);font-weight:600;">Cargo / Área</th>
-            <th style="padding:0.625rem 0.75rem;font-size:0.8rem;color:var(--text-secondary);font-weight:600;">Ingreso estimado</th>
-            <th style="padding:0.625rem 0.75rem;font-size:0.8rem;color:var(--text-secondary);font-weight:600;">Estado</th>
-            <th style="padding:0.625rem 0.75rem;font-size:0.8rem;color:var(--text-secondary);font-weight:600;"></th>
+          <tr>
+            <th>Nombre</th>
+            <th>Documento</th>
+            <th>Cargo / Área</th>
+            <th>Ingreso estimado</th>
+            <th>Estado</th>
+            <th></th>
           </tr>
         </thead>
         <tbody>
           @for (c of candidates(); track c.id) {
-            <tr style="border-bottom:1px solid var(--border-color);">
-              <td style="padding:0.75rem;">
-                <strong>{{ c.firstName }} {{ c.lastName }}</strong>
+            <tr>
+              <td><strong>{{ c.firstName }} {{ c.lastName }}</strong></td>
+              <td class="dt-muted">{{ c.documentType }} {{ c.documentId }}</td>
+              <td>
+                <span style="font-size:var(--text-sm); color:var(--text-main);">{{ c.position?.name ?? '—' }}</span>
+                @if (c.department?.name) {
+                  <br><span style="font-size:var(--text-xs); color:var(--text-secondary);">{{ c.department!.name }}</span>
+                }
               </td>
-              <td style="padding:0.75rem;color:var(--text-secondary);font-size:0.875rem;">
-                {{ c.documentType }} {{ c.documentId }}
+              <td class="dt-muted">{{ c.hireDate | date:'dd/MM/yyyy' }}</td>
+              <td>
+                <app-badge [variant]="c.onboardingStatus | onboardingVariant">
+                  {{ c.onboardingStatus | onboardingLabel }}
+                </app-badge>
               </td>
-              <td style="padding:0.75rem;color:var(--text-secondary);font-size:0.875rem;">
-                {{ c.position?.name ?? '—' }}<br>
-                <span style="font-size:0.8rem;">{{ c.department?.name ?? '' }}</span>
-              </td>
-              <td style="padding:0.75rem;font-size:0.875rem;">{{ c.hireDate | date:'dd/MM/yyyy' }}</td>
-              <td style="padding:0.75rem;">
-                <app-badge [variant]="c.onboardingStatus | onboardingVariant">{{ c.onboardingStatus | onboardingLabel }}</app-badge>
-              </td>
-              <td style="padding:0.75rem;text-align:right;">
+              <td class="dt-actions">
                 <app-button variant="ghost" size="sm" icon="open_in_new" (clicked)="openDetail(c.id)">Ver</app-button>
               </td>
             </tr>
           }
         </tbody>
-      </table>
+      </app-data-table>
 
-      <div style="display:flex;justify-content:flex-end;padding:1rem 0 0;">
+      <div style="display:flex; justify-content:flex-end; padding:1rem 0 0;">
         <app-pagination
           [page]="page()"
           [total]="total()"
@@ -90,44 +81,43 @@
     </app-section-card>
   }
 
-  <!-- Modal: Crear candidato -->
-  <app-modal [isOpen]="isModalOpen()" title="Registrar Candidato" (close)="closeCreate()">
-
-    @if (createError()) {
-      <app-banner variant="error" icon="error" [title]="createError()"></app-banner>
-    }
-
-    <form [formGroup]="form" style="display:flex;flex-direction:column;gap:0.75rem;">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;">
-        <app-input label="Primer Nombre *"    formControlName="firstName"  placeholder="Ej. Juan"></app-input>
-        <app-input label="Segundo Nombre"     formControlName="middleName" placeholder="Ej. Carlos"></app-input>
-        <app-input label="Apellido Paterno *" formControlName="lastName"   placeholder="Ej. García"></app-input>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;">
-        <app-select label="Tipo de Documento *" formControlName="documentType" [options]="documentTypes"></app-select>
-        <app-input  label="Nro. de Documento *" formControlName="documentId"   placeholder="Ej. 12345678"></app-input>
-      </div>
-      <app-input label="Fecha de Ingreso Estimada *" type="date" formControlName="hireDate"
-        min="1900-01-01" max="2100-12-31"></app-input>
-      @if (form.get('hireDate')?.touched && form.get('hireDate')?.errors) {
-        <span class="field-error">
-          @if (form.get('hireDate')?.hasError('required')) { Campo obligatorio }
-          @else if (form.get('hireDate')?.hasError('dateOutOfRange')) { El año debe estar entre 1900 y 2100 }
-          @else if (form.get('hireDate')?.hasError('invalidDate'))    { La fecha no es válida }
-        </span>
-      }
-      <app-banner variant="info" icon="key" title="Credenciales temporales">
-        <p>El candidato podrá ingresar con su número de documento como usuario y contraseña temporal.</p>
-      </app-banner>
-    </form>
-
-    <ng-container modal-actions>
-      <app-button variant="ghost"   (clicked)="closeCreate()">Cancelar</app-button>
-      <app-button variant="primary" [loading]="isCreating()" [disabled]="isCreating()" (clicked)="createCandidate()">
-        Registrar y generar acceso
-      </app-button>
-    </ng-container>
-
-  </app-modal>
-
 </div>
+
+<app-modal [isOpen]="isModalOpen()" title="Registrar Candidato" (close)="closeCreate()">
+
+  @if (createError()) {
+    <app-banner variant="error" icon="error" [title]="createError()"></app-banner>
+  }
+
+  <form [formGroup]="form" style="display:flex; flex-direction:column; gap:0.75rem;">
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem;">
+      <app-input label="Primer Nombre *"    formControlName="firstName"  placeholder="Ej. Juan"></app-input>
+      <app-input label="Segundo Nombre"     formControlName="middleName" placeholder="Ej. Carlos"></app-input>
+      <app-input label="Apellido Paterno *" formControlName="lastName"   placeholder="Ej. García"></app-input>
+    </div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem;">
+      <app-select label="Tipo de Documento *" formControlName="documentType" [options]="documentTypes"></app-select>
+      <app-input  label="Nro. de Documento *" formControlName="documentId"   placeholder="Ej. 12345678"></app-input>
+    </div>
+    <app-input label="Fecha de Ingreso Estimada *" type="date" formControlName="hireDate"
+      min="1900-01-01" max="2100-12-31"></app-input>
+    @if (form.get('hireDate')?.touched && form.get('hireDate')?.errors) {
+      <span style="font-size:var(--text-xs); color:var(--color-danger);">
+        @if (form.get('hireDate')?.hasError('required'))        { Campo obligatorio }
+        @else if (form.get('hireDate')?.hasError('dateOutOfRange')) { El año debe estar entre 1900 y 2100 }
+        @else if (form.get('hireDate')?.hasError('invalidDate'))    { La fecha no es válida }
+      </span>
+    }
+    <app-banner variant="info" icon="key" title="Credenciales temporales">
+      <p>El candidato podrá ingresar con su número de documento como usuario y contraseña temporal.</p>
+    </app-banner>
+  </form>
+
+  <ng-container modal-actions>
+    <app-button variant="ghost"   (clicked)="closeCreate()">Cancelar</app-button>
+    <app-button variant="primary" [loading]="isCreating()" [disabled]="isCreating()" (clicked)="createCandidate()">
+      Registrar y generar acceso
+    </app-button>
+  </ng-container>
+
+</app-modal>

@@ -1,154 +1,158 @@
-<app-page-header
-  title="Colaboradores"
-  subtitle="Directorio de empleados activos de la organización">
-  <app-button icon="person_add" (clicked)="showCreateDrawer.set(true)">
-    Nuevo colaborador
-  </app-button>
-</app-page-header>
+<div style="display:flex; flex-direction:column; gap:1.25rem; padding-bottom:2rem;">
 
-@if (loadError()) {
-  <app-banner variant="error" icon="error" [title]="loadError()"></app-banner>
-}
+  <app-page-header
+    title="Colaboradores"
+    subtitle="Directorio de empleados activos de la organización">
+    <app-button icon="person_add" (clicked)="showCreateDrawer.set(true)">
+      Nuevo colaborador
+    </app-button>
+  </app-page-header>
 
-@if (!isLoading() && !loadError()) {
-  <div style="display:grid; grid-template-columns:repeat(2,1fr); gap:1rem;">
-    <app-stat-card label="Total colaboradores" [value]="total().toString()" icon="badge"></app-stat-card>
-    <app-stat-card label="En esta página"       [value]="employees().length.toString()" icon="list"></app-stat-card>
-  </div>
-}
-
-<div style="display:flex; gap:.75rem; align-items:flex-end; flex-wrap:wrap;">
-  <div style="flex:1; min-width:200px;">
-    <app-input label="Buscar colaborador..." placeholder="Nombre, área o documento" [formControl]="searchCtrl"></app-input>
-  </div>
-  <div style="width:220px; min-width:160px;">
-    <app-select label="Departamento" [options]="deptOptions()" [formControl]="deptCtrl"></app-select>
-  </div>
-</div>
-
-@if (isLoading()) {
-  <app-loading-skeleton variant="card"></app-loading-skeleton>
-  <app-loading-skeleton variant="card" [lines]="5"></app-loading-skeleton>
-} @else if (!loadError()) {
-
-  @if (employees().length === 0) {
-    <app-empty-state
-      icon="search_off"
-      title="Sin resultados"
-      description="No se encontraron colaboradores que coincidan con la búsqueda o filtro.">
-    </app-empty-state>
-  } @else {
-
-    <app-section-card title="Colaboradores" [columns]="1">
-
-      <!-- Tabla (desktop ≥768px, oculta en mobile por DataTable) -->
-      <app-data-table>
-        <thead>
-          <tr>
-            <th>Colaborador</th>
-            <th>Cargo</th>
-            <th>Área</th>
-            <th>Documento</th>
-            <th>Supervisor</th>
-            <th>Ingreso</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (emp of employees(); track emp.id) {
-            <tr>
-              <td>
-                <div style="display:flex; align-items:center; gap:.75rem;">
-                  <app-avatar [name]="fullName(emp)" [src]="emp.photoUrl ?? undefined" size="sm"></app-avatar>
-                  <div style="display:flex; flex-direction:column; gap:2px;">
-                    <span style="font-weight:500;">{{ fullName(emp) }}</span>
-                    <span style="font-size:.75rem; color:var(--text-secondary);">{{ emp.user?.email ?? '—' }}</span>
-                  </div>
-                </div>
-              </td>
-              <td>{{ emp.position?.name ?? '—' }}</td>
-              <td>
-                @if (emp.department) {
-                  <app-badge variant="neutral">{{ emp.department.name }}</app-badge>
-                } @else {
-                  <span class="dt-muted">Sin área</span>
-                }
-              </td>
-              <td>
-                <span class="dt-label">{{ emp.documentType }}</span>{{ emp.documentId ?? '—' }}
-              </td>
-              <td class="dt-muted">{{ supervisorName(emp) }}</td>
-              <td class="dt-muted">{{ emp.hireDate ? (emp.hireDate | date:'dd/MM/yyyy') : '—' }}</td>
-              <td class="dt-actions">
-                <app-button variant="ghost" size="sm" icon="open_in_new" (clicked)="openProfile(emp.id)">
-                  Ver perfil
-                </app-button>
-              </td>
-            </tr>
-          }
-        </tbody>
-      </app-data-table>
-
-      <!-- Cards (mobile ≤768px, ocultas en desktop por EntityCard) -->
-      @for (emp of employees(); track emp.id) {
-        <app-entity-card
-          [name]="fullName(emp)"
-          [subtitle]="emp.position?.name ?? 'Sin cargo'"
-          [avatarSrc]="emp.photoUrl ?? undefined">
-
-          @if (emp.department) {
-            <app-badge entity-badge variant="neutral">{{ emp.department.name }}</app-badge>
-          }
-
-          <ng-container entity-meta>
-            @if (emp.user?.email) {
-              <div class="ec-field">
-                <span class="ec-field__label">Email</span>
-                <span class="ec-field__value">{{ emp.user!.email }}</span>
-              </div>
-            }
-            @if (emp.hireDate) {
-              <div class="ec-field">
-                <span class="ec-field__label">Ingreso</span>
-                <span class="ec-field__value">{{ emp.hireDate | date:'dd/MM/yyyy' }}</span>
-              </div>
-            }
-            @if (emp.supervisor) {
-              <div class="ec-field">
-                <span class="ec-field__label">Supervisor</span>
-                <span class="ec-field__value">{{ supervisorName(emp) }}</span>
-              </div>
-            }
-            @if (emp.documentId) {
-              <div class="ec-field">
-                <span class="ec-field__label">Documento</span>
-                <span class="ec-field__value">{{ emp.documentType }} {{ emp.documentId }}</span>
-              </div>
-            }
-          </ng-container>
-
-          <ng-container entity-footer>
-            <app-button variant="ghost" size="sm" icon="open_in_new" (clicked)="openProfile(emp.id)">
-              Ver perfil
-            </app-button>
-          </ng-container>
-
-        </app-entity-card>
-      }
-
-      <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:.75rem; padding-top:1rem; border-top:1px solid var(--border-color);">
-        <app-pagination
-          [page]="page()"
-          [total]="total()"
-          [pageSize]="pageSize"
-          (pageChange)="onPageChange($event)">
-        </app-pagination>
-        <span style="font-size:.75rem; color:var(--text-secondary);">{{ showRange() }}</span>
-      </div>
-
-    </app-section-card>
+  @if (loadError()) {
+    <app-banner variant="error" icon="error" [title]="loadError()"></app-banner>
   }
-}
+
+  @if (!isLoading() && !loadError()) {
+    <div style="display:grid; grid-template-columns:repeat(2,1fr); gap:1rem;">
+      <app-stat-card label="Total colaboradores" [value]="total().toString()" icon="badge"></app-stat-card>
+      <app-stat-card label="En esta página"       [value]="employees().length.toString()" icon="list"></app-stat-card>
+    </div>
+  }
+
+  <div style="display:flex; gap:.75rem; align-items:flex-end; flex-wrap:wrap;">
+    <div style="flex:1; min-width:200px;">
+      <app-input label="Buscar colaborador..." placeholder="Nombre, área o documento" [formControl]="searchCtrl"></app-input>
+    </div>
+    <div style="width:220px; min-width:160px;">
+      <app-select label="Departamento" [options]="deptOptions()" [formControl]="deptCtrl"></app-select>
+    </div>
+  </div>
+
+  @if (isLoading()) {
+    <app-loading-skeleton variant="card"></app-loading-skeleton>
+    <app-loading-skeleton variant="card" [lines]="5"></app-loading-skeleton>
+  } @else if (!loadError()) {
+
+    @if (employees().length === 0) {
+      <app-empty-state
+        icon="search_off"
+        title="Sin resultados"
+        description="No se encontraron colaboradores que coincidan con la búsqueda o filtro.">
+      </app-empty-state>
+    } @else {
+
+      <app-section-card title="Colaboradores" [columns]="1">
+
+        <!-- Tabla (desktop ≥768px, oculta en mobile por DataTable) -->
+        <app-data-table>
+          <thead>
+            <tr>
+              <th>Colaborador</th>
+              <th>Cargo</th>
+              <th>Área</th>
+              <th>Documento</th>
+              <th>Supervisor</th>
+              <th>Ingreso</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (emp of employees(); track emp.id) {
+              <tr>
+                <td>
+                  <div style="display:flex; align-items:center; gap:.75rem;">
+                    <app-avatar [name]="fullName(emp)" [src]="emp.photoUrl ?? undefined" size="sm"></app-avatar>
+                    <div style="display:flex; flex-direction:column; gap:2px;">
+                      <span style="font-weight:500;">{{ fullName(emp) }}</span>
+                      <span style="font-size:.75rem; color:var(--text-secondary);">{{ emp.user?.email ?? '—' }}</span>
+                    </div>
+                  </div>
+                </td>
+                <td>{{ emp.position?.name ?? '—' }}</td>
+                <td>
+                  @if (emp.department) {
+                    <app-badge variant="neutral">{{ emp.department.name }}</app-badge>
+                  } @else {
+                    <span class="dt-muted">Sin área</span>
+                  }
+                </td>
+                <td>
+                  <span class="dt-label">{{ emp.documentType }}</span>{{ emp.documentId ?? '—' }}
+                </td>
+                <td class="dt-muted">{{ supervisorName(emp) }}</td>
+                <td class="dt-muted">{{ emp.hireDate ? (emp.hireDate | date:'dd/MM/yyyy') : '—' }}</td>
+                <td class="dt-actions">
+                  <app-button variant="ghost" size="sm" icon="open_in_new" (clicked)="openProfile(emp.id)">
+                    Ver perfil
+                  </app-button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </app-data-table>
+
+        <!-- Cards (mobile ≤768px, ocultas en desktop por EntityCard) -->
+        @for (emp of employees(); track emp.id) {
+          <app-entity-card
+            [name]="fullName(emp)"
+            [subtitle]="emp.position?.name ?? 'Sin cargo'"
+            [avatarSrc]="emp.photoUrl ?? undefined">
+
+            @if (emp.department) {
+              <app-badge entity-badge variant="neutral">{{ emp.department.name }}</app-badge>
+            }
+
+            <ng-container entity-meta>
+              @if (emp.user?.email) {
+                <div class="ec-field">
+                  <span class="ec-field__label">Email</span>
+                  <span class="ec-field__value">{{ emp.user!.email }}</span>
+                </div>
+              }
+              @if (emp.hireDate) {
+                <div class="ec-field">
+                  <span class="ec-field__label">Ingreso</span>
+                  <span class="ec-field__value">{{ emp.hireDate | date:'dd/MM/yyyy' }}</span>
+                </div>
+              }
+              @if (emp.supervisor) {
+                <div class="ec-field">
+                  <span class="ec-field__label">Supervisor</span>
+                  <span class="ec-field__value">{{ supervisorName(emp) }}</span>
+                </div>
+              }
+              @if (emp.documentId) {
+                <div class="ec-field">
+                  <span class="ec-field__label">Documento</span>
+                  <span class="ec-field__value">{{ emp.documentType }} {{ emp.documentId }}</span>
+                </div>
+              }
+            </ng-container>
+
+            <ng-container entity-footer>
+              <app-button variant="ghost" size="sm" icon="open_in_new" (clicked)="openProfile(emp.id)">
+                Ver perfil
+              </app-button>
+            </ng-container>
+
+          </app-entity-card>
+        }
+
+        <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:.75rem; padding-top:1rem; border-top:1px solid var(--border-color);">
+          <app-pagination
+            [page]="page()"
+            [total]="total()"
+            [pageSize]="pageSize"
+            (pageChange)="onPageChange($event)">
+          </app-pagination>
+          <span style="font-size:.75rem; color:var(--text-secondary);">{{ showRange() }}</span>
+        </div>
+
+      </app-section-card>
+    }
+  }
+
+</div>
 
 <app-create-employee-drawer
   [isOpen]="showCreateDrawer()"

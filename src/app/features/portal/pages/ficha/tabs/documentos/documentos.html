@@ -1,24 +1,12 @@
 <app-portal-tab-layout>
 <div class="docs-page">
 
-  <!-- Cabecera sin botón global — la subida es por tab -->
-  <app-toolbar-layout>
-    <ng-container main>
-      <app-page-header
-        [title]="activeCategoryLabel()"
-        [subtitle]="(filteredDocs()?.length ?? 0) > 0
-                    ? (filteredDocs()!.length + ' archivo' + (filteredDocs()!.length === 1 ? '' : 's'))
-                    : ''">
-      </app-page-header>
-    </ng-container>
-  </app-toolbar-layout>
-
   <!-- Tabs de categoría -->
   <app-tabs-card
     [items]="tabItems()"
     [current]="activeCategory()"
     (currentChange)="selectCategory($event)"
-    align="fill">
+    align="start">
   </app-tabs-card>
 
   <!-- Nota de documento declarado (solo en tab Identidad) -->
@@ -28,7 +16,7 @@
     </app-banner>
   }
 
-  <!-- Error -->
+  <!-- Error de subida -->
   @if (uploadError()) {
     <app-banner variant="error" icon="error_outline" title="Error" [dismissible]="true"
                 (dismissed)="uploadError.set('')">
@@ -36,33 +24,56 @@
     </app-banner>
   }
 
-  <!-- Loading -->
+  <!-- Cargando — filas skeleton -->
   @if (filteredDocs() === undefined) {
-    <div class="docs-grid">
-      @for (i of [1,2,3]; track i) {
-        <app-loading-skeleton variant="card"></app-loading-skeleton>
+    <div class="docs-list">
+      @for (i of [1, 2, 3]; track i) {
+        <div class="docs-skel-row">
+          <div class="docs-skel-icon docs-shimmer"></div>
+          <div class="docs-skel-text">
+            <span class="docs-shimmer"></span>
+            <span class="docs-shimmer"></span>
+          </div>
+          <div class="docs-skel-badge docs-shimmer"></div>
+          <div class="docs-skel-btn docs-shimmer"></div>
+        </div>
       }
-      <div class="docs-add-card docs-add-card--loading"></div>
     </div>
-  }
 
-  <!-- Grid de documentos + tarjeta de subida al final -->
-  @else {
-    <div class="docs-grid">
+  <!-- Lista (vacía o con documentos) -->
+  } @else {
+    <div class="docs-list">
 
-      @for (doc of filteredDocs()!; track doc.id) {
-        <app-doc-card
-          [doc]="doc"
-          [showDelete]="false"
-          [badgeLabel]="docCategoryLabel(doc)"
-          (download)="onDownload($event)">
-        </app-doc-card>
+      @if (filteredDocs()!.length === 0) {
+        <app-empty-state
+          [compact]="true"
+          icon="description"
+          title="Sin documentos"
+          description="No hay archivos en esta categoría.">
+        </app-empty-state>
+      } @else {
+        @for (doc of filteredDocs()!; track doc.id) {
+          <div class="docs-row">
+            <div class="docs-row__icon"
+                 [style.background]="docIcon(doc).bg"
+                 [style.color]="docIcon(doc).color">
+              <span class="material-icons-round">{{ docIcon(doc).icon }}</span>
+            </div>
+            <div class="docs-row__info">
+              <span class="docs-row__name" [title]="doc.name">{{ doc.name }}</span>
+              <span class="docs-row__meta">{{ docSize(doc) }} · {{ docDate(doc) }}</span>
+            </div>
+            <span class="docs-row__badge">{{ docCategoryLabel(doc) }}</span>
+            <button class="docs-row__dl" (click)="onDownload(doc)" title="Descargar">
+              <span class="material-icons-round">download</span>
+            </button>
+          </div>
+        }
       }
 
-      <!-- Tarjeta de subida contextual — siempre visible al final del grid -->
-      <button class="docs-add-card" (click)="openUpload()" [title]="'Subir ' + activeCategoryLabel()">
-        <span class="material-icons-round docs-add-card__icon">add_circle_outline</span>
-        <span class="docs-add-card__label">Subir<br>{{ activeCategoryLabel() }}</span>
+      <button class="docs-upload-row" (click)="openUpload()">
+        <span class="material-icons-round">add_circle_outline</span>
+        <span>Subir {{ activeCategoryLabel() }}</span>
       </button>
 
     </div>
@@ -70,7 +81,7 @@
 
 </div>
 
-<!-- Modal de subida: DocUploadZone se destruye al cerrar → limpia estado -->
+<!-- Modal de subida -->
 <app-modal
   [title]="'Subir — ' + activeCategoryLabel()"
   [isOpen]="showUploadModal()"

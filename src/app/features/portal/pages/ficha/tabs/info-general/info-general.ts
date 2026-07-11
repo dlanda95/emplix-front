@@ -1,5 +1,5 @@
 import { Component, inject, signal, computed } from '@angular/core';
-import { TabsCard, TabItem } from '../../../../../../shared/components/ui/tabs-card/tabs-card';
+import { TabsCard, type TabItem } from '@shared/ui';
 import { MisDatos }    from './components/mis-datos/mis-datos';
 import { Direccion }   from './components/direccion/direccion';
 import { Familia }     from './components/familia/familia';

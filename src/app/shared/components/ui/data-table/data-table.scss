@@ -3,6 +3,13 @@
 
 // ViewEncapsulation.None: prefijo .dt- evita colisiones globales
 
+// El host debe ser bloque con min-width:0 para que overflow-x:auto
+// funcione cuando vive dentro de un grid o flex container.
+app-data-table {
+  display: block;
+  min-width: 0;
+}
+
 .dt-wrap {
   overflow-x: auto;
 
