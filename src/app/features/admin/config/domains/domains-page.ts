@@ -2,16 +2,15 @@ import { Component, DestroyRef, inject, signal, computed, OnInit } from '@angula
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, Validators, ReactiveFormsModule } from '@angular/forms';
-import { Avatar, Badge, Banner, Button, EmptyState, LoadingSkeleton, Modal, PageHeader, SectionCard, AppInput } from '@shared/ui';
+import { Avatar, Badge, Banner, Button, EmptyState, LoadingSkeleton, Modal, PageHeader, SectionCard, AppInput, AdminPageLayout } from '@shared/ui';
 import { DomainsConfigService, TenantDomain } from './domains.service';
 import { PermissionsService } from '@core/auth/permissions.service';
 import { ToastService } from '@core/services/toast.service';
 
 @Component({
   selector: 'app-domains-page',
-  imports: [CommonModule, ReactiveFormsModule, Avatar, Badge, Banner, Button, EmptyState, LoadingSkeleton, Modal, PageHeader, SectionCard, AppInput],
+  imports: [CommonModule, ReactiveFormsModule, Avatar, Badge, Banner, Button, EmptyState, LoadingSkeleton, Modal, PageHeader, SectionCard, AppInput, AdminPageLayout],
   templateUrl: './domains-page.html',
-  styleUrl:    './domains-page.scss',
 })
 export class DomainsPage implements OnInit {
   private readonly svc        = inject(DomainsConfigService);

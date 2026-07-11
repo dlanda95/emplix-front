@@ -5,6 +5,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import {
   Badge, Banner, Button, EmptyState, FilterChips, LoadingSkeleton,
   Modal, PageHeader, SectionCard, AppInput, AppSelect, TabsCard,
+  AdminPageLayout,
 } from '@shared/ui';
 import type { FilterChipItem, SelectOption, TabItem } from '@shared/ui';
 import {
@@ -51,9 +52,10 @@ const LEVEL_OPTIONS: SelectOption[] = Array.from({ length: 10 }, (_, i) => ({
     CommonModule, ReactiveFormsModule,
     Badge, Banner, Button, EmptyState, FilterChips, LoadingSkeleton,
     Modal, PageHeader, SectionCard, AppInput, AppSelect, TabsCard,
+    AdminPageLayout,
   ],
   templateUrl: './organizacion.html',
-  styleUrl:    './organizacion.scss',
+  host: { style: 'display:block' },
 })
 export class Organizacion {
   private readonly svc        = inject(OrganizationAdminService);

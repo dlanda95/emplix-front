@@ -2,16 +2,16 @@ import { Component, DestroyRef, inject, signal, computed, OnInit } from '@angula
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Banner, Button, ConfirmModal, LoadingSkeleton, PageHeader, SectionCard } from '@shared/ui';
+import { Banner, Button, ConfirmModal, LoadingSkeleton, PageHeader, SectionCard, AdminPageLayout } from '@shared/ui';
 import { AuthMethodsService, AuthMethodConfig } from './auth-methods.service';
 import { ToastService } from '@core/services/toast.service';
 import { AuthService } from '@core/auth/auth';
 
 @Component({
   selector: 'app-auth-methods-page',
-  imports: [CommonModule, ReactiveFormsModule, Banner, Button, ConfirmModal, LoadingSkeleton, PageHeader, SectionCard],
+  imports: [CommonModule, ReactiveFormsModule, Banner, Button, ConfirmModal, LoadingSkeleton, PageHeader, SectionCard, AdminPageLayout],
   templateUrl: './auth-methods-page.html',
-  styleUrl:    './auth-methods-page.scss',
+  host: { style: 'display:block' },
 })
 export class AuthMethodsPage implements OnInit {
   private readonly svc        = inject(AuthMethodsService);

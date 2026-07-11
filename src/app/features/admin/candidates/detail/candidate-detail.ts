@@ -4,7 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { forkJoin } from 'rxjs';
-import { Badge, Banner, Button, Field, LoadingSkeleton, SectionCard, Modal, AppSelect, AppInput } from '@shared/ui';
+import { Badge, Banner, Button, Field, LoadingSkeleton, SectionCard, Modal, AppSelect, AppInput, AdminPageLayout } from '@shared/ui';
 import { OnboardingLabelPipe, OnboardingVariantPipe } from '../onboarding-status.pipe';
 import type { SelectOption } from '@shared/ui';
 import { CandidatesService } from '../../services/candidates.service';
@@ -25,9 +25,9 @@ const DOC_LABELS: { prefix: string; label: string }[] = [
 
 @Component({
   selector: 'app-candidate-detail',
-  imports: [CommonModule, ReactiveFormsModule, Badge, Banner, Button, Field, LoadingSkeleton, SectionCard, Modal, AppSelect, AppInput, OnboardingLabelPipe, OnboardingVariantPipe],
+  imports: [CommonModule, ReactiveFormsModule, Badge, Banner, Button, Field, LoadingSkeleton, SectionCard, Modal, AppSelect, AppInput, OnboardingLabelPipe, OnboardingVariantPipe, AdminPageLayout],
   templateUrl: './candidate-detail.html',
-  styleUrl: './candidate-detail.scss',
+  host: { style: 'display:block' },
 })
 export class CandidateDetail implements OnInit {
   private readonly svc        = inject(CandidatesService);

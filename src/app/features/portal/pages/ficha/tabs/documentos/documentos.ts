@@ -10,6 +10,7 @@ import {
 import {
   Banner, Button, DocCard, DocUploadZone,
   EmptyState, LoadingSkeleton, Modal, PageHeader, TabsCard,
+  PortalTabLayout,
 } from '@shared/ui';
 import type { UploadPayload, TabItem } from '@shared/ui';
 import { ToolbarLayout } from '@shared/layout';
@@ -24,9 +25,10 @@ const DOC_IDENTITY_DISPLAY: Record<string, string> = {
   imports: [
     Banner, DocCard, DocUploadZone,
     LoadingSkeleton, Modal, PageHeader, TabsCard, ToolbarLayout,
+    PortalTabLayout,
   ],
   templateUrl: './documentos.html',
-  styleUrl:    './documentos.scss',
+  host: { style: 'display:block; height:100%; overflow-y:auto' },
 })
 export class Documentos {
   private readonly collaboratorService = inject(CollaboratorService);

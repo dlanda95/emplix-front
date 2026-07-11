@@ -42,6 +42,8 @@ export { AuthSplitLayout }    from './auth-split-layout/auth-split-layout';
 export { AuthCardLayout }     from './auth-card-layout/auth-card-layout';
 export { OnboardingLayout }   from './onboarding-layout/onboarding-layout';
 export { NavCard }            from './nav-card/nav-card';
+export { AdminPageLayout }   from './admin-page-layout/admin-page-layout';
+export { PortalTabLayout }   from './portal-tab-layout/portal-tab-layout';
 
 export type { AvatarSize }       from './avatar/avatar';
 export type { TypePermissions }  from './type-preview/type-preview';

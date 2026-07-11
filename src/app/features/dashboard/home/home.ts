@@ -4,14 +4,13 @@ import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { AuthService } from '@core/auth/auth';
-import { StatCard, Avatar, LoadingSkeleton, Banner } from '@shared/ui';
+import { StatCard, Avatar, LoadingSkeleton, Banner, AdminPageLayout } from '@shared/ui';
 import { DashboardService, DashboardStats, RecentRequest } from '../dashboard.service';
 
 @Component({
   selector: 'app-home',
-  imports: [CommonModule, RouterLink, StatCard, Avatar, LoadingSkeleton, Banner],
+  imports: [CommonModule, RouterLink, StatCard, Avatar, LoadingSkeleton, Banner, AdminPageLayout],
   templateUrl: './home.html',
-  styleUrl: './home.scss',
 })
 export class Home implements OnInit {
   private readonly auth       = inject(AuthService);
