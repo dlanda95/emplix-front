@@ -45,6 +45,10 @@
         <span>{{ control?.errors?.['dateOutOfRange']?.message ?? 'El año debe estar entre 1900 y 2100.' }}</span>
       } @else if (control?.hasError('futureDate')) {
         <span>{{ control?.errors?.['futureDate']?.message ?? 'No puede ser una fecha futura.' }}</span>
+      } @else if (control?.hasError('maxlength')) {
+        <span>Máximo {{ control?.errors?.['maxlength'].requiredLength }} caracteres</span>
+      } @else if (control?.hasError('docFormat')) {
+        <span>{{ control?.errors?.['docFormat'].message }}</span>
       }
     </div>
   } @else if (hint() && !isInvalid) {

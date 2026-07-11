@@ -76,14 +76,22 @@ export interface CandidateDetail {
 }
 
 export interface CreateCandidatePayload {
-  firstName:    string;
-  lastName:     string;
-  middleName?:  string;
-  documentType: string;
-  documentId:   string;
-  hireDate:     string;
-  positionId?:  string;
-  departmentId?:string;
+  firstName:     string;
+  lastName:      string;
+  middleName?:   string;
+  documentType:  string;
+  documentId:    string;
+  personalEmail: string;
+  hireDate:      string;
+  positionId?:   string;
+  departmentId?: string;
+}
+
+export interface CreateCandidateResult {
+  employee:          CandidateDetail;
+  temporaryPassword: string;
+  emailSent:         boolean;
+  emailError?:       string;
 }
 
 export interface PagedResult<T> {
@@ -118,8 +126,8 @@ export class CandidatesService {
     return this.http.get<CandidateDetail>(`${this.endpoint}/${id}`);
   }
 
-  create(payload: CreateCandidatePayload): Observable<CandidateDetail> {
-    return this.http.post<CandidateDetail>(this.endpoint, payload);
+  create(payload: CreateCandidatePayload): Observable<CreateCandidateResult> {
+    return this.http.post<CreateCandidateResult>(this.endpoint, payload);
   }
 
   updateHrData(id: string, data: Record<string, unknown>): Observable<CandidateDetail> {
@@ -141,7 +149,9 @@ export class CandidatesService {
   }
 
   listActiveEmployees(): Observable<EmployeeMinimal[]> {
-    return this.http.get<EmployeeMinimal[]>(`${environment.apiUrl}/employees`);
+    return this.http.get<any>(`${environment.apiUrl}/employees`).pipe(
+      map(r => Array.isArray(r) ? r : (r?.data ?? r?.items ?? [])),
+    );
   }
 
   getDocUrl(docId: string): Observable<string> {

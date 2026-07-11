@@ -52,10 +52,11 @@ export class Sidebar implements OnInit {
       items.push({
         label: 'RRHH', icon: 'corporate_fare', expanded: expanded.has('RRHH'),
         children: [
-          { label: 'Candidatos',    icon: 'group_add',    route: '/admin/candidatos'    },
-          { label: 'Colaboradores', icon: 'badge',        route: '/admin/colaboradores' },
-          { label: 'Solicitudes',   icon: 'approval',     route: '/admin/solicitudes'   },
-          { label: 'Organización',  icon: 'account_tree', route: '/admin/organizacion'  },
+          { label: 'Procesos de Selección', icon: 'work_history', route: '/admin/procesos-seleccion' },
+          { label: 'Candidatos',            icon: 'group_add',    route: '/admin/candidatos'         },
+          { label: 'Colaboradores',         icon: 'badge',        route: '/admin/colaboradores'      },
+          { label: 'Solicitudes',           icon: 'approval',     route: '/admin/solicitudes'        },
+          { label: 'Organización',          icon: 'account_tree', route: '/admin/organizacion'       },
         ],
       });
 

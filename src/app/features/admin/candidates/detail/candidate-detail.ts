@@ -3,7 +3,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
-import { forkJoin } from 'rxjs';
+import { forkJoin, switchMap } from 'rxjs';
 import { Badge, Banner, Button, Field, LoadingSkeleton, SectionCard, Modal, AppSelect, AppInput, AdminPageLayout } from '@shared/ui';
 import { OnboardingLabelPipe, OnboardingVariantPipe } from '../onboarding-status.pipe';
 import type { SelectOption } from '@shared/ui';
@@ -36,12 +36,13 @@ export class CandidateDetail implements OnInit {
   private readonly fb         = inject(FormBuilder);
   private readonly destroyRef = inject(DestroyRef);
 
-  readonly candidate      = signal<CandidateDetailModel | null>(null);
-  readonly isLoading      = signal(true);
-  readonly isActivating   = signal(false);
-  readonly activateError  = signal('');
-  readonly isActivateModal = signal(false);
-  readonly hrSaved        = signal(false);
+  readonly candidate           = signal<CandidateDetailModel | null>(null);
+  readonly isLoading           = signal(true);
+  readonly isActivating        = signal(false);
+  readonly activateError       = signal('');
+  readonly isActivateModal     = signal(false);
+  readonly hrSaved             = signal(false);
+  readonly isEditingAssignment = signal(false);
 
   // Catálogos org
   readonly departments = signal<DeptWithPositions[]>([]);
@@ -142,6 +143,9 @@ export class CandidateDetail implements OnInit {
         this.candidate.set(candidate);
         this.isLoading.set(false);
 
+        const hasAssignment = !!(candidate.department?.name || candidate.position?.name || candidate.supervisor);
+        this.isEditingAssignment.set(!hasAssignment);
+
         // Determinar si el departamento guardado es un área o subárea
         const savedDeptId = candidate.department?.id ?? candidate.departmentId ?? '';
         const savedPosId  = candidate.position?.id   ?? candidate.positionId   ?? '';
@@ -184,14 +188,20 @@ export class CandidateDetail implements OnInit {
       positionId:   v.positionId   || null,
       supervisorId: v.supervisorId || null,
     };
-    this.svc.updateHrData(id, payload).subscribe({
-      next: updated => {
-        this.candidate.set(updated);
+    this.svc.updateHrData(id, payload).pipe(
+      switchMap(() => this.svc.get(id)),
+    ).subscribe({
+      next: full => {
+        this.candidate.set(full);
+        this.isEditingAssignment.set(false);
         this.hrSaved.set(true);
-        setTimeout(() => this.hrSaved.set(false), 2500);
+        setTimeout(() => this.hrSaved.set(false), 3000);
       },
     });
   }
+
+  startEditAssignment(): void  { this.isEditingAssignment.set(true); }
+  cancelEditAssignment(): void { this.isEditingAssignment.set(false); }
 
   openActivate(): void  { this.isActivateModal.set(true); this.activateError.set(''); }
   closeActivate(): void { this.isActivateModal.set(false); }

@@ -1,7 +1,15 @@
 import { Routes } from '@angular/router';
 
 export const ADMIN_ROUTES: Routes = [
-  { path: '',           redirectTo: 'candidatos', pathMatch: 'full' },
+  { path: '', redirectTo: 'procesos-seleccion', pathMatch: 'full' },
+  {
+    path: 'procesos-seleccion',
+    loadComponent: () => import('./selection-processes/list/selection-processes-list').then(m => m.SelectionProcessesList),
+  },
+  {
+    path: 'procesos-seleccion/:id',
+    loadComponent: () => import('./selection-processes/detail/selection-process-detail').then(m => m.SelectionProcessDetail),
+  },
   {
     path: 'candidatos',
     loadComponent: () => import('./candidates/list/candidates-list').then(m => m.CandidatesList),

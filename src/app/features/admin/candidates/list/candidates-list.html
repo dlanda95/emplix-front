@@ -3,7 +3,7 @@
   <app-page-header
     title="Candidatos en Proceso"
     subtitle="Colaboradores en fase de onboarding">
-    <app-button variant="primary" icon="person_add" [disabled]="!perms.canCreate()" (clicked)="openCreate()">
+    <app-button variant="primary" icon="person_add" [disabled]="!perms.canCreate()" (clicked)="openRegisterCandidate()">
       Registrar candidato
     </app-button>
   </app-page-header>
@@ -83,41 +83,7 @@
 
 </div>
 
-<app-modal [isOpen]="isModalOpen()" title="Registrar Candidato" (close)="closeCreate()">
-
-  @if (createError()) {
-    <app-banner variant="error" icon="error" [title]="createError()"></app-banner>
-  }
-
-  <form [formGroup]="form" style="display:flex; flex-direction:column; gap:0.75rem;">
-    <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem;">
-      <app-input label="Primer Nombre *"    formControlName="firstName"  placeholder="Ej. Juan"></app-input>
-      <app-input label="Segundo Nombre"     formControlName="middleName" placeholder="Ej. Carlos"></app-input>
-      <app-input label="Apellido Paterno *" formControlName="lastName"   placeholder="Ej. García"></app-input>
-    </div>
-    <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem;">
-      <app-select label="Tipo de Documento *" formControlName="documentType" [options]="documentTypes"></app-select>
-      <app-input  label="Nro. de Documento *" formControlName="documentId"   placeholder="Ej. 12345678"></app-input>
-    </div>
-    <app-input label="Fecha de Ingreso Estimada *" type="date" formControlName="hireDate"
-      min="1900-01-01" max="2100-12-31"></app-input>
-    @if (form.get('hireDate')?.touched && form.get('hireDate')?.errors) {
-      <span style="font-size:var(--text-xs); color:var(--color-danger);">
-        @if (form.get('hireDate')?.hasError('required'))        { Campo obligatorio }
-        @else if (form.get('hireDate')?.hasError('dateOutOfRange')) { El año debe estar entre 1900 y 2100 }
-        @else if (form.get('hireDate')?.hasError('invalidDate'))    { La fecha no es válida }
-      </span>
-    }
-    <app-banner variant="info" icon="key" title="Credenciales temporales">
-      <p>El candidato podrá ingresar con su número de documento como usuario y contraseña temporal.</p>
-    </app-banner>
-  </form>
-
-  <ng-container modal-actions>
-    <app-button variant="ghost"   (clicked)="closeCreate()">Cancelar</app-button>
-    <app-button variant="primary" [loading]="isCreating()" [disabled]="isCreating()" (clicked)="createCandidate()">
-      Registrar y generar acceso
-    </app-button>
-  </ng-container>
-
-</app-modal>
+<!-- Modal de registro + credenciales (componente reutilizable) -->
+<app-create-candidate-modal
+  (candidateRegistered)="onCandidateRegistered($event)">
+</app-create-candidate-modal>

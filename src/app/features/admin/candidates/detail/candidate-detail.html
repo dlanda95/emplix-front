@@ -76,70 +76,114 @@
         <!-- Asignación Corporativa -->
         <app-section-card title="Asignación Corporativa" [columns]="1">
 
-          <app-banner variant="info" icon="corporate_fare" title="Solo visible para RRHH">
-            <p>Completa la asignación antes de activar al colaborador. Los datos se reflejarán en su expediente.</p>
-          </app-banner>
+          @if (!isEditingAssignment()) {
 
-          <!-- Resumen de asignación actual (si ya tiene) -->
-          @if (c.department?.name || c.position?.name || c.supervisor) {
-            <div class="assign-summary">
-              @if (c.department?.name) {
-                <p><strong>Área:</strong> {{ c.department?.name }}</p>
-              }
-              @if (c.position?.name) {
-                <p><strong>Cargo:</strong> {{ c.position?.name }}</p>
-              }
-              @if (c.supervisor) {
-                <p><strong>Supervisor:</strong> {{ c.supervisor.firstName }} {{ c.supervisor.lastName }}</p>
-              }
+            <!-- ── Vista resumen ─────────────────────────────── -->
+            <div class="assign-view">
+
+              <div class="assign-view__success">
+                <span class="material-icons-round">verified</span>
+                <span>Asignación corporativa configurada</span>
+              </div>
+
+              <div class="assign-chips">
+                @if (c.department?.name) {
+                  <div class="assign-chip">
+                    <span class="material-icons-round assign-chip__icon">corporate_fare</span>
+                    <div class="assign-chip__body">
+                      <span class="assign-chip__label">Área / Departamento</span>
+                      <span class="assign-chip__value">{{ c.department!.name }}</span>
+                    </div>
+                  </div>
+                }
+                @if (c.position?.name) {
+                  <div class="assign-chip">
+                    <span class="material-icons-round assign-chip__icon">work</span>
+                    <div class="assign-chip__body">
+                      <span class="assign-chip__label">Cargo</span>
+                      <span class="assign-chip__value">{{ c.position!.name }}</span>
+                    </div>
+                  </div>
+                }
+                @if (c.supervisor) {
+                  <div class="assign-chip assign-chip--wide">
+                    <span class="material-icons-round assign-chip__icon">manage_accounts</span>
+                    <div class="assign-chip__body">
+                      <span class="assign-chip__label">Supervisor directo</span>
+                      <span class="assign-chip__value">{{ c.supervisor.firstName }} {{ c.supervisor.lastName }}</span>
+                    </div>
+                  </div>
+                }
+              </div>
+
+              <div class="assign-view__footer">
+                @if (hrSaved()) {
+                  <div class="save-notice">
+                    <span class="material-icons-round">check_circle</span>
+                    ¡Asignación guardada!
+                  </div>
+                }
+                <app-button variant="ghost" icon="edit" size="sm" (clicked)="startEditAssignment()">
+                  Editar asignación
+                </app-button>
+              </div>
+
             </div>
+
+          } @else {
+
+            <!-- ── Formulario de edición ─────────────────────── -->
+            <app-banner variant="info" icon="corporate_fare" title="Solo visible para RRHH">
+              <p>Completa la asignación antes de activar al colaborador. Los datos se reflejarán en su expediente.</p>
+            </app-banner>
+
+            <form [formGroup]="hrForm" class="hr-form">
+              <app-select
+                label="Área / Departamento"
+                formControlName="areaId"
+                [options]="deptOptions()"
+                placeholder="— Seleccionar área —">
+              </app-select>
+
+              @if (selectedAreaHasSubareas()) {
+                <app-select
+                  label="Subárea"
+                  formControlName="subareaId"
+                  [options]="subareaOptions()"
+                  placeholder="— Seleccionar subárea —">
+                </app-select>
+              }
+
+              @if (showPositionSelect()) {
+                <app-select
+                  label="Cargo"
+                  formControlName="positionId"
+                  [options]="positionOptions()"
+                  placeholder="— Seleccionar cargo —">
+                </app-select>
+              }
+
+              <app-select
+                label="Supervisor directo"
+                formControlName="supervisorId"
+                [options]="supervisorOptions()"
+                placeholder="— Sin supervisor asignado —">
+              </app-select>
+
+              <div class="hr-form-footer">
+                @if (c.department?.name || c.position?.name || c.supervisor) {
+                  <app-button variant="ghost" size="sm" (clicked)="cancelEditAssignment()">
+                    Cancelar
+                  </app-button>
+                }
+                <app-button variant="secondary" icon="save" (clicked)="saveHrData()">
+                  Guardar asignación
+                </app-button>
+              </div>
+            </form>
+
           }
 
-          <form [formGroup]="hrForm" class="hr-form">
-            <app-select
-              label="Área / Departamento"
-              formControlName="areaId"
-              [options]="deptOptions()"
-              placeholder="— Seleccionar área —">
-            </app-select>
-
-            @if (selectedAreaHasSubareas()) {
-              <app-select
-                label="Subárea"
-                formControlName="subareaId"
-                [options]="subareaOptions()"
-                placeholder="— Seleccionar subárea —">
-              </app-select>
-            }
-
-            @if (showPositionSelect()) {
-              <app-select
-                label="Cargo"
-                formControlName="positionId"
-                [options]="positionOptions()"
-                placeholder="— Seleccionar cargo —">
-              </app-select>
-            }
-
-            <app-select
-              label="Supervisor directo"
-              formControlName="supervisorId"
-              [options]="supervisorOptions()"
-              placeholder="— Sin supervisor asignado —">
-            </app-select>
-
-            <div class="hr-form-footer">
-              @if (hrSaved()) {
-                <div class="save-notice">
-                  <span class="material-icons-round">check_circle</span>
-                  ¡Asignación guardada!
-                </div>
-              }
-              <app-button variant="secondary" icon="save" (clicked)="saveHrData()">
-                Guardar asignación
-              </app-button>
-            </div>
-          </form>
         </app-section-card>
 
         <!-- Documentos adjuntos -->
