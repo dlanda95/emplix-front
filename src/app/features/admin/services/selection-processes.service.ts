@@ -30,15 +30,13 @@ export interface SelectionProcess {
 }
 
 export interface CreateSelectionProcessPayload {
-  name:         string;
   description?: string;
   departmentId: string;
-  positionId?:  string;
+  positionId:   string;
   approverIds:  string[];
 }
 
 export interface UpdateSelectionProcessPayload {
-  name?:        string;
   description?: string | null;
   status?:      SelectionProcessStatus;
 }

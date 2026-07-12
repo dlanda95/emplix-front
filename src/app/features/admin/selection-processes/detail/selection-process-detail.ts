@@ -91,7 +91,6 @@ export class SelectionProcessDetail implements OnInit {
   readonly processStatusOptions = PROCESS_STATUS_OPTIONS;
 
   readonly editForm = this.fb.group({
-    name:        ['', [Validators.required, Validators.minLength(3), Validators.maxLength(120)]],
     description: ['', Validators.maxLength(500)],
     status:      ['OPEN', Validators.required],
   });
@@ -255,7 +254,7 @@ export class SelectionProcessDetail implements OnInit {
   openEditProcess(): void {
     const p = this.process();
     if (!p) return;
-    this.editForm.reset({ name: p.name, description: p.description ?? '', status: p.status });
+    this.editForm.reset({ description: p.description ?? '', status: p.status });
     this.saveError.set('');
     this.isEditModalOpen.set(true);
   }

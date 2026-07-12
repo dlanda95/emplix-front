@@ -11,7 +11,7 @@
     <div class="cand-header__identity">
       <app-button variant="ghost" icon="arrow_back" size="sm" (clicked)="back()">Volver</app-button>
       <div>
-        <h2>{{ p.name }}</h2>
+        <h2>{{ p.position?.name ?? p.code }}</h2>
         <div class="sp-detail-meta">
           <span class="sp-detail-meta__code">{{ p.code }}</span>
           <app-badge [variant]="p.status | spStatusVariant">{{ p.status | spStatusLabel }}</app-badge>
@@ -200,7 +200,6 @@
   }
 
   <form [formGroup]="editForm" style="display:flex; flex-direction:column; gap:1rem;">
-    <app-input label="Nombre *" formControlName="name" placeholder="Nombre del proceso"></app-input>
     <app-input label="Descripción" formControlName="description" placeholder="Descripción opcional"></app-input>
     <app-select label="Estado" formControlName="status" [options]="processStatusOptions"></app-select>
   </form>

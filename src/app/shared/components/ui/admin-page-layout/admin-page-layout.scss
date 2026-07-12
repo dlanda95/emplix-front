@@ -881,6 +881,63 @@
   }
 }
 
+// ── Tabla desktop / cards mobile toggle ──────────────────────────────────────
+.ut-table-card {
+  @include m.respond-to('tablet') { display: none !important; }
+}
+
+.ut-cards-mobile {
+  display: none !important;
+  @include m.respond-to('tablet') { display: grid !important; }
+}
+
+// ── Celdas de la tabla ────────────────────────────────────────────────────────
+.ut-name-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  white-space: nowrap;
+}
+
+.ut-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.ut-name-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.ut-name {
+  margin: 0;
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--text-main);
+}
+
+.ut-desc-cell {
+  max-width: 220px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ut-badges-cell {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.ut-row--inactive td {
+  opacity: 0.5;
+}
+
+// ── Grid de cards (mobile) ────────────────────────────────────────────────────
 .types-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));

@@ -59,10 +59,9 @@ export class SelectionProcessesList implements OnInit {
   private readonly deptIdCtrl = new FormControl('', Validators.required);
 
   readonly createForm = this.fb.group({
-    name:         ['', [Validators.required, Validators.minLength(3), Validators.maxLength(120)]],
     description:  ['', Validators.maxLength(500)],
     departmentId: this.deptIdCtrl,
-    positionId:   [''],
+    positionId:   ['', Validators.required],
   });
 
   // Cuando cambia el área, limpiamos el puesto
@@ -82,7 +81,7 @@ export class SelectionProcessesList implements OnInit {
     const dept = this.depts().find(d => d.id === deptId);
     if (!dept?.positions?.length) return [{ value: '', label: '— Sin puestos en esta área —' }];
     return [
-      { value: '', label: '— Sin puesto específico —' },
+      { value: '', label: '— Seleccionar puesto —' },
       ...dept.positions.map(p => ({ value: p.id, label: p.name })),
     ];
   });
@@ -151,7 +150,7 @@ export class SelectionProcessesList implements OnInit {
 
   // ── Modal actions ─────────────────────────────────────────────────────────
   openCreateModal(): void {
-    this.createForm.reset({ name: '', description: '', departmentId: '', positionId: '' });
+    this.createForm.reset({ description: '', departmentId: '', positionId: '' });
     this.selectedApprovers.set([]);
     this.approverSearchCtrl.reset('');
     this.createError.set('');
@@ -184,12 +183,11 @@ export class SelectionProcessesList implements OnInit {
 
     const raw = this.createForm.value;
     const payload: any = {
-      name:         raw.name,
       departmentId: raw.departmentId,
+      positionId:   raw.positionId,
       approverIds:  this.selectedApprovers().map(a => a.id),
     };
     if (raw.description) payload['description'] = raw.description;
-    if (raw.positionId)  payload['positionId']  = raw.positionId;
 
     this.svc.create(payload).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: process => {

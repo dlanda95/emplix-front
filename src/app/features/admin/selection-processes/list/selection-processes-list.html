@@ -34,7 +34,7 @@
         <thead>
           <tr>
             <th>Código</th>
-            <th>Nombre del proceso</th>
+            <th>Puesto</th>
             <th>Área</th>
             <th>Estado</th>
             <th>Candidatos</th>
@@ -46,7 +46,7 @@
           @for (p of processes(); track p.id) {
             <tr class="sp-table-row" (click)="openProcess(p.id)" tabindex="0" (keydown.enter)="openProcess(p.id)">
               <td><span class="sp-code-tag">{{ p.code }}</span></td>
-              <td><strong>{{ p.name }}</strong></td>
+              <td><strong>{{ p.position?.name ?? '—' }}</strong></td>
               <td class="dt-muted">{{ p.department?.name ?? '—' }}</td>
               <td>
                 <app-badge [variant]="p.status | spStatusVariant">{{ p.status | spStatusLabel }}</app-badge>
@@ -75,7 +75,7 @@
             <div class="sp-card__icon"><span class="material-icons-round">work_history</span></div>
             <div class="sp-card__info">
               <p class="sp-card__code">{{ p.code }}</p>
-              <p class="sp-card__name">{{ p.name }}</p>
+              <p class="sp-card__name">{{ p.position?.name ?? '—' }}</p>
               <p class="sp-card__meta">{{ p.department?.name ?? '—' }} · {{ p.createdAt | date:'dd/MM/yyyy' }}</p>
             </div>
           </div>
@@ -107,25 +107,6 @@
 
   <form [formGroup]="createForm" class="sp-create-form">
 
-    <!-- ── Sección: Información básica ──────────────────────────────────── -->
-    <div class="sp-create-form__section">
-      <p class="sp-create-form__section-title">
-        <span class="material-icons-round">info</span> Información básica
-      </p>
-      <app-input
-        label="Nombre del proceso *"
-        formControlName="name"
-        placeholder="Ej. Captación de Agentes Q1 2026"
-        hint="Mínimo 3 caracteres">
-      </app-input>
-      <app-input
-        label="Descripción"
-        formControlName="description"
-        placeholder="Objetivo y alcance de este proceso..."
-        hint="Opcional — máximo 500 caracteres">
-      </app-input>
-    </div>
-
     <!-- ── Sección: Área y Puesto ────────────────────────────────────────── -->
     <div class="sp-create-form__section">
       <p class="sp-create-form__section-title">
@@ -138,11 +119,17 @@
           [options]="deptOptions()">
         </app-select>
         <app-select
-          label="Puesto (opcional)"
+          label="Puesto *"
           formControlName="positionId"
           [options]="positionOptions()">
         </app-select>
       </div>
+      <app-input
+        label="Descripción"
+        formControlName="description"
+        placeholder="Objetivo y alcance de este proceso (opcional)..."
+        hint="Máximo 500 caracteres">
+      </app-input>
     </div>
 
     <!-- ── Sección: Aprobadores ──────────────────────────────────────────── -->
@@ -201,8 +188,8 @@
     </div>
 
     <!-- ── Código automático ─────────────────────────────────────────────── -->
-    <app-banner variant="info" icon="tag" title="Código automático">
-      <p style="margin:0;">Se generará un código único con formato <strong>PS-2026-000001</strong>.</p>
+    <app-banner variant="info" icon="tag" title="El proceso se identificará por su código">
+      <p style="margin:0;">Se generará automáticamente un código único, ej. <strong>PS-2026-000001</strong>.</p>
     </app-banner>
 
   </form>

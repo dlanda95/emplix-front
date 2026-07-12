@@ -4,7 +4,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, Validators, ReactiveFormsModule } from '@angular/forms';
 import {
   PageHeader, Button, Banner, Badge, EmptyState, LoadingSkeleton, SectionCard,
-  AdminPageLayout,
+  AdminPageLayout, DataTable,
 } from '@shared/ui';
 import { UsersAdminService, SystemUserType, PermissionSet } from '../../users/users-admin.service';
 import { PermissionsService } from '@core/auth/permissions.service';
@@ -21,7 +21,7 @@ const PERM_LABELS: Array<{ key: keyof PermissionSet; label: string; icon: string
 
 @Component({
   selector: 'app-user-types-page',
-  imports: [CommonModule, ReactiveFormsModule, PageHeader, Button, Banner, Badge, EmptyState, LoadingSkeleton, SectionCard, AdminPageLayout],
+  imports: [CommonModule, ReactiveFormsModule, PageHeader, Button, Banner, Badge, EmptyState, LoadingSkeleton, SectionCard, AdminPageLayout, DataTable],
   templateUrl: './user-types-page.html',
 })
 export class UserTypesPage implements OnInit {
