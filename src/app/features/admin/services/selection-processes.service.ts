@@ -23,7 +23,7 @@ export interface SelectionProcess {
   openedAt:    string;
   closedAt:    string | null;
   createdAt:   string;
-  department:  { id: string; name: string } | null;
+  department:  { id: string; name: string; parent: { id: string; name: string } | null } | null;
   position:    { id: string; name: string } | null;
   approvers:   SPApprover[];
   _count:      { candidates: number };

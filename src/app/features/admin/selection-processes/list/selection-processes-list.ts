@@ -56,38 +56,74 @@ export class SelectionProcessesList implements OnInit {
   readonly isCreating        = signal(false);
   readonly createError       = signal('');
 
-  private readonly deptIdCtrl = new FormControl('', Validators.required);
+  // Controles del formulario de creación (cascade: área → subárea → puesto)
+  private readonly areaIdCtrl    = new FormControl('', Validators.required);
+  private readonly subareaIdCtrl = new FormControl('');
 
   readonly createForm = this.fb.group({
-    description:  ['', Validators.maxLength(500)],
-    departmentId: this.deptIdCtrl,
-    positionId:   ['', Validators.required],
+    description: ['', Validators.maxLength(500)],
+    areaId:      this.areaIdCtrl,
+    subareaId:   this.subareaIdCtrl,
+    positionId:  ['', Validators.required],
   });
 
-  // Cuando cambia el área, limpiamos el puesto
-  private readonly selectedDeptId = toSignal(
-    this.deptIdCtrl.valueChanges.pipe(startWith('')),
+  // Signals reactivos desde los controles
+  private readonly selectedAreaId = toSignal(
+    this.areaIdCtrl.valueChanges.pipe(startWith('')),
+    { initialValue: '' },
+  );
+  private readonly selectedSubareaId = toSignal(
+    this.subareaIdCtrl.valueChanges.pipe(startWith('')),
     { initialValue: '' },
   );
 
-  readonly deptOptions = computed<SelectOption[]>(() => [
+  // Área actualmente seleccionada (objeto completo)
+  readonly selectedArea = computed<DeptWithPositions | null>(() => {
+    const id = this.selectedAreaId();
+    return this.depts().find(d => d.id === id) ?? null;
+  });
+
+  // ¿El área tiene subáreas?
+  readonly hasSubareas = computed(() => (this.selectedArea()?.children?.length ?? 0) > 0);
+
+  // Opciones para el select de área (solo áreas raíz)
+  readonly areaOptions = computed<SelectOption[]>(() => [
     { value: '', label: '— Seleccionar área —' },
     ...this.depts().map(d => ({ value: d.id, label: d.name })),
   ]);
 
+  // Opciones para el select de subárea (solo si el área tiene subareas)
+  readonly subareaOptions = computed<SelectOption[]>(() => {
+    const area = this.selectedArea();
+    if (!area?.children?.length) return [];
+    return [
+      { value: '', label: '— Directo en el área —' },
+      ...area.children.map(c => ({ value: c.id, label: c.name })),
+    ];
+  });
+
+  // Opciones de puesto: dependen del área y/o subárea seleccionada
   readonly positionOptions = computed<SelectOption[]>(() => {
-    const deptId = this.selectedDeptId();
-    if (!deptId) return [{ value: '', label: '— Primero selecciona un área —' }];
-    const dept = this.depts().find(d => d.id === deptId);
-    if (!dept?.positions?.length) return [{ value: '', label: '— Sin puestos en esta área —' }];
+    const area = this.selectedArea();
+    if (!area) return [{ value: '', label: '— Primero selecciona un área —' }];
+
+    const subareaId = this.selectedSubareaId();
+    let positions = area.positions;
+
+    if (subareaId) {
+      const sub = area.children.find(c => c.id === subareaId);
+      positions = sub?.positions ?? [];
+    }
+
+    if (!positions.length) return [{ value: '', label: '— Sin puestos disponibles —' }];
     return [
       { value: '', label: '— Seleccionar puesto —' },
-      ...dept.positions.map(p => ({ value: p.id, label: p.name })),
+      ...positions.map(p => ({ value: p.id, label: p.name })),
     ];
   });
 
   // ── Aprobadores ───────────────────────────────────────────────────────────
-  readonly selectedApprovers = signal<EmployeeMinimal[]>([]);
+  readonly selectedApprovers  = signal<EmployeeMinimal[]>([]);
   readonly approverSearchCtrl = new FormControl('');
 
   private readonly approverQuery = toSignal(
@@ -114,8 +150,16 @@ export class SelectionProcessesList implements OnInit {
       takeUntilDestroyed(this.destroyRef),
     ).subscribe(() => { this.page.set(1); this.load(); });
 
-    // Limpiar puesto al cambiar área
-    this.deptIdCtrl.valueChanges.pipe(
+    // Al cambiar área: reset subárea y puesto
+    this.areaIdCtrl.valueChanges.pipe(
+      distinctUntilChanged(), takeUntilDestroyed(this.destroyRef),
+    ).subscribe(() => {
+      this.subareaIdCtrl.setValue('', { emitEvent: false });
+      this.createForm.patchValue({ positionId: '' });
+    });
+
+    // Al cambiar subárea: reset puesto
+    this.subareaIdCtrl.valueChanges.pipe(
       distinctUntilChanged(), takeUntilDestroyed(this.destroyRef),
     ).subscribe(() => this.createForm.patchValue({ positionId: '' }));
 
@@ -150,7 +194,7 @@ export class SelectionProcessesList implements OnInit {
 
   // ── Modal actions ─────────────────────────────────────────────────────────
   openCreateModal(): void {
-    this.createForm.reset({ description: '', departmentId: '', positionId: '' });
+    this.createForm.reset({ description: '', areaId: '', subareaId: '', positionId: '' });
     this.selectedApprovers.set([]);
     this.approverSearchCtrl.reset('');
     this.createError.set('');
@@ -182,8 +226,11 @@ export class SelectionProcessesList implements OnInit {
     this.createError.set('');
 
     const raw = this.createForm.value;
+    // El departmentId efectivo es la subárea si está seleccionada, sino el área
+    const effectiveDeptId = raw.subareaId || raw.areaId;
+
     const payload: any = {
-      departmentId: raw.departmentId,
+      departmentId: effectiveDeptId,
       positionId:   raw.positionId,
       approverIds:  this.selectedApprovers().map(a => a.id),
     };
@@ -202,6 +249,13 @@ export class SelectionProcessesList implements OnInit {
           (firstErr ? ` — ${firstErr.message}` : ''));
       },
     });
+  }
+
+  /** Muestra "Área" o "Área / Subárea" según si el proceso está en una subárea */
+  deptLabel(p: SelectionProcess): string {
+    if (!p.department) return '—';
+    if (p.department.parent) return `${p.department.parent.name} / ${p.department.name}`;
+    return p.department.name;
   }
 
   openProcess(processId: string): void {

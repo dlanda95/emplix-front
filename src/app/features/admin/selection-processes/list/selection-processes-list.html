@@ -35,7 +35,7 @@
           <tr>
             <th>Código</th>
             <th>Puesto</th>
-            <th>Área</th>
+            <th>Área / Subárea</th>
             <th>Estado</th>
             <th>Candidatos</th>
             <th>Apertura</th>
@@ -47,7 +47,7 @@
             <tr class="sp-table-row" (click)="openProcess(p.id)" tabindex="0" (keydown.enter)="openProcess(p.id)">
               <td><span class="sp-code-tag">{{ p.code }}</span></td>
               <td><strong>{{ p.position?.name ?? '—' }}</strong></td>
-              <td class="dt-muted">{{ p.department?.name ?? '—' }}</td>
+              <td class="dt-muted">{{ deptLabel(p) }}</td>
               <td>
                 <app-badge [variant]="p.status | spStatusVariant">{{ p.status | spStatusLabel }}</app-badge>
               </td>
@@ -76,7 +76,7 @@
             <div class="sp-card__info">
               <p class="sp-card__code">{{ p.code }}</p>
               <p class="sp-card__name">{{ p.position?.name ?? '—' }}</p>
-              <p class="sp-card__meta">{{ p.department?.name ?? '—' }} · {{ p.createdAt | date:'dd/MM/yyyy' }}</p>
+              <p class="sp-card__meta">{{ deptLabel(p) }} · {{ p.createdAt | date:'dd/MM/yyyy' }}</p>
             </div>
           </div>
           <div class="sp-card__right">
@@ -107,23 +107,35 @@
 
   <form [formGroup]="createForm" class="sp-create-form">
 
-    <!-- ── Sección: Área y Puesto ────────────────────────────────────────── -->
+    <!-- ── Sección: Ubicación del puesto ─────────────────────────────────── -->
     <div class="sp-create-form__section">
       <p class="sp-create-form__section-title">
-        <span class="material-icons-round">account_tree</span> Área y Puesto
+        <span class="material-icons-round">account_tree</span> Ubicación del puesto
       </p>
-      <div class="sp-create-form__row">
+
+      <!-- Área (siempre visible) -->
+      <app-select
+        label="Área *"
+        formControlName="areaId"
+        [options]="areaOptions()">
+      </app-select>
+
+      <!-- Subárea (solo si el área tiene subáreas) -->
+      @if (hasSubareas()) {
         <app-select
-          label="Área *"
-          formControlName="departmentId"
-          [options]="deptOptions()">
+          label="Subárea"
+          formControlName="subareaId"
+          [options]="subareaOptions()">
         </app-select>
-        <app-select
-          label="Puesto *"
-          formControlName="positionId"
-          [options]="positionOptions()">
-        </app-select>
-      </div>
+      }
+
+      <!-- Puesto (filtrado por área/subárea seleccionada) -->
+      <app-select
+        label="Puesto *"
+        formControlName="positionId"
+        [options]="positionOptions()">
+      </app-select>
+
       <app-input
         label="Descripción"
         formControlName="description"

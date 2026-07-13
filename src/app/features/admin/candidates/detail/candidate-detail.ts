@@ -4,9 +4,10 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { forkJoin, switchMap } from 'rxjs';
-import { Badge, Banner, Button, Field, LoadingSkeleton, SectionCard, Modal, AppSelect, AppInput, AdminPageLayout } from '@shared/ui';
+import { Badge, Banner, Button, Field, LoadingSkeleton, SectionCard, Modal, AppSelect, AppInput, AdminPageLayout, DocCard, FilterChips, EmptyState } from '@shared/ui';
 import { OnboardingLabelPipe, OnboardingVariantPipe } from '../onboarding-status.pipe';
-import type { SelectOption } from '@shared/ui';
+import type { SelectOption, FilterChipItem } from '@shared/ui';
+import { DOC_CATEGORIES, DocCategoryId, EmployeeDocument, filterDocsByCategory } from '@features/portal/models/document.model';
 import { CandidatesService } from '../../services/candidates.service';
 import type { CandidateDetail as CandidateDetailModel, DeptWithPositions, EmployeeMinimal } from '../../services/candidates.service';
 import {
@@ -15,17 +16,10 @@ import {
   AFP_TYPE_OPTIONS, AFP_ENTITY_OPTIONS,
 } from '@features/portal/models/catalog.model';
 
-const DOC_LABELS: { prefix: string; label: string }[] = [
-  { prefix: 'DNI_CE',          label: 'Documento de Identidad'          },
-  { prefix: 'CV_',             label: 'Currículum Vitae'                 },
-  { prefix: 'RECIBO_DOMICILIO',label: 'Recibo de Servicios (Domicilio)' },
-  { prefix: 'CONTRATO_',       label: 'Contrato'                        },
-  { prefix: 'CERT_',           label: 'Certificado'                     },
-];
 
 @Component({
   selector: 'app-candidate-detail',
-  imports: [CommonModule, ReactiveFormsModule, Badge, Banner, Button, Field, LoadingSkeleton, SectionCard, Modal, AppSelect, AppInput, OnboardingLabelPipe, OnboardingVariantPipe, AdminPageLayout],
+  imports: [CommonModule, ReactiveFormsModule, Badge, Banner, Button, Field, LoadingSkeleton, SectionCard, Modal, AppSelect, AppInput, OnboardingLabelPipe, OnboardingVariantPipe, AdminPageLayout, DocCard, FilterChips, EmptyState],
   templateUrl: './candidate-detail.html',
   host: { style: 'display:block' },
 })
@@ -36,13 +30,14 @@ export class CandidateDetail implements OnInit {
   private readonly fb         = inject(FormBuilder);
   private readonly destroyRef = inject(DestroyRef);
 
-  readonly candidate           = signal<CandidateDetailModel | null>(null);
-  readonly isLoading           = signal(true);
-  readonly isActivating        = signal(false);
-  readonly activateError       = signal('');
-  readonly isActivateModal     = signal(false);
-  readonly hrSaved             = signal(false);
-  readonly isEditingAssignment = signal(false);
+  readonly candidate             = signal<CandidateDetailModel | null>(null);
+  readonly isLoading             = signal(true);
+  readonly isActivating          = signal(false);
+  readonly activateError         = signal('');
+  readonly isActivateModal       = signal(false);
+  readonly hrSaved               = signal(false);
+  readonly isEditingAssignment   = signal(false);
+  readonly prefilledFromProcess  = signal(false);
 
   // Catálogos org
   readonly departments = signal<DeptWithPositions[]>([]);
@@ -54,6 +49,20 @@ export class CandidateDetail implements OnInit {
 
   // URLs de documentos (cargadas asíncronamente)
   readonly docUrls = signal<Record<string, string>>({});
+
+  // ── Documentos: filtro por categoría ────────────────────────────────────────
+  readonly activeDocCat = signal<DocCategoryId>('ALL');
+
+  readonly docCategoryChips = computed<FilterChipItem[]>(() => {
+    const docs = this.candidate()?.documents ?? [];
+    return DOC_CATEGORIES
+      .filter(cat => cat.type === 'ALL' ? docs.length > 0 : filterDocsByCategory(docs, cat.type).length > 0)
+      .map(cat => ({ id: cat.type, label: cat.label }));
+  });
+
+  readonly filteredDocs = computed<EmployeeDocument[]>(() =>
+    filterDocsByCategory(this.candidate()?.documents ?? [], this.activeDocCat())
+  );
 
   hrForm = this.fb.group({
     areaId:       [''],   // UI only — no se envía al backend
@@ -146,23 +155,20 @@ export class CandidateDetail implements OnInit {
         const hasAssignment = !!(candidate.department?.name || candidate.position?.name || candidate.supervisor);
         this.isEditingAssignment.set(!hasAssignment);
 
-        // Determinar si el departamento guardado es un área o subárea
         const savedDeptId = candidate.department?.id ?? candidate.departmentId ?? '';
         const savedPosId  = candidate.position?.id   ?? candidate.positionId   ?? '';
         const savedSupId  = candidate.supervisor?.id  ?? candidate.supervisorId ?? '';
 
-        const isTopArea  = depts.find(d => d.id === savedDeptId);
-        const parentArea = !isTopArea && depts.find(d => d.children.some(c => c.id === savedDeptId));
-
-        if (isTopArea) {
-          this.uiAreaId.set(savedDeptId);
-          this.hrForm.patchValue({ areaId: savedDeptId, subareaId: '', positionId: savedPosId, supervisorId: savedSupId }, { emitEvent: false });
-        } else if (parentArea) {
-          this.uiAreaId.set(parentArea.id);
-          this.uiSubareaId.set(savedDeptId);
-          this.hrForm.patchValue({ areaId: parentArea.id, subareaId: savedDeptId, positionId: savedPosId, supervisorId: savedSupId }, { emitEvent: false });
-        } else {
-          this.hrForm.patchValue({ positionId: savedPosId, supervisorId: savedSupId }, { emitEvent: false });
+        if (savedDeptId || savedPosId) {
+          // Ya tiene asignación manual: resolver si es área o subárea
+          this._applyDeptToForm(savedDeptId, savedPosId, savedSupId, depts);
+        } else if (candidate.selectionProcess) {
+          // Sin asignación manual: pre-llenar desde el proceso de selección
+          const sp = candidate.selectionProcess;
+          const spDeptId = sp.department?.id ?? '';
+          const spPosId  = sp.position?.id   ?? '';
+          this._applyDeptToForm(spDeptId, spPosId, '', depts);
+          if (spDeptId || spPosId) this.prefilledFromProcess.set(true);
         }
 
         // Cargar URLs de docs adjuntos
@@ -227,6 +233,39 @@ export class CandidateDetail implements OnInit {
 
   // ── Helpers ──────────────────────────────────────────────────────────────────
 
+  /** Muestra "Área" o "Área / Subárea" según el departamento del candidato */
+  deptDisplayLabel(c: CandidateDetailModel): string {
+    if (!c.department) return '—';
+    if (c.department.parent) return `${c.department.parent.name} / ${c.department.name}`;
+    return c.department.name;
+  }
+
+  /** Muestra el departamento del proceso de selección como breadcrumb */
+  processDeptLabel(c: CandidateDetailModel): string {
+    const d = c.selectionProcess?.department;
+    if (!d) return '—';
+    return d.parent ? `${d.parent.name} / ${d.name}` : d.name;
+  }
+
+  /** Resuelve si el deptId guardado es área o subárea y parchea el formulario */
+  private _applyDeptToForm(
+    deptId: string, posId: string, supId: string, depts: DeptWithPositions[],
+  ): void {
+    const isTopArea  = depts.find(d => d.id === deptId);
+    const parentArea = !isTopArea && depts.find(d => d.children.some(c => c.id === deptId));
+
+    if (isTopArea) {
+      this.uiAreaId.set(deptId);
+      this.hrForm.patchValue({ areaId: deptId, subareaId: '', positionId: posId, supervisorId: supId }, { emitEvent: false });
+    } else if (parentArea) {
+      this.uiAreaId.set(parentArea.id);
+      this.uiSubareaId.set(deptId);
+      this.hrForm.patchValue({ areaId: parentArea.id, subareaId: deptId, positionId: posId, supervisorId: supId }, { emitEvent: false });
+    } else {
+      this.hrForm.patchValue({ positionId: posId, supervisorId: supId }, { emitEvent: false });
+    }
+  }
+
   docTypeLabel(val: string | null | undefined): string {
     return catalogLabel(DOCUMENT_TYPE_OPTIONS, val);
   }
@@ -251,15 +290,14 @@ export class CandidateDetail implements OnInit {
     return catalogLabel(AFP_ENTITY_OPTIONS, val);
   }
 
-  docLabel(doc: { name?: string; originalName?: string }): string {
-    const upper = (doc.name ?? '').toUpperCase();
-    const match = DOC_LABELS.find(d => upper.startsWith(d.prefix));
-    return match?.label ?? doc.originalName ?? doc.name ?? 'Documento';
-  }
-
   get canActivate(): boolean {
     const c = this.candidate();
     return c?.onboardingStatus === 'DOCS_SUBMITTED' || c?.onboardingStatus === 'COMPLETED';
+  }
+
+  downloadDoc(doc: EmployeeDocument): void {
+    const url = this.docUrls()[doc.id];
+    if (url) window.open(url, '_blank', 'noopener');
   }
 
   back(): void { this.nav.navigate(['/admin/candidatos']); }

@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { environment } from '@env';
+import type { EmployeeDocument } from '@features/portal/models/document.model';
 
 export interface AreaPosition {
   id:   string;
@@ -69,10 +70,16 @@ export interface CandidateDetail {
   departmentId:     string | null;
   positionId:       string | null;
   supervisorId:     string | null;
-  department:       { id: string; name: string } | null;
+  department:       { id: string; name: string; parent: { id: string; name: string } | null } | null;
   position:         { id: string; name: string } | null;
   supervisor:       { id: string; firstName: string; lastName: string } | null;
-  documents:        { id: string; name: string; originalName?: string }[];
+  documents:        EmployeeDocument[];
+  selectionProcess: {
+    id:         string;
+    code:       string;
+    department: { id: string; name: string; parent: { id: string; name: string } | null } | null;
+    position:   { id: string; name: string } | null;
+  } | null;
 }
 
 export interface CreateCandidatePayload {

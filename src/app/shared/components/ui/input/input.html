@@ -22,7 +22,9 @@
       [readonly]="readonly()"
       [attr.min]="min()"
       [attr.max]="max()"
-      (input)="onInput($any($event.target).value)"
+      [attr.maxlength]="maxlength()"
+      [attr.inputmode]="inputmode()"
+      (input)="onInput($event)"
       (focus)="onFocus()"
       (blur)="onBlur()">
   </div>

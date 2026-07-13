@@ -16,6 +16,9 @@ export class AppInput implements ControlValueAccessor {
   readonly readonly    = input(false);
   readonly min         = input<string | undefined>(undefined);
   readonly max         = input<string | undefined>(undefined);
+  readonly maxlength   = input<number | undefined>(undefined);
+  readonly inputmode   = input<string>('text');
+  readonly numericOnly = input(false);
 
   readonly focused = signal(false);
   isDisabled = false;
@@ -53,9 +56,14 @@ export class AppInput implements ControlValueAccessor {
     this.control?.markAsTouched();
   }
 
-  onInput(value: string): void {
-    this._value = value;
-    this._onChange(value);
+  onInput(event: Event): void {
+    const target = event.target as HTMLInputElement;
+    let v = this.numericOnly() ? target.value.replace(/\D/g, '') : target.value;
+    const max = this.maxlength();
+    if (max !== undefined && v.length > max) v = v.slice(0, max);
+    if (target.value !== v) target.value = v;
+    this._value = v;
+    this._onChange(v);
   }
 
   writeValue(value: any): void { this._value = value ?? ''; }

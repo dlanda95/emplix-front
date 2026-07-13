@@ -23,6 +23,14 @@ export const DOCUMENT_FORMAT_RULES: Record<string, { pattern: RegExp; hint: stri
   PTP:       { pattern: /^[A-Za-z0-9]{5,15}$/, hint: '5 a 15 caracteres alfanuméricos',  message: 'El PTP debe tener entre 5 y 15 caracteres alfanuméricos.'         },
 };
 
+// Restricciones de input por tipo de documento
+const DOCUMENT_INPUT_RULES: Record<string, { maxLength: number; numericOnly: boolean }> = {
+  DNI:       { maxLength: 8,  numericOnly: true  },
+  CE:        { maxLength: 15, numericOnly: false  },
+  PASAPORTE: { maxLength: 20, numericOnly: false  },
+  PTP:       { maxLength: 15, numericOnly: false  },
+};
+
 function documentIdValidator(documentType: string): ValidatorFn {
   return (control: AbstractControl) => {
     const value = (control.value ?? '').toString().trim();
@@ -59,7 +67,9 @@ export class CreateCandidateModal implements OnInit {
   readonly showCredentialsModal = signal(false);
   readonly copiedField          = signal<'user' | 'pass' | null>(null);
 
-  readonly documentTypes = DOCUMENT_TYPE_OPTIONS;
+  readonly documentTypes   = DOCUMENT_TYPE_OPTIONS;
+  readonly docMaxLength    = signal(8);
+  readonly docNumericOnly  = signal(true);
 
   form = this.fb.group({
     firstName:     ['', Validators.required],
@@ -78,7 +88,14 @@ export class CreateCandidateModal implements OnInit {
   ngOnInit(): void {
     this.form.get('documentType')!.valueChanges
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(documentType => this.updateDocumentIdValidators(documentType ?? 'DNI'));
+      .subscribe(documentType => {
+        const type = documentType ?? 'DNI';
+        this.updateDocumentIdValidators(type);
+        const rules = DOCUMENT_INPUT_RULES[type];
+        this.docMaxLength.set(rules?.maxLength ?? 20);
+        this.docNumericOnly.set(rules?.numericOnly ?? false);
+        this.form.get('documentId')!.setValue('', { emitEvent: false });
+      });
   }
 
   open(): void {

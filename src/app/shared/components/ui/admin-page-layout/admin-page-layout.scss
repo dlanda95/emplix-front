@@ -283,6 +283,28 @@
   }
 }
 
+// ── Asignación corporativa — referencia de proceso ───────────────────────────
+
+.assign-process-ref {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.625rem;
+  padding: 0.75rem 1rem;
+  margin-bottom: 0.75rem;
+  background: var(--bg-surface-alt, var(--bg-surface));
+  border: 1px solid var(--border-color);
+  border-left: 3px solid var(--color-primary);
+  border-radius: var(--radius-md);
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+
+  .material-icons-round { font-size: 1.125rem; color: var(--color-primary); flex-shrink: 0; margin-top: 0.0625rem; }
+
+  &__body { display: flex; flex-direction: column; gap: 0.2rem; }
+  &__label { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-secondary); }
+  &__value { color: var(--text-main); }
+}
+
 // ── Asignación corporativa — vista resumen ────────────────────────────────────
 
 .assign-view {
@@ -383,6 +405,55 @@
   flex-direction: column;
   gap: 0.75rem;
   margin-top: 0.75rem;
+}
+
+.hr-locked-fields {
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 0.875rem 1rem;
+  background: var(--bg-surface-alt, var(--bg-surface));
+
+  &__label {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--text-secondary);
+    margin: 0 0 0.625rem;
+
+    .material-icons-round { font-size: 0.9rem; }
+  }
+
+  &__chips {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+  }
+}
+
+.hr-locked-chip {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+
+  &__key {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-secondary);
+    min-width: 3.5rem;
+    flex-shrink: 0;
+  }
+
+  &__val {
+    font-weight: 600;
+    color: var(--text-main);
+  }
 }
 
 .hr-form-footer {
@@ -2279,5 +2350,26 @@
     color: var(--color-success, #22c55e);
 
     .material-icons-round { font-size: 1.25rem; }
+  }
+}
+
+// ─── Candidatos: grid de documentos ──────────────────────────────────────────
+
+.cand-docs-section {
+  margin-top: 0;
+}
+
+.cand-doc-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-top: 0.75rem;
+
+  @include m.respond-to('tablet') {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @include m.respond-to('mobile') {
+    grid-template-columns: 1fr;
   }
 }

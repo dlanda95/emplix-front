@@ -20,7 +20,10 @@
         label="Nro. de Documento *"
         formControlName="documentId"
         placeholder="Ej. 12345678"
-        [hint]="documentHint">
+        [hint]="documentHint"
+        [maxlength]="docMaxLength()"
+        [numericOnly]="docNumericOnly()"
+        [inputmode]="docNumericOnly() ? 'numeric' : 'text'">
       </app-input>
     </div>
 

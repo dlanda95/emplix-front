@@ -76,6 +76,20 @@
         <!-- Asignación Corporativa -->
         <app-section-card title="Asignación Corporativa" [columns]="1">
 
+          <!-- Proceso de selección de referencia -->
+          @if (c.selectionProcess) {
+            <div class="assign-process-ref">
+              <span class="material-icons-round">work_history</span>
+              <div class="assign-process-ref__body">
+                <span class="assign-process-ref__label">Proceso de selección</span>
+                <span class="assign-process-ref__value">
+                  <strong>{{ c.selectionProcess.code }}</strong>
+                  — {{ processDeptLabel(c) }} / {{ c.selectionProcess.position?.name ?? '—' }}
+                </span>
+              </div>
+            </div>
+          }
+
           @if (!isEditingAssignment()) {
 
             <!-- ── Vista resumen ─────────────────────────────── -->
@@ -87,12 +101,12 @@
               </div>
 
               <div class="assign-chips">
-                @if (c.department?.name) {
+                @if (c.department) {
                   <div class="assign-chip">
                     <span class="material-icons-round assign-chip__icon">corporate_fare</span>
                     <div class="assign-chip__body">
-                      <span class="assign-chip__label">Área / Departamento</span>
-                      <span class="assign-chip__value">{{ c.department!.name }}</span>
+                      <span class="assign-chip__label">Área / Subárea</span>
+                      <span class="assign-chip__value">{{ deptDisplayLabel(c) }}</span>
                     </div>
                   </div>
                 }
@@ -133,36 +147,59 @@
           } @else {
 
             <!-- ── Formulario de edición ─────────────────────── -->
-            <app-banner variant="info" icon="corporate_fare" title="Solo visible para RRHH">
-              <p>Completa la asignación antes de activar al colaborador. Los datos se reflejarán en su expediente.</p>
-            </app-banner>
-
             <form [formGroup]="hrForm" class="hr-form">
-              <app-select
-                label="Área / Departamento"
-                formControlName="areaId"
-                [options]="deptOptions()"
-                placeholder="— Seleccionar área —">
-              </app-select>
 
-              @if (selectedAreaHasSubareas()) {
+              @if (c.selectionProcess) {
+                <!-- Área/subárea/cargo bloqueados — vienen del proceso -->
+                <div class="hr-locked-fields">
+                  <p class="hr-locked-fields__label">
+                    <span class="material-icons-round">lock</span>
+                    Definido por el proceso de selección
+                  </p>
+                  <div class="hr-locked-fields__chips">
+                    @if (c.selectionProcess.department) {
+                      <div class="hr-locked-chip">
+                        <span class="hr-locked-chip__key">Área</span>
+                        <span class="hr-locked-chip__val">{{ processDeptLabel(c) }}</span>
+                      </div>
+                    }
+                    @if (c.selectionProcess.position) {
+                      <div class="hr-locked-chip">
+                        <span class="hr-locked-chip__key">Cargo</span>
+                        <span class="hr-locked-chip__val">{{ c.selectionProcess.position.name }}</span>
+                      </div>
+                    }
+                  </div>
+                </div>
+              } @else {
+                <!-- Sin proceso: selects editables para área/subárea/cargo -->
                 <app-select
-                  label="Subárea"
-                  formControlName="subareaId"
-                  [options]="subareaOptions()"
-                  placeholder="— Seleccionar subárea —">
+                  label="Área / Departamento"
+                  formControlName="areaId"
+                  [options]="deptOptions()"
+                  placeholder="— Seleccionar área —">
                 </app-select>
+
+                @if (selectedAreaHasSubareas()) {
+                  <app-select
+                    label="Subárea"
+                    formControlName="subareaId"
+                    [options]="subareaOptions()"
+                    placeholder="— Seleccionar subárea —">
+                  </app-select>
+                }
+
+                @if (showPositionSelect()) {
+                  <app-select
+                    label="Cargo"
+                    formControlName="positionId"
+                    [options]="positionOptions()"
+                    placeholder="— Seleccionar cargo —">
+                  </app-select>
+                }
               }
 
-              @if (showPositionSelect()) {
-                <app-select
-                  label="Cargo"
-                  formControlName="positionId"
-                  [options]="positionOptions()"
-                  placeholder="— Seleccionar cargo —">
-                </app-select>
-              }
-
+              <!-- Supervisor directo: siempre editable -->
               <app-select
                 label="Supervisor directo"
                 formControlName="supervisorId"
@@ -186,35 +223,39 @@
 
         </app-section-card>
 
-        <!-- Documentos adjuntos -->
-        @if (c.documents.length > 0) {
-          <app-section-card title="Documentos adjuntos" [columns]="1">
-            @for (doc of c.documents; track doc.id) {
-              <div class="doc-row">
-
-                <span class="material-icons-round doc-row__icon">description</span>
-
-                <div class="doc-row__info">
-                  <p class="doc-row__name">{{ docLabel(doc) }}</p>
-                  <p class="doc-row__file">{{ doc.originalName ?? doc.name }}</p>
-                </div>
-
-                @if (docUrls()[doc.id]) {
-                  <a [href]="docUrls()[doc.id]" target="_blank" rel="noopener" class="doc-row__link">
-                    <span class="material-icons-round">open_in_new</span>
-                    Ver
-                  </a>
-                } @else {
-                  <span class="material-icons-round" style="font-size:1rem;color:var(--text-secondary);">hourglass_top</span>
-                }
-
-              </div>
-            }
-          </app-section-card>
-        }
-
       </div>
     </div>
+
+    <!-- ── Documentos del candidato (sección full-width) ──────────────────── -->
+    @if (c.documents.length > 0) {
+      <app-section-card title="Documentos del candidato" [columns]="1" class="cand-docs-section">
+
+        <app-filter-chips
+          [items]="docCategoryChips()"
+          [active]="activeDocCat()"
+          (activeChange)="activeDocCat.set($any($event))">
+        </app-filter-chips>
+
+        @if (filteredDocs().length > 0) {
+          <div class="cand-doc-grid">
+            @for (doc of filteredDocs(); track doc.id) {
+              <app-doc-card
+                [doc]="doc"
+                [showDelete]="false"
+                (download)="downloadDoc(doc)">
+              </app-doc-card>
+            }
+          </div>
+        } @else {
+          <app-empty-state
+            icon="folder_open"
+            title="Sin documentos en esta categoría"
+            description="El candidato no ha subido documentos de este tipo.">
+          </app-empty-state>
+        }
+
+      </app-section-card>
+    }
 
     <!-- ── Modal: Activar colaborador ────────────────────────────────────── -->
     <app-modal [isOpen]="isActivateModal()" title="Activar Colaborador" (close)="closeActivate()">
