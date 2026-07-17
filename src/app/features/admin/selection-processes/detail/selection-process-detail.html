@@ -121,70 +121,99 @@
   } @else {
 
     <app-section-card [title]="'Candidatos — ' + total() + ' total'" [columns]="1">
-      <app-data-table>
-        <thead>
-          <tr>
-            <th>Nombre</th>
-            <th>Documento</th>
-            @if (isHRUser) {
-              <th>Cargo / Área</th>
-              <th>Ingreso estimado</th>
-              <th>Estado</th>
-            }
-            <th>Aprobaciones</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (c of candidates(); track c.id) {
+      <!-- View toggle -->
+      <div style="display:flex; justify-content:flex-end; margin-bottom:1rem;">
+        <div class="sp-view-toggle">
+          <button class="sp-view-toggle__btn" [class.sp-view-toggle__btn--active]="viewMode() === 'list'" (click)="switchView('list')">
+            <span class="material-icons-round">table_rows</span> Lista
+          </button>
+          <button class="sp-view-toggle__btn" [class.sp-view-toggle__btn--active]="viewMode() === 'compare'" (click)="switchView('compare')">
+            <span class="material-icons-round">compare_arrows</span> Comparativo HR
+          </button>
+        </div>
+      </div>
+      <!-- ── Vista: Lista ──────────────────────────────────────────────────── -->
+      @if (viewMode() === 'list') {
+        <app-data-table>
+          <thead>
             <tr>
-              <td><strong>{{ c.firstName }} {{ c.lastName }}</strong></td>
-              <td class="dt-muted">{{ c.documentType }} {{ c.documentId }}</td>
+              <th>Nombre</th>
+              <th>Documento</th>
               @if (isHRUser) {
+                <th>Cargo / Área</th>
+                <th>Ingreso estimado</th>
+                <th>Estado</th>
+              }
+              <th>Aprobaciones</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (c of candidates(); track c.id) {
+              <tr>
+                <td><strong>{{ c.firstName }} {{ c.lastName }}</strong></td>
+                <td class="dt-muted">{{ c.documentType }} {{ c.documentId }}</td>
+                @if (isHRUser) {
+                  <td>
+                    <span style="font-size:var(--text-sm);">{{ c.position?.name ?? '—' }}</span>
+                    @if (c.department?.name) {
+                      <br><span style="font-size:var(--text-xs); color:var(--text-secondary);">{{ c.department!.name }}</span>
+                    }
+                  </td>
+                  <td class="dt-muted">{{ c.hireDate | date:'dd/MM/yyyy' }}</td>
+                  <td>
+                    <app-badge [variant]="c.onboardingStatus | onboardingVariant">
+                      {{ c.onboardingStatus | onboardingLabel }}
+                    </app-badge>
+                  </td>
+                }
                 <td>
-                  <span style="font-size:var(--text-sm);">{{ c.position?.name ?? '—' }}</span>
-                  @if (c.department?.name) {
-                    <br><span style="font-size:var(--text-xs); color:var(--text-secondary);">{{ c.department!.name }}</span>
+                  <span style="font-size:var(--text-xs); color:var(--text-secondary);">
+                    Ver aprobaciones
+                  </span>
+                </td>
+                <td class="dt-actions">
+                  <app-button variant="primary" size="sm" icon="how_to_reg" (clicked)="openApprovalModal(c.id)">
+                    Aprobaciones
+                  </app-button>
+                  <app-button variant="ghost" size="sm" icon="analytics" (clicked)="openAnalysisPanel(c)">
+                    Análisis HR
+                  </app-button>
+                  @if (isHRUser) {
+                    <app-button variant="ghost" size="sm" icon="open_in_new" (clicked)="openCandidateDetail(c.id)">
+                      Ver
+                    </app-button>
                   }
                 </td>
-                <td class="dt-muted">{{ c.hireDate | date:'dd/MM/yyyy' }}</td>
-                <td>
-                  <app-badge [variant]="c.onboardingStatus | onboardingVariant">
-                    {{ c.onboardingStatus | onboardingLabel }}
-                  </app-badge>
-                </td>
-              }
-              <td>
-                <!-- Approval progress dots -->
-                <span style="font-size:var(--text-xs); color:var(--text-secondary);">
-                  Ver aprobaciones
-                </span>
-              </td>
-              <td class="dt-actions">
-                <app-button variant="primary" size="sm" icon="how_to_reg" (clicked)="openApprovalModal(c.id)">
-                  Aprobaciones
-                </app-button>
-                @if (isHRUser) {
-                  <app-button variant="ghost" size="sm" icon="open_in_new" (clicked)="openCandidateDetail(c.id)">
-                    Ver
-                  </app-button>
-                }
-              </td>
-            </tr>
-          }
-        </tbody>
-      </app-data-table>
+              </tr>
+            }
+          </tbody>
+        </app-data-table>
 
-      @if (isHRUser) {
-        <div style="display:flex; justify-content:flex-end; padding:1rem 0 0;">
-          <app-pagination
-            [page]="page()"
-            [total]="total()"
-            [pageSize]="pageSize"
-            (pageChange)="onPageChange($event)">
-          </app-pagination>
-        </div>
+        @if (isHRUser) {
+          <div style="display:flex; justify-content:flex-end; padding:1rem 0 0;">
+            <app-pagination
+              [page]="page()"
+              [total]="total()"
+              [pageSize]="pageSize"
+              (pageChange)="onPageChange($event)">
+            </app-pagination>
+          </div>
+        }
       }
+
+      <!-- ── Vista: Comparativo HR ─────────────────────────────────────────── -->
+      @if (viewMode() === 'compare') {
+        @if (analysesLoading()) {
+          <app-loading-skeleton variant="card"></app-loading-skeleton>
+        } @else {
+          <app-candidate-comparison-panel
+            [candidates]="candidates()"
+            [analyses]="processAnalyses()">
+          </app-candidate-comparison-panel>
+        }
+      }
+
     </app-section-card>
 
   }
@@ -193,15 +222,85 @@
 }
 
 <!-- ══ Modal: Editar proceso (HR only) ════════════════════════════════════════ -->
-<app-modal [isOpen]="isEditModalOpen()" title="Editar Proceso" (close)="closeEditProcess()">
+<app-modal [isOpen]="isEditModalOpen()" title="Editar Proceso" size="lg" (close)="closeEditProcess()">
 
   @if (saveError()) {
     <app-banner variant="error" icon="error" [title]="saveError()"></app-banner>
   }
 
-  <form [formGroup]="editForm" style="display:flex; flex-direction:column; gap:1rem;">
-    <app-input label="Descripción" formControlName="description" placeholder="Descripción opcional"></app-input>
-    <app-select label="Estado" formControlName="status" [options]="processStatusOptions"></app-select>
+  <form [formGroup]="editForm" class="sp-create-form">
+
+    <!-- ── Estado del proceso ────────────────────────────────────────────── -->
+    <div class="sp-create-form__section">
+      <p class="sp-create-form__section-title">
+        <span class="material-icons-round">info</span> Estado del proceso
+      </p>
+      <app-select label="Estado *" formControlName="status" [options]="processStatusOptions"></app-select>
+      <app-input label="Descripción" formControlName="description" placeholder="Objetivo y alcance (opcional)..." hint="Máximo 500 caracteres"></app-input>
+    </div>
+
+    <!-- ── Ubicación del puesto ──────────────────────────────────────────── -->
+    <div class="sp-create-form__section">
+      <p class="sp-create-form__section-title">
+        <span class="material-icons-round">account_tree</span> Ubicación del puesto
+      </p>
+
+      <app-select label="Área *" formControlName="areaId" [options]="editAreaOptions()"></app-select>
+
+      @if (editHasSubareas()) {
+        <app-select label="Subárea" formControlName="subareaId" [options]="editSubareaOptions()"></app-select>
+      }
+
+      <app-select label="Puesto *" formControlName="positionId" [options]="editPositionOptions()"></app-select>
+    </div>
+
+    <!-- ── Aprobadores ───────────────────────────────────────────────────── -->
+    <div class="sp-create-form__section">
+      <p class="sp-create-form__section-title">
+        <span class="material-icons-round">how_to_reg</span>
+        Aprobadores
+        <span class="sp-approver-count">{{ editApprovers().length }}/5</span>
+      </p>
+
+      @if (editApprovers().length > 0) {
+        <div class="sp-approver-chips">
+          @for (a of editApprovers(); track a.id; let i = $index) {
+            <div class="sp-approver-chip">
+              <span class="sp-approver-chip__order">{{ i + 1 }}</span>
+              <span class="sp-approver-chip__name">{{ a.firstName }} {{ a.lastName }}</span>
+              <button type="button" class="sp-approver-chip__remove" (click)="removeEditApprover(a.id)">
+                <span class="material-icons-round">close</span>
+              </button>
+            </div>
+          }
+        </div>
+      }
+
+      @if (editApprovers().length < 5) {
+        <div class="sp-approver-picker">
+          <app-input placeholder="Buscar colaborador por nombre o puesto..." icon="search" [formControl]="editApproverSearch"></app-input>
+          <div class="sp-approver-list">
+            @for (e of editFilteredEmployees(); track e.id) {
+              <button type="button" class="sp-approver-item" (click)="toggleEditApprover(e)">
+                <span class="sp-approver-item__avatar">{{ e.firstName[0] }}{{ e.lastName[0] }}</span>
+                <span class="sp-approver-item__info">
+                  <span class="sp-approver-item__name">{{ e.firstName }} {{ e.lastName }}</span>
+                  @if (e.position?.name) {
+                    <span class="sp-approver-item__role">{{ e.position!.name }}</span>
+                  }
+                </span>
+                <span class="material-icons-round sp-approver-item__add">add_circle</span>
+              </button>
+            } @empty {
+              <p class="sp-approver-list__empty">
+                {{ allEmployees().length === 0 ? 'Cargando colaboradores...' : 'No se encontraron resultados.' }}
+              </p>
+            }
+          </div>
+        </div>
+      }
+    </div>
+
   </form>
 
   <ng-container modal-actions>
@@ -302,7 +401,7 @@
         @for (line of data.approverLines; track line.approverId) {
           <div class="apv-line apv-line--{{ line.status | lowercase }}">
             <div class="apv-line__avatar">
-              {{ line.approverName[0] }}{{ line.approverName.split(' ')[1]?.[0] ?? '' }}
+              {{ line.approverName[0] }}{{ line.approverName.split(' ')[1]?.[0] }}
             </div>
             <div class="apv-line__body">
               <p class="apv-line__name">{{ line.approverName }}</p>
@@ -459,5 +558,8 @@
   [selectionProcessId]="process()?.id ?? null"
   (candidateRegistered)="onCandidateRegistered($event)">
 </app-create-candidate-modal>
+
+<!-- ══ Panel: Análisis de RR.HH. ═══════════════════════════════════════════════ -->
+<app-hr-analysis-panel></app-hr-analysis-panel>
 
 </app-admin-page-layout>

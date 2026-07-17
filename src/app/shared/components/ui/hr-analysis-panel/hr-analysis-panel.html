@@ -1,0 +1,297 @@
+<app-modal
+  [isOpen]="isOpen()"
+  title="Análisis de RR.HH."
+  size="xl"
+  (close)="close()">
+
+  @if (isLoading()) {
+    <app-loading-skeleton variant="card"></app-loading-skeleton>
+  } @else {
+
+    <!-- ══ MODO VISTA ═════════════════════════════════════════════════════════ -->
+    @if (!isEditMode()) {
+
+      <!-- Encabezado: candidato + recomendación -->
+      <div class="hra-header">
+        <div class="hra-header__identity">
+          <span class="hra-header__avatar">
+            {{ candidateName().split(' ')[0]?.[0] ?? '' }}{{ candidateName().split(' ')[1]?.[0] ?? '' }}
+          </span>
+          <div>
+            <p class="hra-header__name">{{ candidateName() }}</p>
+            @if (analysis()) {
+              <p class="hra-header__updated">Última actualización: {{ analysis()!.updatedAt | date:'dd/MM/yyyy HH:mm' }}</p>
+            }
+          </div>
+        </div>
+        <div class="hra-header__rec">
+          <span class="hra-rec hra-rec--{{ recBadge[recommendation()].variant }}">
+            <span class="material-icons-round">{{ recBadge[recommendation()].icon }}</span>
+            {{ recBadge[recommendation()].label }}
+          </span>
+          @if (canEdit()) {
+            <app-button variant="ghost" icon="edit" size="sm" (clicked)="startEdit()">
+              {{ analysis() ? 'Editar análisis' : 'Crear análisis' }}
+            </app-button>
+          }
+        </div>
+      </div>
+
+      @if (!analysis() || !hasContent()) {
+        <app-banner variant="info" icon="assignment" title="Sin análisis registrado">
+          <p style="margin:0;">{{ canEdit() ? 'Haz clic en "Crear análisis" para comenzar.' : 'RR.HH. aún no ha registrado un análisis para este candidato.' }}</p>
+        </app-banner>
+      } @else {
+
+        <!-- ── Informe estructurado ───────────────────────────────────────── -->
+        <div class="hra-report">
+
+          <!-- Resumen profesional (ancho completo) -->
+          @if (analysis()!.professionalSummary) {
+            <div class="hra-section hra-section--full">
+              <p class="hra-section__label">
+                <span class="material-icons-round">person</span> Resumen profesional
+              </p>
+              <p class="hra-section__content">{{ analysis()!.professionalSummary }}</p>
+            </div>
+          }
+
+          <!-- Dos columnas: fortalezas / áreas de mejora -->
+          @if (analysis()!.strengths || analysis()!.improvementAreas) {
+            <div class="hra-section-row">
+              @if (analysis()!.strengths) {
+                <div class="hra-section hra-section--positive">
+                  <p class="hra-section__label">
+                    <span class="material-icons-round">thumb_up</span> Fortalezas
+                  </p>
+                  <p class="hra-section__content">{{ analysis()!.strengths }}</p>
+                </div>
+              }
+              @if (analysis()!.improvementAreas) {
+                <div class="hra-section">
+                  <p class="hra-section__label">
+                    <span class="material-icons-round">trending_up</span> Áreas de mejora
+                  </p>
+                  <p class="hra-section__content">{{ analysis()!.improvementAreas }}</p>
+                </div>
+              }
+            </div>
+          }
+
+          <!-- Resultados de entrevistas (ancho completo) -->
+          @if (analysis()!.interviewResults) {
+            <div class="hra-section hra-section--full">
+              <p class="hra-section__label">
+                <span class="material-icons-round">record_voice_over</span> Resultados de entrevistas
+              </p>
+              <p class="hra-section__content">{{ analysis()!.interviewResults }}</p>
+            </div>
+          }
+
+          <!-- Dos columnas: competencias / riesgos -->
+          @if (analysis()!.competencyEvaluation || analysis()!.identifiedRisks) {
+            <div class="hra-section-row">
+              @if (analysis()!.competencyEvaluation) {
+                <div class="hra-section">
+                  <p class="hra-section__label">
+                    <span class="material-icons-round">psychology</span> Evaluación de competencias
+                  </p>
+                  <p class="hra-section__content">{{ analysis()!.competencyEvaluation }}</p>
+                </div>
+              }
+              @if (analysis()!.identifiedRisks) {
+                <div class="hra-section hra-section--risk">
+                  <p class="hra-section__label">
+                    <span class="material-icons-round">warning</span> Riesgos identificados
+                  </p>
+                  <p class="hra-section__content">{{ analysis()!.identifiedRisks }}</p>
+                </div>
+              }
+            </div>
+          }
+
+          <!-- Recomendación de RR.HH. -->
+          <div class="hra-section hra-section--full hra-section--rec">
+            <p class="hra-section__label">
+              <span class="material-icons-round">verified_user</span> Recomendación de RR.HH.
+            </p>
+            <div class="hra-rec-display">
+              <span class="hra-rec hra-rec--{{ recBadge[recommendation()].variant }}">
+                <span class="material-icons-round">{{ recBadge[recommendation()].icon }}</span>
+                {{ recBadge[recommendation()].label }}
+              </span>
+              @if (analysis()!.recommendationNotes) {
+                <p class="hra-rec-notes">{{ analysis()!.recommendationNotes }}</p>
+              }
+            </div>
+          </div>
+
+        </div>
+
+      }
+
+      <!-- ── Documentos adjuntos ─────────────────────────────────────────── -->
+      <div class="hra-docs">
+        <p class="hra-docs__title">
+          <span class="material-icons-round">folder_open</span>
+          Documentos de soporte
+          @if (analysis()?.documents?.length) {
+            <span class="hra-docs__count">{{ analysis()!.documents.length }}</span>
+          }
+        </p>
+
+        @if (analysis()?.documents?.length) {
+          <div class="hra-doc-list">
+            @for (doc of analysis()!.documents; track doc.id) {
+              <div class="hra-doc-item" [class.hra-doc-item--active]="previewDoc()?.id === doc.id">
+                <div class="hra-doc-item__icon">
+                  <span class="material-icons-round">{{ fileIcon(doc) }}</span>
+                </div>
+                <div class="hra-doc-item__info">
+                  <p class="hra-doc-item__name">{{ doc.originalName }}</p>
+                  <p class="hra-doc-item__meta">{{ formatSize(doc.size) }} · {{ doc.createdAt | date:'dd/MM/yyyy' }}</p>
+                </div>
+                <div class="hra-doc-item__actions">
+                  @if (previewLoading() && previewDoc()?.id === doc.id) {
+                    <span class="material-icons-round hra-doc-spin">hourglass_top</span>
+                  } @else {
+                    <button class="hra-doc-btn" (click)="previewDocument(doc)" [title]="isPdf(doc) ? 'Ver en visor' : 'Abrir en Office Online'">
+                      <span class="material-icons-round">{{ isPdf(doc) ? 'preview' : 'open_in_new' }}</span>
+                    </button>
+                  }
+                  @if (canEdit()) {
+                    <button class="hra-doc-btn hra-doc-btn--delete" (click)="deleteDoc(doc)" title="Eliminar">
+                      <span class="material-icons-round">delete</span>
+                    </button>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        }
+
+        <!-- Visor PDF inline -->
+        @if (previewUrl()) {
+          <div class="hra-preview">
+            <div class="hra-preview__bar">
+              <span class="material-icons-round">picture_as_pdf</span>
+              <span>{{ previewDoc()?.originalName }}</span>
+              <button class="hra-doc-btn" (click)="previewDoc.set(null); previewUrl.set(null)" title="Cerrar visor">
+                <span class="material-icons-round">close</span>
+              </button>
+            </div>
+            <iframe [src]="previewUrl()" class="hra-preview__frame" title="Vista previa del documento"></iframe>
+          </div>
+        }
+
+        <!-- Upload (solo HR) -->
+        @if (canEdit()) {
+          <div class="hra-upload">
+            @if (uploadError()) {
+              <app-banner variant="error" icon="error" [title]="uploadError()"></app-banner>
+            }
+            <label class="hra-upload__zone" [class.hra-upload__zone--loading]="isUploading()">
+              @if (isUploading()) {
+                <span class="material-icons-round hra-doc-spin">hourglass_top</span>
+                <span>Subiendo archivo...</span>
+              } @else {
+                <span class="material-icons-round">upload_file</span>
+                <span>Adjuntar documento <strong>(PDF o Word)</strong></span>
+              }
+              <input
+                type="file"
+                accept=".pdf,.doc,.docx"
+                [disabled]="isUploading()"
+                (change)="onFileSelected($event)"
+                style="display:none">
+            </label>
+          </div>
+        }
+      </div>
+
+    }
+
+    <!-- ══ MODO EDICIÓN ═══════════════════════════════════════════════════════ -->
+    @if (isEditMode()) {
+
+      @if (saveError()) {
+        <app-banner variant="error" icon="error" [title]="saveError()"></app-banner>
+      }
+
+      <form [formGroup]="editForm" class="hra-edit-form">
+
+        <div class="hra-edit-form__section-title">
+          <span class="material-icons-round">analytics</span> Informe de evaluación
+        </div>
+
+        <div class="hra-edit-grid">
+
+          <div class="hra-edit-field hra-edit-field--full">
+            <label>Resumen profesional</label>
+            <textarea formControlName="professionalSummary" rows="4" placeholder="Síntesis de la trayectoria, perfil y motivaciones del candidato..."></textarea>
+          </div>
+
+          <div class="hra-edit-field">
+            <label>Fortalezas</label>
+            <textarea formControlName="strengths" rows="4" placeholder="Habilidades destacadas, logros relevantes..."></textarea>
+          </div>
+
+          <div class="hra-edit-field">
+            <label>Áreas de mejora</label>
+            <textarea formControlName="improvementAreas" rows="4" placeholder="Competencias a desarrollar, brechas identificadas..."></textarea>
+          </div>
+
+          <div class="hra-edit-field hra-edit-field--full">
+            <label>Resultados de entrevistas</label>
+            <textarea formControlName="interviewResults" rows="4" placeholder="Desempeño en entrevistas técnicas y conductuales..."></textarea>
+          </div>
+
+          <div class="hra-edit-field">
+            <label>Evaluación de competencias</label>
+            <textarea formControlName="competencyEvaluation" rows="4" placeholder="Liderazgo, trabajo en equipo, comunicación..."></textarea>
+          </div>
+
+          <div class="hra-edit-field">
+            <label>Riesgos identificados</label>
+            <textarea formControlName="identifiedRisks" rows="4" placeholder="Factores de riesgo, condiciones, observaciones..."></textarea>
+          </div>
+
+        </div>
+
+        <div class="hra-edit-form__section-title" style="margin-top:1rem;">
+          <span class="material-icons-round">verified_user</span> Recomendación de RR.HH.
+        </div>
+
+        <div class="hra-edit-grid">
+          <div class="hra-edit-field">
+            <label>Decisión</label>
+            <select formControlName="recommendation" class="hra-select">
+              @for (opt of recOptions; track opt.value) {
+                <option [value]="opt.value">{{ opt.label }}</option>
+              }
+            </select>
+          </div>
+          <div class="hra-edit-field">
+            <label>Notas adicionales</label>
+            <textarea formControlName="recommendationNotes" rows="3" placeholder="Condiciones, plazos, observaciones finales..."></textarea>
+          </div>
+        </div>
+
+      </form>
+
+    }
+
+  }
+
+  <ng-container modal-actions>
+    @if (isEditMode()) {
+      <app-button variant="ghost" (clicked)="cancelEdit()">Cancelar</app-button>
+      <app-button variant="primary" icon="save" [loading]="isSaving()" [disabled]="isSaving()" (clicked)="save()">
+        Guardar análisis
+      </app-button>
+    } @else {
+      <app-button variant="ghost" (clicked)="close()">Cerrar</app-button>
+    }
+  </ng-container>
+
+</app-modal>

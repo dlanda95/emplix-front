@@ -37,8 +37,11 @@ export interface CreateSelectionProcessPayload {
 }
 
 export interface UpdateSelectionProcessPayload {
-  description?: string | null;
-  status?:      SelectionProcessStatus;
+  description?:  string | null;
+  status?:       SelectionProcessStatus;
+  departmentId?: string;
+  positionId?:   string;
+  approverIds?:  string[];
 }
 
 export interface ListSelectionProcessesParams {
@@ -64,6 +67,10 @@ export class SelectionProcessesService {
 
   get(processId: string): Observable<SelectionProcess> {
     return this.http.get<SelectionProcess>(`${this.endpoint}/${processId}`);
+  }
+
+  getByCode(code: string): Observable<SelectionProcess> {
+    return this.http.get<SelectionProcess>(`${this.endpoint}/code/${code}`);
   }
 
   create(payload: CreateSelectionProcessPayload): Observable<SelectionProcess> {

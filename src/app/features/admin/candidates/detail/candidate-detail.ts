@@ -10,6 +10,7 @@ import type { SelectOption, FilterChipItem } from '@shared/ui';
 import { DOC_CATEGORIES, DocCategoryId, EmployeeDocument, filterDocsByCategory } from '@features/portal/models/document.model';
 import { CandidatesService } from '../../services/candidates.service';
 import type { CandidateDetail as CandidateDetailModel, DeptWithPositions, EmployeeMinimal } from '../../services/candidates.service';
+import { ApprovalsService } from '../../services/approvals.service';
 import {
   catalogLabel,
   DOCUMENT_TYPE_OPTIONS, GENDER_OPTIONS, MARITAL_STATUS_OPTIONS, ACADEMIC_LEVEL_OPTIONS,
@@ -24,11 +25,12 @@ import {
   host: { style: 'display:block' },
 })
 export class CandidateDetail implements OnInit {
-  private readonly svc        = inject(CandidatesService);
-  private readonly route      = inject(ActivatedRoute);
-  private readonly nav        = inject(Router);
-  private readonly fb         = inject(FormBuilder);
-  private readonly destroyRef = inject(DestroyRef);
+  private readonly svc          = inject(CandidatesService);
+  private readonly approvalsSvc = inject(ApprovalsService);
+  private readonly route        = inject(ActivatedRoute);
+  private readonly nav          = inject(Router);
+  private readonly fb           = inject(FormBuilder);
+  private readonly destroyRef   = inject(DestroyRef);
 
   readonly candidate             = signal<CandidateDetailModel | null>(null);
   readonly isLoading             = signal(true);
@@ -49,6 +51,9 @@ export class CandidateDetail implements OnInit {
 
   // URLs de documentos (cargadas asíncronamente)
   readonly docUrls = signal<Record<string, string>>({});
+
+  // Estado de aprobaciones del proceso vinculado
+  readonly fullyApproved = signal(false);
 
   // ── Documentos: filtro por categoría ────────────────────────────────────────
   readonly activeDocCat = signal<DocCategoryId>('ALL');
@@ -121,8 +126,9 @@ export class CandidateDetail implements OnInit {
   // ── Ciclo de vida ────────────────────────────────────────────────────────────
 
   ngOnInit(): void {
-    const id = this.route.snapshot.paramMap.get('id');
-    if (!id) { this.nav.navigate(['/admin/candidatos']); return; }
+    const id          = this.route.snapshot.paramMap.get('candidateId');
+    const processCode = this.route.snapshot.paramMap.get('code') ?? '';
+    if (!id) { this.nav.navigate(['/admin/procesos-seleccion']); return; }
 
     // Subscripciones reactivas de cascada (usuario cambia el select)
     this.hrForm.get('areaId')!.valueChanges
@@ -171,6 +177,17 @@ export class CandidateDetail implements OnInit {
           if (spDeptId || spPosId) this.prefilledFromProcess.set(true);
         }
 
+        // Cargar aprobaciones del proceso vinculado
+        if (candidate.selectionProcess) {
+          this.approvalsSvc
+            .getCandidateApprovals(candidate.selectionProcess.id, candidate.id)
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe({
+              next: data => this.fullyApproved.set(data.fullyApproved),
+              error: () => {},
+            });
+        }
+
         // Cargar URLs de docs adjuntos
         for (const doc of candidate.documents ?? []) {
           this.svc.getDocUrl(doc.id).subscribe({
@@ -179,7 +196,7 @@ export class CandidateDetail implements OnInit {
           });
         }
       },
-      error: () => { this.isLoading.set(false); this.nav.navigate(['/admin/candidatos']); },
+      error: () => { this.isLoading.set(false); this.nav.navigate(['/admin/procesos-seleccion', processCode]); },
     });
   }
 
@@ -292,7 +309,11 @@ export class CandidateDetail implements OnInit {
 
   get canActivate(): boolean {
     const c = this.candidate();
-    return c?.onboardingStatus === 'DOCS_SUBMITTED' || c?.onboardingStatus === 'COMPLETED';
+    if (!c) return false;
+    const statusOk = c.onboardingStatus === 'DOCS_SUBMITTED' || c.onboardingStatus === 'COMPLETED';
+    if (!statusOk) return false;
+    if (c.selectionProcess) return this.fullyApproved();
+    return true;
   }
 
   downloadDoc(doc: EmployeeDocument): void {
@@ -300,5 +321,8 @@ export class CandidateDetail implements OnInit {
     if (url) window.open(url, '_blank', 'noopener');
   }
 
-  back(): void { this.nav.navigate(['/admin/candidatos']); }
+  back(): void {
+    const code = this.route.snapshot.paramMap.get('code') ?? '';
+    this.nav.navigate(['/admin/procesos-seleccion', code]);
+  }
 }

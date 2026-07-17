@@ -19,8 +19,13 @@
         <app-badge [variant]="c.onboardingStatus | onboardingVariant">
           {{ c.onboardingStatus | onboardingLabel }}
         </app-badge>
-        @if (canActivate) {
-          <app-button variant="primary" icon="person_check" (clicked)="openActivate()">
+        @if (c.onboardingStatus === 'DOCS_SUBMITTED' || c.onboardingStatus === 'COMPLETED') {
+          <app-button
+            variant="primary"
+            icon="person_check"
+            [disabled]="!canActivate"
+            [title]="!canActivate ? 'Faltan aprobaciones del proceso de selección' : ''"
+            (clicked)="openActivate()">
             Activar colaborador
           </app-button>
         }
@@ -149,29 +154,7 @@
             <!-- ── Formulario de edición ─────────────────────── -->
             <form [formGroup]="hrForm" class="hr-form">
 
-              @if (c.selectionProcess) {
-                <!-- Área/subárea/cargo bloqueados — vienen del proceso -->
-                <div class="hr-locked-fields">
-                  <p class="hr-locked-fields__label">
-                    <span class="material-icons-round">lock</span>
-                    Definido por el proceso de selección
-                  </p>
-                  <div class="hr-locked-fields__chips">
-                    @if (c.selectionProcess.department) {
-                      <div class="hr-locked-chip">
-                        <span class="hr-locked-chip__key">Área</span>
-                        <span class="hr-locked-chip__val">{{ processDeptLabel(c) }}</span>
-                      </div>
-                    }
-                    @if (c.selectionProcess.position) {
-                      <div class="hr-locked-chip">
-                        <span class="hr-locked-chip__key">Cargo</span>
-                        <span class="hr-locked-chip__val">{{ c.selectionProcess.position.name }}</span>
-                      </div>
-                    }
-                  </div>
-                </div>
-              } @else {
+              @if (!c.selectionProcess) {
                 <!-- Sin proceso: selects editables para área/subárea/cargo -->
                 <app-select
                   label="Área / Departamento"

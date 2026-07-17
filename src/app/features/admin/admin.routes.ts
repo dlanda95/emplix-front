@@ -7,15 +7,11 @@ export const ADMIN_ROUTES: Routes = [
     loadComponent: () => import('./selection-processes/list/selection-processes-list').then(m => m.SelectionProcessesList),
   },
   {
-    path: 'procesos-seleccion/:id',
+    path: 'procesos-seleccion/:code',
     loadComponent: () => import('./selection-processes/detail/selection-process-detail').then(m => m.SelectionProcessDetail),
   },
   {
-    path: 'candidatos',
-    loadComponent: () => import('./candidates/list/candidates-list').then(m => m.CandidatesList),
-  },
-  {
-    path: 'candidatos/:id',
+    path: 'procesos-seleccion/:code/candidatos/:candidateId',
     loadComponent: () => import('./candidates/detail/candidate-detail').then(m => m.CandidateDetail),
   },
   {

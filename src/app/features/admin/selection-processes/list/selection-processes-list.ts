@@ -240,7 +240,7 @@ export class SelectionProcessesList implements OnInit {
       next: process => {
         this.isCreating.set(false);
         this.closeCreateModal();
-        this.router.navigate(['/admin/procesos-seleccion', process.id]);
+        this.router.navigate(['/admin/procesos-seleccion', process.code]);
       },
       error: err => {
         this.isCreating.set(false);
@@ -258,8 +258,8 @@ export class SelectionProcessesList implements OnInit {
     return p.department.name;
   }
 
-  openProcess(processId: string): void {
-    this.router.navigate(['/admin/procesos-seleccion', processId]);
+  openProcess(process: SelectionProcess): void {
+    this.router.navigate(['/admin/procesos-seleccion', process.code]);
   }
 
   onPageChange(p: number): void { this.page.set(p); this.load(); }

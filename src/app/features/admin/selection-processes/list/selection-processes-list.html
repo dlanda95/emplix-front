@@ -44,7 +44,7 @@
         </thead>
         <tbody>
           @for (p of processes(); track p.id) {
-            <tr class="sp-table-row" (click)="openProcess(p.id)" tabindex="0" (keydown.enter)="openProcess(p.id)">
+            <tr class="sp-table-row" (click)="openProcess(p)" tabindex="0" (keydown.enter)="openProcess(p)">
               <td><span class="sp-code-tag">{{ p.code }}</span></td>
               <td><strong>{{ p.position?.name ?? '—' }}</strong></td>
               <td class="dt-muted">{{ deptLabel(p) }}</td>
@@ -59,7 +59,7 @@
               </td>
               <td class="dt-muted">{{ p.createdAt | date:'dd/MM/yyyy' }}</td>
               <td class="dt-actions">
-                <app-button variant="ghost" size="sm" icon="chevron_right" (clicked)="openProcess(p.id)">Ver</app-button>
+                <app-button variant="ghost" size="sm" icon="chevron_right" (clicked)="openProcess(p)">Ver</app-button>
               </td>
             </tr>
           }
@@ -70,7 +70,7 @@
     <!-- ── Cards mobile (≤ 768px) ────────────────────────────────────────── -->
     <div class="sp-cards-mobile">
       @for (p of processes(); track p.id) {
-        <div class="sp-card" (click)="openProcess(p.id)" role="button" tabindex="0" (keydown.enter)="openProcess(p.id)">
+        <div class="sp-card" (click)="openProcess(p)" role="button" tabindex="0" (keydown.enter)="openProcess(p)">
           <div class="sp-card__left">
             <div class="sp-card__icon"><span class="material-icons-round">work_history</span></div>
             <div class="sp-card__info">

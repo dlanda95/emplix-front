@@ -1,0 +1,99 @@
+@if (rows().length === 0) {
+  <app-empty-state icon="people" title="Sin candidatos" subtitle="No hay candidatos en este proceso."></app-empty-state>
+} @else {
+
+  <!-- ── Stats bar ──────────────────────────────────────────────────────────── -->
+  <div class="ccp-stats">
+    <span class="ccp-stats__label">
+      <span class="material-icons-round">analytics</span>
+      Comparativo de {{ rows().length }} candidato{{ rows().length === 1 ? '' : 's' }}
+    </span>
+    <div class="ccp-stats__pills">
+      @for (s of stats(); track s.key) {
+        <span class="ccp-stat-pill ccp-stat-pill--{{ s.cls }}">
+          <span class="material-icons-round">{{ s.icon }}</span>
+          <strong>{{ s.count }}</strong> {{ s.label }}
+        </span>
+      }
+    </div>
+  </div>
+
+  <!-- ── Matrix ─────────────────────────────────────────────────────────────── -->
+  <div class="ccp-scroll">
+    <table class="ccp-table">
+
+      <!-- Candidate headers -->
+      <thead>
+        <tr>
+          <th class="ccp-th ccp-th--label"></th>
+          @for (row of rows(); track row.candidate.id) {
+            <th class="ccp-th ccp-th--candidate ccp-col--{{ recMeta[rec(row)].cls }}">
+              <div class="ccp-cand-head">
+                <div class="ccp-avatar ccp-avatar--{{ recMeta[rec(row)].cls }}">
+                  {{ initials(row.candidate) }}
+                </div>
+                <div class="ccp-cand-head__info">
+                  <p class="ccp-cand-head__name">
+                    {{ row.candidate.firstName }} {{ row.candidate.lastName }}
+                  </p>
+                  @if (row.candidate.position?.name) {
+                    <p class="ccp-cand-head__pos">{{ row.candidate.position!.name }}</p>
+                  }
+                </div>
+              </div>
+              <!-- Recommendation badge -->
+              <span class="ccp-rec-badge ccp-rec-badge--{{ recMeta[rec(row)].cls }}">
+                <span class="material-icons-round">{{ recMeta[rec(row)].icon }}</span>
+                {{ recMeta[rec(row)].label }}
+              </span>
+            </th>
+          }
+        </tr>
+      </thead>
+
+      <!-- Section rows -->
+      <tbody>
+        @for (section of sections; track section.key) {
+          <tr class="ccp-row">
+            <td class="ccp-td ccp-td--label">
+              <span class="ccp-dim">
+                <span class="material-icons-round">{{ section.icon }}</span>
+                {{ section.label }}
+              </span>
+            </td>
+            @for (row of rows(); track row.candidate.id) {
+              <td class="ccp-td ccp-td--cell ccp-col--{{ recMeta[rec(row)].cls }}">
+                @if (cellValue(row, section.key)) {
+                  <p class="ccp-cell-text">{{ cellValue(row, section.key) }}</p>
+                } @else {
+                  <span class="ccp-empty-cell">—</span>
+                }
+              </td>
+            }
+          </tr>
+        }
+
+        <!-- Recommendation notes row -->
+        <tr class="ccp-row ccp-row--notes">
+          <td class="ccp-td ccp-td--label">
+            <span class="ccp-dim">
+              <span class="material-icons-round">comment</span>
+              Notas finales
+            </span>
+          </td>
+          @for (row of rows(); track row.candidate.id) {
+            <td class="ccp-td ccp-td--cell ccp-col--{{ recMeta[rec(row)].cls }}">
+              @if (row.analysis?.recommendationNotes) {
+                <p class="ccp-cell-text">{{ row.analysis!.recommendationNotes }}</p>
+              } @else {
+                <span class="ccp-empty-cell">—</span>
+              }
+            </td>
+          }
+        </tr>
+      </tbody>
+
+    </table>
+  </div>
+
+}
