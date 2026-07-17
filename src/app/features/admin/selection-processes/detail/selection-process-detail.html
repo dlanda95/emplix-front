@@ -93,11 +93,11 @@
 
   <!-- ── Filtros candidatos ────────────────────────────────────────────────── -->
   @if (isHRUser) {
-    <div style="display:flex; gap:1rem; flex-wrap:wrap; align-items:flex-end;">
-      <div style="flex:1; min-width:200px;">
+    <div class="sp-filters-bar">
+      <div class="sp-filters-bar__search">
         <app-input label="Buscar candidato..." placeholder="Nombre o documento" [formControl]="searchCtrl"></app-input>
       </div>
-      <div style="min-width:200px;">
+      <div class="sp-filters-bar__select">
         <app-select label="Estado" [options]="onboardingOptions" [formControl]="statusCtrl"></app-select>
       </div>
     </div>
@@ -122,7 +122,7 @@
 
     <app-section-card [title]="'Candidatos — ' + total() + ' total'" [columns]="1">
       <!-- View toggle -->
-      <div style="display:flex; justify-content:flex-end; margin-bottom:1rem;">
+      <div class="sp-section-toolbar">
         <div class="sp-view-toggle">
           <button class="sp-view-toggle__btn" [class.sp-view-toggle__btn--active]="viewMode() === 'list'" (click)="switchView('list')">
             <span class="material-icons-round">table_rows</span> Lista
@@ -144,7 +144,6 @@
                 <th>Ingreso estimado</th>
                 <th>Estado</th>
               }
-              <th>Aprobaciones</th>
               <th></th>
             </tr>
           </thead>
@@ -155,9 +154,9 @@
                 <td class="dt-muted">{{ c.documentType }} {{ c.documentId }}</td>
                 @if (isHRUser) {
                   <td>
-                    <span style="font-size:var(--text-sm);">{{ c.position?.name ?? '—' }}</span>
+                    <span class="sp-cell-role">{{ c.position?.name ?? '—' }}</span>
                     @if (c.department?.name) {
-                      <br><span style="font-size:var(--text-xs); color:var(--text-secondary);">{{ c.department!.name }}</span>
+                      <span class="sp-cell-dept">{{ c.department!.name }}</span>
                     }
                   </td>
                   <td class="dt-muted">{{ c.hireDate | date:'dd/MM/yyyy' }}</td>
@@ -167,11 +166,6 @@
                     </app-badge>
                   </td>
                 }
-                <td>
-                  <span style="font-size:var(--text-xs); color:var(--text-secondary);">
-                    Ver aprobaciones
-                  </span>
-                </td>
                 <td class="dt-actions">
                   <app-button variant="primary" size="sm" icon="how_to_reg" (clicked)="openApprovalModal(c.id)">
                     Aprobaciones
@@ -191,7 +185,7 @@
         </app-data-table>
 
         @if (isHRUser) {
-          <div style="display:flex; justify-content:flex-end; padding:1rem 0 0;">
+          <div class="sp-pagination-row">
             <app-pagination
               [page]="page()"
               [total]="total()"
@@ -412,7 +406,7 @@
                 <p class="apv-line__comment">"{{ line.comment }}"</p>
               }
             </div>
-            <div style="display:flex; flex-direction:column; align-items:flex-end; gap:0.2rem;">
+            <div class="apv-line__decision">
               <span class="apv-line__status apv-line__status--{{ line.status | lowercase }}">
                 @if (line.status === 'APPROVED') {
                   <span class="material-icons-round">check_circle</span> Aprobado
@@ -449,7 +443,7 @@
                   <p class="apv-line__comment">"{{ hr.comment }}"</p>
                 }
               </div>
-              <div style="display:flex; flex-direction:column; align-items:flex-end; gap:0.2rem;">
+              <div class="apv-line__decision">
                 <span class="apv-line__status apv-line__status--{{ hr.status | lowercase }}">
                   @if (hr.status === 'APPROVED') {
                     <span class="material-icons-round">check_circle</span> Aprobado
@@ -467,7 +461,7 @@
           }
         </div>
       } @else {
-        <p class="sp-info-empty" style="padding:0.5rem 0;">Sin aprobación de RRHH aún.</p>
+        <p class="sp-info-empty">Sin aprobación de RRHH aún.</p>
       }
     </div>
 
