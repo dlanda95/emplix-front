@@ -4,13 +4,12 @@ import { FormBuilder, ReactiveFormsModule, Validators, FormControl, FormGroup } 
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '@core/auth/auth';
 import { TenantService } from '@core/services/tenant.service';
-import { InputField, PrimaryBtn } from '@shared/ui';
+import { AppInput, Button, AuthSplitLayout } from '@shared/ui';
 
 @Component({
   selector: 'app-register',
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, InputField, PrimaryBtn],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, AppInput, Button, AuthSplitLayout],
   templateUrl: './register.html',
-  styleUrl: './register.scss',
 })
 export class Register {
   private readonly fb            = inject(FormBuilder);

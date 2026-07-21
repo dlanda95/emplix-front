@@ -1,0 +1,342 @@
+<app-modal
+  [isOpen]="isOpen()"
+  title="Análisis de RR.HH."
+  size="xl"
+  (close)="close()">
+
+  @if (isLoading()) {
+    <app-loading-skeleton variant="card"></app-loading-skeleton>
+  } @else {
+
+    <!-- ══ MODO VISTA ══════════════════════════════════════════════════════════ -->
+    @if (!isEditMode()) {
+
+      <!-- ── Header: candidato + veredicto ─────────────────────────────────── -->
+      <div class="hra-header">
+        <div class="hra-header__identity">
+          <span class="hra-avatar">
+            {{ candidateName().split(' ')[0]?.[0] }}{{ candidateName().split(' ')[1]?.[0] }}
+          </span>
+          <div>
+            <p class="hra-header__name">{{ candidateName() }}</p>
+            @if (analysis()?.createdByName) {
+              <p class="hra-header__analyst">
+                <span class="material-icons-round">badge</span>
+                {{ analysis()!.createdByName }}
+              </p>
+            }
+            @if (analysis()) {
+              <p class="hra-header__updated">
+                Última actualización: {{ analysis()!.updatedAt | date:'dd/MM/yyyy HH:mm' }}
+              </p>
+            }
+          </div>
+        </div>
+        <div class="hra-header__actions">
+          <span class="hra-verdict-badge hra-verdict-badge--{{ recBadge[recommendation()].variant }}">
+            <span class="material-icons-round">{{ recBadge[recommendation()].icon }}</span>
+            {{ recBadge[recommendation()].label }}
+          </span>
+          @if (canEdit()) {
+            <app-button variant="ghost" icon="edit" size="sm" (clicked)="startEdit()">
+              {{ analysis() ? 'Editar' : 'Crear análisis' }}
+            </app-button>
+          }
+        </div>
+      </div>
+
+      <!-- Sin análisis registrado -->
+      @if (!analysis() || !hasContent()) {
+        <app-banner variant="info" icon="assignment" title="Sin análisis registrado">
+          <p style="margin:0">
+            {{ canEdit()
+              ? 'Haz clic en "Crear análisis" para comenzar.'
+              : 'RR.HH. aún no ha registrado un análisis para este candidato.' }}
+          </p>
+        </app-banner>
+      } @else {
+
+        <!-- ── Bloque dividido: positivo ↔ a considerar ───────────────────── -->
+        <div class="hra-split">
+
+          <!-- Columna positiva (verde) -->
+          <div class="hra-split__col hra-split__col--positive">
+            <p class="hra-split__col-title">
+              <span class="material-icons-round">sentiment_satisfied_alt</span>
+              Puntos positivos
+            </p>
+
+            @if (analysis()!.strengths) {
+              <div class="hra-card hra-card--green">
+                <p class="hra-card__label">
+                  <span class="hra-card__label-icon">
+                    <span class="material-icons-round">thumb_up</span>
+                  </span>
+                  Fortalezas
+                </p>
+                <p class="hra-card__content">{{ analysis()!.strengths }}</p>
+              </div>
+            }
+
+            @if (analysis()!.competencyEvaluation) {
+              <div class="hra-card hra-card--green">
+                <p class="hra-card__label">
+                  <span class="hra-card__label-icon">
+                    <span class="material-icons-round">psychology</span>
+                  </span>
+                  Evaluación de competencias
+                </p>
+                <p class="hra-card__content">{{ analysis()!.competencyEvaluation }}</p>
+              </div>
+            }
+
+            @if (!analysis()!.strengths && !analysis()!.competencyEvaluation) {
+              <p class="hra-split__empty">Sin información registrada</p>
+            }
+          </div>
+
+          <!-- Columna a considerar (ámbar + rojo) -->
+          <div class="hra-split__col hra-split__col--consider">
+            <p class="hra-split__col-title">
+              <span class="material-icons-round">warning_amber</span>
+              Aspectos a considerar
+            </p>
+
+            @if (analysis()!.improvementAreas) {
+              <div class="hra-card hra-card--amber">
+                <p class="hra-card__label">
+                  <span class="hra-card__label-icon">
+                    <span class="material-icons-round">trending_up</span>
+                  </span>
+                  Áreas de mejora
+                </p>
+                <p class="hra-card__content">{{ analysis()!.improvementAreas }}</p>
+              </div>
+            }
+
+            @if (analysis()!.identifiedRisks) {
+              <div class="hra-card hra-card--red">
+                <p class="hra-card__label">
+                  <span class="hra-card__label-icon">
+                    <span class="material-icons-round">warning</span>
+                  </span>
+                  Riesgos identificados
+                </p>
+                <p class="hra-card__content">{{ analysis()!.identifiedRisks }}</p>
+              </div>
+            }
+
+            @if (!analysis()!.improvementAreas && !analysis()!.identifiedRisks) {
+              <p class="hra-split__empty">Sin información registrada</p>
+            }
+          </div>
+
+        </div>
+
+        <!-- ── Contexto general (ancho completo) ─────────────────────────── -->
+        @if (analysis()!.professionalSummary) {
+          <div class="hra-card hra-card--neutral">
+            <p class="hra-card__label">
+              <span class="hra-card__label-icon">
+                <span class="material-icons-round">person</span>
+              </span>
+              Resumen profesional
+            </p>
+            <p class="hra-card__content">{{ analysis()!.professionalSummary }}</p>
+          </div>
+        }
+
+        @if (analysis()!.interviewResults) {
+          <div class="hra-card hra-card--neutral">
+            <p class="hra-card__label">
+              <span class="hra-card__label-icon">
+                <span class="material-icons-round">record_voice_over</span>
+              </span>
+              Resultados de entrevistas
+            </p>
+            <p class="hra-card__content">{{ analysis()!.interviewResults }}</p>
+          </div>
+        }
+
+        <!-- ── Recomendación final ────────────────────────────────────────── -->
+        <div class="hra-verdict hra-verdict--{{ recBadge[recommendation()].variant }}">
+          <div class="hra-verdict__header">
+            <span class="material-icons-round">verified_user</span>
+            Recomendación de RR.HH.
+          </div>
+          <div class="hra-verdict__body">
+            <div class="hra-verdict__left">
+              <span class="hra-verdict-badge hra-verdict-badge--{{ recBadge[recommendation()].variant }}">
+                <span class="material-icons-round">{{ recBadge[recommendation()].icon }}</span>
+                {{ recBadge[recommendation()].label }}
+              </span>
+              @if (analysis()!.recommendationNotes) {
+                <p class="hra-verdict__notes">{{ analysis()!.recommendationNotes }}</p>
+              }
+            </div>
+            @if (analysis()!.salaryExpectation != null) {
+              <div class="hra-salary">
+                <span class="hra-salary__label">Pretensión salarial</span>
+                <span class="hra-salary__value">
+                  S/ {{ analysis()!.salaryExpectation | number:'1.2-2' }}
+                </span>
+              </div>
+            }
+          </div>
+        </div>
+
+      }
+
+      <!-- ── Documentos de soporte ──────────────────────────────────────── -->
+      <div class="hra-docs">
+        <p class="hra-docs__title">
+          <span class="material-icons-round">folder_open</span>
+          Documentos de soporte
+          @if (analysis()?.documents?.length) {
+            <span class="hra-docs__count">{{ analysis()!.documents.length }}</span>
+          }
+        </p>
+
+        @if (analysis()?.documents?.length) {
+          <div class="hra-doc-list">
+            @for (doc of analysis()!.documents; track doc.id) {
+              <div class="hra-doc-item" [class.hra-doc-item--active]="previewDoc()?.id === doc.id">
+                <div class="hra-doc-item__icon">
+                  <span class="material-icons-round">{{ fileIcon(doc) }}</span>
+                </div>
+                <div class="hra-doc-item__info">
+                  <p class="hra-doc-item__name">{{ doc.originalName }}</p>
+                  <p class="hra-doc-item__meta">{{ formatSize(doc.size) }} · {{ doc.createdAt | date:'dd/MM/yyyy' }}</p>
+                </div>
+                <div class="hra-doc-item__actions">
+                  @if (previewLoading() && previewDoc()?.id === doc.id) {
+                    <span class="material-icons-round hra-doc-spin">hourglass_top</span>
+                  } @else {
+                    <button class="hra-doc-btn" (click)="previewDocument(doc)"
+                      [title]="isPdf(doc) ? 'Ver en visor' : 'Abrir en Office Online'">
+                      <span class="material-icons-round">{{ isPdf(doc) ? 'preview' : 'open_in_new' }}</span>
+                    </button>
+                  }
+                  @if (canEdit()) {
+                    <button class="hra-doc-btn hra-doc-btn--delete" (click)="deleteDoc(doc)" title="Eliminar">
+                      <span class="material-icons-round">delete</span>
+                    </button>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        }
+
+        <!-- Visor PDF inline -->
+        @if (previewUrl()) {
+          <div class="hra-preview">
+            <div class="hra-preview__bar">
+              <span class="material-icons-round">picture_as_pdf</span>
+              <span>{{ previewDoc()?.originalName }}</span>
+              <button class="hra-doc-btn" (click)="previewDoc.set(null); previewUrl.set(null)" title="Cerrar visor">
+                <span class="material-icons-round">close</span>
+              </button>
+            </div>
+            <iframe [src]="previewUrl()" class="hra-preview__frame" title="Vista previa del documento"></iframe>
+          </div>
+        }
+
+        <!-- Upload (solo HR) -->
+        @if (canEdit()) {
+          <div class="hra-upload">
+            @if (uploadError()) {
+              <app-banner variant="error" icon="error" [title]="uploadError()"></app-banner>
+            }
+            <label class="hra-upload__zone" [class.hra-upload__zone--loading]="isUploading()">
+              @if (isUploading()) {
+                <span class="material-icons-round hra-doc-spin">hourglass_top</span>
+                <span>Subiendo archivo...</span>
+              } @else {
+                <span class="material-icons-round">upload_file</span>
+                <span>Adjuntar documento <strong>(PDF o Word)</strong></span>
+              }
+              <input type="file" accept=".pdf,.doc,.docx" [disabled]="isUploading()"
+                (change)="onFileSelected($event)" style="display:none">
+            </label>
+          </div>
+        }
+      </div>
+
+    }
+
+    <!-- ══ MODO EDICIÓN ════════════════════════════════════════════════════════ -->
+    @if (isEditMode()) {
+
+      @if (saveError()) {
+        <app-banner variant="error" icon="error" [title]="saveError()"></app-banner>
+      }
+
+      <form [formGroup]="editForm" class="hra-edit-form">
+
+        <p class="hra-edit-form__section-title">
+          <span class="material-icons-round">analytics</span> Informe de evaluación
+        </p>
+
+        <div class="hra-edit-grid">
+          <app-textarea class="hra-full" label="Resumen profesional"
+            formControlName="professionalSummary" [rows]="4"
+            placeholder="Síntesis de la trayectoria, perfil y motivaciones del candidato...">
+          </app-textarea>
+          <app-textarea label="Fortalezas"
+            formControlName="strengths" [rows]="4"
+            placeholder="Habilidades destacadas, logros relevantes...">
+          </app-textarea>
+          <app-textarea label="Áreas de mejora"
+            formControlName="improvementAreas" [rows]="4"
+            placeholder="Competencias a desarrollar, brechas identificadas...">
+          </app-textarea>
+          <app-textarea class="hra-full" label="Resultados de entrevistas"
+            formControlName="interviewResults" [rows]="4"
+            placeholder="Desempeño en entrevistas técnicas y conductuales...">
+          </app-textarea>
+          <app-textarea label="Evaluación de competencias"
+            formControlName="competencyEvaluation" [rows]="4"
+            placeholder="Liderazgo, trabajo en equipo, comunicación...">
+          </app-textarea>
+          <app-textarea label="Riesgos identificados"
+            formControlName="identifiedRisks" [rows]="4"
+            placeholder="Factores de riesgo, condiciones, observaciones...">
+          </app-textarea>
+        </div>
+
+        <p class="hra-edit-form__section-title" style="margin-top:1rem;">
+          <span class="material-icons-round">verified_user</span> Recomendación de RR.HH.
+        </p>
+
+        <div class="hra-edit-grid">
+          <app-input type="number" label="Pretensión salarial (S/)"
+            formControlName="salaryExpectation" [min]="'0'" placeholder="Ej. 3500">
+          </app-input>
+          <app-select label="Decisión"
+            formControlName="recommendation" [options]="recOptions">
+          </app-select>
+          <app-textarea class="hra-full" label="Notas adicionales"
+            formControlName="recommendationNotes" [rows]="3"
+            placeholder="Condiciones, plazos, observaciones finales...">
+          </app-textarea>
+        </div>
+
+      </form>
+
+    }
+
+  }
+
+  <ng-container modal-actions>
+    @if (isEditMode()) {
+      <app-button variant="ghost" (clicked)="cancelEdit()">Cancelar</app-button>
+      <app-button variant="primary" icon="save" [loading]="isSaving()" [disabled]="isSaving()" (clicked)="save()">
+        Guardar análisis
+      </app-button>
+    } @else {
+      <app-button variant="ghost" (clicked)="close()">Cerrar</app-button>
+    }
+  </ng-container>
+
+</app-modal>

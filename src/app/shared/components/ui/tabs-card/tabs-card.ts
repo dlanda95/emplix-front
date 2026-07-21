@@ -1,9 +1,8 @@
 import {
-  Component, EventEmitter, Input, Output,
-  ViewChildren, ViewChild, QueryList, ElementRef,
-  signal, afterNextRender,
+  Component, ViewChildren, ViewChild, QueryList, ElementRef,
+  afterNextRender, effect, input, output, signal,
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { NgClass } from '@angular/common';
 
 export interface TabItem {
   id:    string;
@@ -13,15 +12,15 @@ export interface TabItem {
 
 @Component({
   selector: 'app-tabs-card',
-  imports: [CommonModule],
+  imports: [NgClass],
   templateUrl: './tabs-card.html',
   styleUrl: './tabs-card.scss',
 })
 export class TabsCard {
-  @Input({ required: true }) items:   TabItem[] = [];
-  @Input()                   current: string    = '';
-  @Input()                   align:   'start' | 'center' | 'fill' = 'start';
-  @Output()                  currentChange = new EventEmitter<string>();
+  readonly items         = input.required<TabItem[]>();
+  readonly current       = input<string>('');
+  readonly align         = input<'start'|'center'|'fill'>('start');
+  readonly currentChange = output<string>();
 
   @ViewChildren('tabBtn') tabButtons!: QueryList<ElementRef>;
   @ViewChild('navEl')     navEl!:      ElementRef<HTMLElement>;
@@ -29,17 +28,21 @@ export class TabsCard {
   readonly indicatorLeft  = signal('0px');
   readonly indicatorWidth = signal('0px');
   readonly hasOverflow    = signal(false);
+  private  _activeTab     = signal('');
 
   constructor() {
-    afterNextRender(() => {
-      this.equalizeAndUpdate();
-    });
+    effect(() => { this._activeTab.set(this.current()); });
+    afterNextRender(() => { this.equalizeAndUpdate(); });
   }
 
   selectTab(id: string): void {
-    this.current = id;
+    this._activeTab.set(id);
     this.currentChange.emit(id);
     queueMicrotask(() => this.updateIndicator());
+  }
+
+  isActive(id: string): boolean {
+    return this._activeTab() === id;
   }
 
   onResize(): void {
@@ -59,29 +62,20 @@ export class TabsCard {
     this.checkOverflow();
   }
 
-  // Aplica el mismo ancho a todos los tabs: el mayor entre el ancho natural
-  // máximo y lo que corresponde si se reparte el espacio disponible del nav.
-  // Así los tabs son simétricos y hacen scroll si no caben.
   private equalizeTabWidths(): void {
     const buttons = this.tabButtons?.toArray();
     const nav     = this.navEl?.nativeElement;
     if (!buttons?.length || !nav) return;
 
-    // 1. Resetear widths para medir el ancho natural de cada tab
     buttons.forEach(b => (b.nativeElement.style.width = ''));
 
-    // 2. Ancho natural máximo entre todos los botones
     const maxNatural = Math.max(
       ...buttons.map(b => (b.nativeElement as HTMLElement).getBoundingClientRect().width)
     );
 
-    // 3. Ancho si se reparte el espacio del nav equitativamente
-    //    (padding lateral ≈ 1.75rem * 2 = 56px)
-    const navPad      = parseFloat(getComputedStyle(nav).paddingLeft) * 2;
-    const evenWidth   = (nav.clientWidth - navPad) / buttons.length;
-
-    // 4. Usar el mayor de los dos para que quepan los labels más largos
-    const finalWidth  = Math.ceil(Math.max(maxNatural, evenWidth));
+    const navPad    = parseFloat(getComputedStyle(nav).paddingLeft) * 2;
+    const evenWidth = (nav.clientWidth - navPad) / buttons.length;
+    const finalWidth = Math.ceil(Math.max(maxNatural, evenWidth));
 
     buttons.forEach(b => (b.nativeElement.style.width = `${finalWidth}px`));
   }
@@ -89,7 +83,7 @@ export class TabsCard {
   private updateIndicator(): void {
     if (!this.tabButtons) return;
     const buttons     = this.tabButtons.toArray();
-    const activeIndex = this.items.findIndex(i => i.id === this.current);
+    const activeIndex = this.items().findIndex(i => i.id === this._activeTab());
     if (activeIndex !== -1 && buttons[activeIndex]) {
       const el = buttons[activeIndex].nativeElement;
       this.indicatorLeft.set(`${el.offsetLeft}px`);

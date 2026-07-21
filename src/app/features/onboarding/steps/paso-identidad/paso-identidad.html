@@ -18,14 +18,17 @@
   </app-section-card>
 
   <app-section-card title="Dirección en el Documento de Identidad" [columns]="2">
-    <app-input label="Dirección"     formControlName="docAddress"    placeholder="Ej. Av. Larco 500"></app-input>
-    <app-input label="Distrito"      formControlName="docDistrict"   placeholder="Ej. Miraflores"></app-input>
-    <app-input label="Departamento"  formControlName="docDepartment" placeholder="Ej. Lima"></app-input>
-    <app-input label="Referencia"    formControlName="docAddressRef" placeholder="Ej. Frente al parque"></app-input>
+    <app-input label="Dirección"  formControlName="docAddress"    placeholder="Ej. Av. Larco 500"></app-input>
+    <app-input label="Referencia" formControlName="docAddressRef" placeholder="Ej. Frente al parque"></app-input>
+    <app-location-cascade
+      [showCountry]="false"
+      [regionCtrl]="form.controls.docDepartment"
+      [districtCtrl]="form.controls.docDistrict">
+    </app-location-cascade>
   </app-section-card>
 
   <app-section-card title="Información Personal" [columns]="3">
-    <app-input  label="Fecha de Nacimiento" type="date" formControlName="birthDate"></app-input>
+    <app-input  label="Fecha de Nacimiento" type="date" formControlName="birthDate" min="1900-01-01" [max]="today"></app-input>
     <app-select label="Género"              formControlName="gender"        [options]="genderOptions"></app-select>
     <app-select label="Estado Civil"        formControlName="maritalStatus" [options]="maritalOptions"></app-select>
     <app-input  label="Nacionalidad"        formControlName="nationality"   placeholder="Ej. Peruana"></app-input>
@@ -33,9 +36,11 @@
   </app-section-card>
 
   <app-section-card title="Lugar de Nacimiento" [columns]="3">
-    <app-input label="País"          formControlName="birthCountry"  placeholder="Ej. Perú"></app-input>
-    <app-input label="Departamento"  formControlName="birthRegion"   placeholder="Ej. Lima"></app-input>
-    <app-input label="Distrito"      formControlName="birthDistrict" placeholder="Ej. Miraflores"></app-input>
+    <app-location-cascade
+      [countryCtrl]="form.controls.birthCountry"
+      [regionCtrl]="form.controls.birthRegion"
+      [districtCtrl]="form.controls.birthDistrict">
+    </app-location-cascade>
   </app-section-card>
 
   <div style="display:flex;justify-content:flex-end;">

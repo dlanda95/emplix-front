@@ -1,0 +1,135 @@
+<app-drawer
+  [isOpen]="isOpen"
+  title="Nuevo colaborador"
+  subtitle="Completa los datos básicos. El colaborador puede actualizar su perfil desde el portal."
+  width="lg"
+  (close)="onClose()">
+
+  @if (successData) {
+    <app-success-screen
+      icon="check_circle"
+      title="¡Colaborador creado!"
+      description="Comparte estas credenciales con el colaborador para su primer acceso."
+      [email]="successData.email ?? ''"
+      [tempPassword]="successData.tempPassword ?? ''"
+      note="El colaborador deberá cambiar su contraseña al ingresar por primera vez.">
+    </app-success-screen>
+  } @else {
+
+    <app-drawer-stepper
+      [steps]="['Identidad', 'Posición', 'Acceso']"
+      [currentStep]="step"
+      (stepClick)="goTo($event)">
+    </app-drawer-stepper>
+
+    @if (errorMsg) {
+      <app-banner variant="error" icon="error" [title]="errorMsg"></app-banner>
+    }
+
+    @if (step === 1) {
+      <form [formGroup]="step1">
+        <app-form-section title="Datos personales" icon="person">
+          <app-col-grid>
+            <app-input label="Nombres *" formControlName="firstName" placeholder="Ej. María Fernanda"></app-input>
+            <app-input label="Apellidos *" formControlName="lastName" placeholder="Ej. García López"></app-input>
+          </app-col-grid>
+          <app-col-grid>
+            <app-input label="Correo electrónico *" formControlName="email" type="email" placeholder="colaborador@empresa.com"></app-input>
+            <app-input label="Documento de identidad" formControlName="documentId" placeholder="DNI, CE, Pasaporte..."></app-input>
+          </app-col-grid>
+          <app-col-grid>
+            <app-input label="Fecha de ingreso *" formControlName="hireDate" type="date"
+              min="1900-01-01" max="2100-12-31"></app-input>
+            @if (step1.get('hireDate')?.touched && step1.get('hireDate')?.errors) {
+              <span class="field-error">
+                @if (step1.get('hireDate')?.hasError('required'))           { Campo obligatorio }
+                @else if (step1.get('hireDate')?.hasError('dateOutOfRange')) { El año debe estar entre 1900 y 2100 }
+                @else if (step1.get('hireDate')?.hasError('invalidDate'))    { La fecha no es válida }
+              </span>
+            }
+          </app-col-grid>
+        </app-form-section>
+      </form>
+    }
+
+    @if (step === 2) {
+      <form [formGroup]="step2">
+        <app-form-section title="Posición en la organización" icon="business_center">
+          <app-col-grid>
+            <app-select label="Área / Departamento" formControlName="departmentId"
+              [options]="deptOptions()" placeholder="Seleccionar área"></app-select>
+            <app-select label="Cargo" formControlName="positionId"
+              [options]="posOptions()" placeholder="Seleccionar cargo"></app-select>
+          </app-col-grid>
+          <app-col-grid>
+            <app-select label="Supervisor directo" formControlName="supervisorId"
+              [options]="empOptions()" placeholder="Sin supervisor"></app-select>
+          </app-col-grid>
+        </app-form-section>
+
+        <app-form-section title="Condiciones laborales" icon="description">
+          <app-col-grid>
+            <app-select label="Tipo de contrato" formControlName="contractTypeId"
+              [options]="contractOptions()" placeholder="Usar predeterminado"></app-select>
+            <app-select label="Turno de trabajo" formControlName="workShiftId"
+              [options]="shiftOptions()" placeholder="Usar predeterminado"></app-select>
+          </app-col-grid>
+          <app-col-grid>
+            <app-input label="Salario mensual" formControlName="salary" type="number" placeholder="0.00"></app-input>
+          </app-col-grid>
+        </app-form-section>
+      </form>
+    }
+
+    @if (step === 3) {
+      <form [formGroup]="step3">
+        <app-form-section title="Acceso al portal" icon="lock_person">
+          <app-toggle-row
+            label="¿Habilitar acceso al portal?"
+            description="Se generará una contraseña temporal que deberás compartir con el colaborador."
+            formControlName="grantAccess">
+          </app-toggle-row>
+
+          @if (step3.get('grantAccess')?.value) {
+            <app-select label="Rol en el sistema" formControlName="role"
+              [options]="roleOptions" placeholder="Seleccionar rol"></app-select>
+            <p style="display:flex; align-items:center; gap:.5rem; font-size:var(--text-sm); color:var(--text-secondary); margin:0;">
+              <span class="material-icons-round" style="font-size:16px; color:var(--color-info);">info</span>
+              La contraseña temporal será generada automáticamente.
+            </p>
+          } @else {
+            <app-banner
+              variant="info"
+              icon="info"
+              title="El colaborador se registrará sin cuenta de acceso. Podrás habilitarla más adelante desde Usuarios.">
+            </app-banner>
+          }
+        </app-form-section>
+      </form>
+    }
+  }
+
+  <div drawer-footer>
+    @if (successData) {
+      <app-button variant="primary" (clicked)="confirmSuccess()">Entendido</app-button>
+    } @else {
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:var(--space-3); width:100%;">
+        <app-button variant="ghost" (clicked)="step === 1 ? onClose() : prevStep()">
+          {{ step === 1 ? 'Cancelar' : 'Atrás' }}
+        </app-button>
+        <div style="display:flex; gap:var(--space-3);">
+          @if (step < 3) {
+            <app-button variant="primary" icon="arrow_forward" (clicked)="nextStep()">
+              Continuar
+            </app-button>
+          } @else {
+            <app-button variant="primary" icon="check" [loading]="saving" (clicked)="submit()">
+              Crear colaborador
+            </app-button>
+          }
+        </div>
+      </div>
+    }
+  </div>
+
+</app-drawer>

@@ -1,30 +1,23 @@
-import { Component, Input, Output, EventEmitter, HostListener } from '@angular/core';
-import { CommonModule } from '@angular/common';
-
+import { Component, HostListener, input, output } from '@angular/core';
 
 @Component({
   selector: 'app-modal',
-  imports: [CommonModule],
+  imports: [],
   templateUrl: './modal.html',
   styleUrl: './modal.scss',
 })
 export class Modal {
+  readonly isOpen = input.required<boolean>();
+  readonly title  = input.required<string>();
 
+  readonly close = output<void>();
 
-
-  @Input({ required: true }) isOpen: boolean = false;
-  @Input({ required: true }) title!: string;
-  @Output() close = new EventEmitter<void>();
-
-  // Cierra el modal con la tecla ESC
-  @HostListener('document:keydown.escape', ['$event'])
-  onKeydownHandler(event: Event) {
-    if (this.isOpen) this.close.emit();
+  @HostListener('document:keydown.escape')
+  onEsc(): void {
+    if (this.isOpen()) this.close.emit();
   }
 
-  // Cierra si hace clic en el fondo borroso (fuera de la caja blanca)
-  onBackdropClick(event: MouseEvent) {
+  onBackdropClick(): void {
     this.close.emit();
   }
-
 }

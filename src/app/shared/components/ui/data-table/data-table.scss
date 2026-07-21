@@ -1,0 +1,61 @@
+@use 'abstracts/variables' as *;
+@use 'abstracts/mixins' as *;
+
+// ViewEncapsulation.None: prefijo .dt- evita colisiones globales
+
+// El host debe ser bloque con min-width:0 para que overflow-x:auto
+// funcione cuando vive dentro de un grid o flex container.
+app-data-table {
+  display: block;
+  min-width: 0;
+}
+
+.dt-wrap {
+  overflow-x: auto;
+
+  @include respond-to('tablet') { display: none; }
+}
+
+.dt {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-sm);
+
+  th {
+    padding: var(--space-3) var(--space-4);
+    text-align: left;
+    font-size: var(--text-xs);
+    font-weight: var(--font-semibold);
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  tbody tr {
+    border-bottom: 1px solid var(--border-color);
+    transition: background var(--transition-fast);
+
+    &:last-child { border-bottom: none; }
+    &:hover      { background: var(--bg-hover); }
+  }
+
+  td {
+    padding: var(--space-3) var(--space-4);
+    vertical-align: middle;
+    color: var(--text-main);
+    font-size: var(--text-sm);
+  }
+
+  // Helpers semánticos usables en el template de la feature
+  .dt-muted   { color: var(--text-secondary); }
+  .dt-actions { text-align: right; white-space: nowrap; }
+  .dt-label   {
+    display: inline-block;
+    font-size: var(--text-xs);
+    font-weight: var(--font-medium);
+    color: var(--text-secondary);
+    margin-right: var(--space-1);
+  }
+}

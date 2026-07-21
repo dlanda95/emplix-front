@@ -61,6 +61,13 @@
   }
 }
 
+.field-error {
+  display: block;
+  margin-top: 4px;
+  font-size: var(--text-xs, 0.75rem);
+  color: var(--color-error, #ef4444);
+}
+
 .colabs-toolbar {
   display: flex;
   align-items: flex-start;
@@ -68,12 +75,35 @@
   flex-wrap: wrap;
 
   &__search {
-    flex: 0 0 280px;
+    flex: 1 1 280px;
     min-width: 0;
 
     @media (max-width: 640px) {
       flex: 1 1 100%;
     }
+  }
+
+  &__filter {
+    flex: 0 0 220px;
+    min-width: 0;
+
+    @media (max-width: 640px) {
+      flex: 1 1 100%;
+    }
+  }
+}
+
+.colabs-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  padding-top: 1.25rem;
+
+  &__info {
+    font-size: var(--text-sm);
+    color: var(--text-muted);
   }
 }
 
@@ -486,6 +516,93 @@
   display: flex;
   gap: 0.625rem;
   justify-content: flex-end;
+}
+
+// ── Solicitudes: layout responsive ────────────────────────────────────────────
+
+.sreq-toolbar {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.25rem;
+}
+
+.sreq-search { min-width: 240px; }
+
+.sreq-pagination {
+  display: flex;
+  justify-content: flex-end;
+  padding: 1rem 0 0;
+}
+
+// Tabla solo visible en desktop; cards solo en mobile
+.sreq-table-card   { display: block; }
+.sreq-cards-mobile { display: none;  }
+
+@media (max-width: 768px) {
+  .sreq-table-card   { display: none;  }
+  .sreq-cards-mobile { display: flex;  }
+  .sreq-toolbar      { flex-direction: column; }
+  .sreq-search       { width: 100%; }
+}
+
+// Fila pendiente en tabla
+.sreq-row--pending td:first-child {
+  border-left: 3px solid var(--color-warning, #f59e0b);
+}
+
+// Chip de N° cambios
+.sreq-changes-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 999px;
+  background: var(--bg-surface-alt, #f1f5f9);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-main);
+  padding: 0 0.4rem;
+  font-variant-numeric: tabular-nums;
+}
+
+// Modal de detalle: cabecera del colaborador
+.sreq-modal-colab {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding-bottom: 1rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid var(--border-color);
+  flex-wrap: wrap;
+
+  &__info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+  }
+
+  &__name  { font-size: 1rem; font-weight: 700; color: var(--text-main); }
+  &__email { font-size: 0.8rem; color: var(--text-secondary); }
+  &__pos   { font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.1rem; }
+
+  &__meta {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    flex-wrap: wrap;
+    margin-left: auto;
+  }
+}
+
+// Diff en modal: fila más ancha
+.sreq-diff--modal { margin-top: 0; }
+
+.sreq-diff__row--lg {
+  grid-template-columns: 9rem 1fr auto 1fr;
 }
 
 // ── Toast de éxito para ChangeRequestBar (compartido entre tabs) ──────────────

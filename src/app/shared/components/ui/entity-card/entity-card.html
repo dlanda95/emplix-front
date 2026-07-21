@@ -1,0 +1,24 @@
+<div class="ec">
+
+  <div class="ec__header">
+    <app-avatar [name]="name()" [src]="avatarSrc()" size="md"></app-avatar>
+    <div class="ec__identity">
+      <span class="ec__name">{{ name() }}</span>
+      @if (subtitle()) {
+        <span class="ec__subtitle">{{ subtitle() }}</span>
+      }
+    </div>
+    <div class="ec__badge">
+      <ng-content select="[entity-badge]"></ng-content>
+    </div>
+  </div>
+
+  <div class="ec__meta">
+    <ng-content select="[entity-meta]"></ng-content>
+  </div>
+
+  <div class="ec__footer">
+    <ng-content select="[entity-footer]"></ng-content>
+  </div>
+
+</div>

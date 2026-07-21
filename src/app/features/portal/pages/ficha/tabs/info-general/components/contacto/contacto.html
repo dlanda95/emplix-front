@@ -34,18 +34,18 @@
 
     <form [formGroup]="contactForm" style="display:flex;flex-direction:column;gap:0.75rem;">
       <app-form-section title="Contacto directo"></app-form-section>
-      <app-form-row [cols]="3">
+      <app-col-grid [cols]="3">
         <app-input label="Teléfono"       formControlName="phone"          placeholder="Ej. 01-234-5678"></app-input>
         <app-input label="Celular"        formControlName="cellPhone"      placeholder="Ej. 987 654 321"></app-input>
         <app-input label="Email Personal" formControlName="personalEmail"  type="email" placeholder="correo@ejemplo.com"></app-input>
-      </app-form-row>
+      </app-col-grid>
 
       <app-form-section title="Contacto de emergencia"></app-form-section>
-      <app-form-row [cols]="3">
+      <app-col-grid [cols]="3">
         <app-input label="Nombre del Contacto" formControlName="emergencyName"  placeholder="Nombre completo"></app-input>
         <app-input label="Vínculo"             formControlName="emergencyRel"   placeholder="Ej. Madre, Esposo/a"></app-input>
         <app-input label="Teléfono"            formControlName="emergencyPhone" placeholder="Ej. 987 654 321"></app-input>
-      </app-form-row>
+      </app-col-grid>
     </form>
 
     <ng-container modal-actions>

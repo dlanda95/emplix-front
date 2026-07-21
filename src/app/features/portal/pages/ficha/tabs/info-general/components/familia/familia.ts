@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import {
   AppInput, AppSelect, Badge, Button, ConfirmModal, EmptyState,
-  FormRow, ListItem, LoadingSkeleton, Modal, SectionCard,
+  ColGrid, ListItem, LoadingSkeleton, Modal, SectionCard,
 } from '@shared/ui';
 import { FamiliaService } from '@features/portal/services/familia.service';
 import {
@@ -15,10 +15,9 @@ import {
   imports: [
     CommonModule, ReactiveFormsModule,
     AppInput, AppSelect, Badge, Button, ConfirmModal, EmptyState,
-    FormRow, ListItem, LoadingSkeleton, Modal, SectionCard,
+    ColGrid, ListItem, LoadingSkeleton, Modal, SectionCard,
   ],
   templateUrl: './familia.html',
-  styleUrl: './familia.scss',
 })
 export class Familia {
   private readonly fb      = inject(FormBuilder);

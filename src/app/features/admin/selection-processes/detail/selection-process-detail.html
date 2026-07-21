@@ -1,0 +1,454 @@
+<app-admin-page-layout>
+@if (!process()) {
+  <app-loading-skeleton variant="card"></app-loading-skeleton>
+}
+
+@if (process(); as p) {
+<div class="cand-page">
+
+  <!-- ── Header ────────────────────────────────────────────────────────────── -->
+  <div class="cand-header">
+    <div class="cand-header__identity">
+      <app-button variant="ghost" icon="arrow_back" size="sm" (clicked)="back()">Volver</app-button>
+      <div>
+        <h2>{{ p.position?.name ?? p.code }}</h2>
+        <div class="sp-detail-meta">
+          <span class="sp-detail-meta__code">{{ p.code }}</span>
+          <app-badge [variant]="p.status | spStatusVariant">{{ p.status | spStatusLabel }}</app-badge>
+        </div>
+      </div>
+    </div>
+
+    <div class="cand-header__actions">
+      @if (isHRUser) {
+        <app-button variant="ghost" icon="edit" size="sm" (clicked)="openEditProcess()">
+          Editar proceso
+        </app-button>
+        @if (p.status === 'OPEN') {
+          <app-button variant="primary" icon="person_add" [disabled]="!perms.canCreate()" (clicked)="openAddCandidate()">
+            Agregar candidato
+          </app-button>
+        }
+      }
+    </div>
+  </div>
+
+  <!-- ── Información del proceso ───────────────────────────────────────────── -->
+  <app-section-card title="Información del proceso" [columns]="1">
+    <div class="sp-info-grid">
+
+      <div class="sp-info-params">
+        @if (p.description) {
+          <div class="sp-info-row">
+            <span class="sp-info-label">
+              <span class="material-icons-round">notes</span> Descripción
+            </span>
+            <span class="sp-info-value">{{ p.description }}</span>
+          </div>
+        }
+        <div class="sp-info-row">
+          <span class="sp-info-label">
+            <span class="material-icons-round">account_tree</span> Área
+          </span>
+          <span class="sp-info-value">{{ p.department?.name ?? '—' }}</span>
+        </div>
+        <div class="sp-info-row">
+          <span class="sp-info-label">
+            <span class="material-icons-round">work_outline</span> Puesto
+          </span>
+          <span class="sp-info-value">{{ p.position?.name ?? '—' }}</span>
+        </div>
+      </div>
+
+      <div>
+        <p class="sp-info-section-title">
+          <span class="material-icons-round">how_to_reg</span>
+          Aprobadores
+          <span class="sp-approver-count">{{ p.approvers.length }}</span>
+        </p>
+        @if (p.approvers.length === 0) {
+          <p class="sp-info-empty">Sin aprobadores registrados.</p>
+        } @else {
+          <div class="sp-info-approvers-list">
+            @for (a of p.approvers; track a.id) {
+              <div class="sp-info-approver-item">
+                <span class="sp-info-approver-order">{{ a.order }}</span>
+                <span class="sp-info-approver-avatar">
+                  {{ a.employee.firstName[0] }}{{ a.employee.lastName[0] }}
+                </span>
+                <span class="sp-info-approver-name">
+                  <strong>{{ a.employee.firstName }} {{ a.employee.lastName }}</strong>
+                  @if (a.employee.position?.name) {
+                    <span>{{ a.employee.position!.name }}</span>
+                  }
+                </span>
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+    </div>
+  </app-section-card>
+
+  <!-- ── Filtros candidatos ────────────────────────────────────────────────── -->
+  @if (isHRUser) {
+    <div class="sp-filters-bar">
+      <div class="sp-filters-bar__search">
+        <app-input label="Buscar candidato..." placeholder="Nombre o documento" [formControl]="searchCtrl"></app-input>
+      </div>
+      <div class="sp-filters-bar__select">
+        <app-select label="Estado" [options]="onboardingOptions" [formControl]="statusCtrl"></app-select>
+      </div>
+    </div>
+  }
+
+  @if (loadError()) {
+    <app-banner variant="error" icon="error" [title]="loadError()"></app-banner>
+  }
+  @if (activateEmailWarning()) {
+    <app-banner variant="warning" icon="mail" [title]="activateEmailWarning()"></app-banner>
+  }
+
+  <!-- ── Tabla / lista de candidatos ───────────────────────────────────────── -->
+  @if (isLoading()) {
+    <app-loading-skeleton variant="card"></app-loading-skeleton>
+  } @else if (candidates().length === 0 && !loadError()) {
+    <app-empty-state
+      icon="group_add"
+      title="Sin candidatos"
+      [description]="p.status === 'OPEN'
+        ? 'Aún no hay candidatos registrados en este proceso.'
+        : 'Este proceso no tiene candidatos registrados.'">
+    </app-empty-state>
+  } @else {
+
+    <app-section-card [title]="'Candidatos — ' + total() + ' total'" [columns]="1">
+      <!-- View toggle -->
+      <div class="sp-section-toolbar">
+        <div class="sp-view-toggle">
+          <button class="sp-view-toggle__btn" [class.sp-view-toggle__btn--active]="viewMode() === 'list'" (click)="switchView('list')">
+            <span class="material-icons-round">table_rows</span> Lista
+          </button>
+          <button class="sp-view-toggle__btn" [class.sp-view-toggle__btn--active]="viewMode() === 'compare'" (click)="switchView('compare')">
+            <span class="material-icons-round">compare_arrows</span> Comparativo HR
+          </button>
+        </div>
+      </div>
+      <!-- ── Vista: Lista ──────────────────────────────────────────────────── -->
+      @if (viewMode() === 'list') {
+        <app-data-table>
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Documento</th>
+              @if (isHRUser) {
+                <th>Cargo / Área</th>
+                <th>Ingreso estimado</th>
+                <th>Estado</th>
+              }
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (c of candidates(); track c.id) {
+              <tr [class.sp-row--active]="c.status === 'ACTIVE'">
+                <td>
+                  <strong>{{ c.firstName }} {{ c.lastName }}</strong>
+                  @if (c.status === 'ACTIVE') {
+                    <span class="sp-active-badge">
+                      <span class="material-icons-round">verified</span> Colaborador activo
+                    </span>
+                  }
+                </td>
+                <td class="dt-muted">{{ c.documentType }} {{ c.documentId }}</td>
+                @if (isHRUser) {
+                  <td>
+                    <span class="sp-cell-role">{{ c.position?.name ?? '—' }}</span>
+                    @if (c.department?.name) {
+                      <span class="sp-cell-dept">{{ c.department!.name }}</span>
+                    }
+                  </td>
+                  <td class="dt-muted">{{ c.hireDate | date:'dd/MM/yyyy' }}</td>
+                  <td>
+                    @if (c.status === 'ACTIVE') {
+                      <app-badge variant="success">Incorporado</app-badge>
+                    } @else {
+                      <app-badge [variant]="c.onboardingStatus | onboardingVariant">
+                        {{ c.onboardingStatus | onboardingLabel }}
+                      </app-badge>
+                    }
+                  </td>
+                }
+                <td class="dt-actions">
+                  @if (c.status !== 'ACTIVE') {
+                    <app-button variant="primary" size="sm" icon="how_to_reg" (clicked)="openApprovalModal(c.id)">
+                      Aprobaciones
+                    </app-button>
+                  }
+                  <app-button variant="ghost" size="sm" icon="analytics" (clicked)="openAnalysisPanel(c)">
+                    Análisis HR
+                  </app-button>
+                  @if (isHRUser) {
+                    <app-button variant="ghost" size="sm" icon="open_in_new" (clicked)="openCandidateDetail(c.id)">
+                      Ver
+                    </app-button>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </app-data-table>
+
+        @if (isHRUser) {
+          <div class="sp-pagination-row">
+            <app-pagination
+              [page]="page()"
+              [total]="total()"
+              [pageSize]="pageSize"
+              (pageChange)="onPageChange($event)">
+            </app-pagination>
+          </div>
+        }
+      }
+
+      <!-- ── Vista: Comparativo HR ─────────────────────────────────────────── -->
+      @if (viewMode() === 'compare') {
+        @if (analysesLoading()) {
+          <app-loading-skeleton variant="card"></app-loading-skeleton>
+        } @else {
+          <app-candidate-comparison-panel
+            [candidates]="candidates()"
+            [analyses]="processAnalyses()">
+          </app-candidate-comparison-panel>
+        }
+      }
+
+    </app-section-card>
+
+  }
+
+</div>
+}
+
+<!-- ══ Modal: Editar proceso (HR only) ════════════════════════════════════════ -->
+<app-modal [isOpen]="isEditModalOpen()" title="Editar Proceso" size="lg" (close)="closeEditProcess()">
+
+  @if (saveError()) {
+    <app-banner variant="error" icon="error" [title]="saveError()"></app-banner>
+  }
+
+  <form [formGroup]="editForm" class="sp-create-form">
+
+    <!-- ── Estado del proceso ────────────────────────────────────────────── -->
+    <div class="sp-create-form__section">
+      <p class="sp-create-form__section-title">
+        <span class="material-icons-round">info</span> Estado del proceso
+      </p>
+      <app-select label="Estado *" formControlName="status" [options]="processStatusOptions"></app-select>
+      <app-input label="Descripción" formControlName="description" placeholder="Objetivo y alcance (opcional)..." hint="Máximo 500 caracteres"></app-input>
+    </div>
+
+    <!-- ── Ubicación del puesto ──────────────────────────────────────────── -->
+    <div class="sp-create-form__section">
+      <p class="sp-create-form__section-title">
+        <span class="material-icons-round">account_tree</span> Ubicación del puesto
+      </p>
+
+      <app-select label="Área *" formControlName="areaId" [options]="editAreaOptions()"></app-select>
+
+      @if (editHasSubareas()) {
+        <app-select label="Subárea" formControlName="subareaId" [options]="editSubareaOptions()"></app-select>
+      }
+
+      <app-select label="Puesto *" formControlName="positionId" [options]="editPositionOptions()"></app-select>
+    </div>
+
+    <!-- ── Aprobadores ───────────────────────────────────────────────────── -->
+    <div class="sp-create-form__section">
+      <p class="sp-create-form__section-title">
+        <span class="material-icons-round">how_to_reg</span>
+        Aprobadores
+        <span class="sp-approver-count">{{ editApprovers().length }}/5</span>
+      </p>
+
+      @if (editApprovers().length > 0) {
+        <div class="sp-approver-chips">
+          @for (a of editApprovers(); track a.id; let i = $index) {
+            <div class="sp-approver-chip">
+              <span class="sp-approver-chip__order">{{ i + 1 }}</span>
+              <span class="sp-approver-chip__name">{{ a.firstName }} {{ a.lastName }}</span>
+              <button type="button" class="sp-approver-chip__remove" (click)="removeEditApprover(a.id)">
+                <span class="material-icons-round">close</span>
+              </button>
+            </div>
+          }
+        </div>
+      }
+
+      @if (editApprovers().length < 5) {
+        <div class="sp-approver-picker">
+          <app-input placeholder="Buscar colaborador por nombre o puesto..." icon="search" [formControl]="editApproverSearch"></app-input>
+          <div class="sp-approver-list">
+            @for (e of editFilteredEmployees(); track e.id) {
+              <button type="button" class="sp-approver-item" (click)="toggleEditApprover(e)">
+                <span class="sp-approver-item__avatar">{{ e.firstName[0] }}{{ e.lastName[0] }}</span>
+                <span class="sp-approver-item__info">
+                  <span class="sp-approver-item__name">{{ e.firstName }} {{ e.lastName }}</span>
+                  @if (e.position?.name) {
+                    <span class="sp-approver-item__role">{{ e.position!.name }}</span>
+                  }
+                </span>
+                <span class="material-icons-round sp-approver-item__add">add_circle</span>
+              </button>
+            } @empty {
+              <p class="sp-approver-list__empty">
+                {{ allEmployees().length === 0 ? 'Cargando colaboradores...' : 'No se encontraron resultados.' }}
+              </p>
+            }
+          </div>
+        </div>
+      }
+    </div>
+
+  </form>
+
+  <ng-container modal-actions>
+    <app-button variant="ghost" (clicked)="closeEditProcess()">Cancelar</app-button>
+    <app-button variant="primary" icon="save" [loading]="isSaving()" [disabled]="isSaving()" (clicked)="saveProcess()">
+      Guardar cambios
+    </app-button>
+  </ng-container>
+
+</app-modal>
+
+<!-- ══ Modal: Aprobaciones de candidato ════════════════════════════════════════ -->
+<app-modal
+  [isOpen]="isApprovalModalOpen()"
+  title="Aprobaciones del candidato"
+  size="lg"
+  (close)="closeApprovalModal()">
+
+  @if (isLoadingApprovals()) {
+    <app-loading-skeleton variant="card"></app-loading-skeleton>
+  }
+
+  @if (approvalError()) {
+    <app-banner variant="error" icon="error" [title]="approvalError()"></app-banner>
+  }
+
+  <app-candidate-approval-panel
+    [data]="approvalData()"
+    [isHRUser]="isHRUser"
+    [isSubmitting]="isSubmittingApproval()"
+    [isConverting]="isConverting()"
+    [convertError]="convertError()"
+    (voted)="submitApproval($event.status, $event.comment)"
+    (convertRequested)="convertToEmployee()">
+  </app-candidate-approval-panel>
+
+  <ng-container modal-actions>
+    <app-button variant="ghost" (clicked)="closeApprovalModal()">Cerrar</app-button>
+  </ng-container>
+
+</app-modal>
+
+<!-- ══ Modal: Agregar candidato ════════════════════════════════════════════════ -->
+<app-create-candidate-modal
+  [selectionProcessId]="process()?.id ?? null"
+  (candidateRegistered)="onCandidateRegistered($event)">
+</app-create-candidate-modal>
+
+<!-- ══ Panel: Análisis de RR.HH. ═══════════════════════════════════════════════ -->
+<app-hr-analysis-panel></app-hr-analysis-panel>
+
+<!-- ══ Modal: Activar colaborador ═════════════════════════════════════════════ -->
+<app-modal
+  [isOpen]="isActivateModalOpen()"
+  title="Activar colaborador"
+  (close)="closeActivateModal()">
+
+  @if (activateError()) {
+    <app-banner variant="error" icon="error" [title]="activateError()"></app-banner>
+  }
+
+  <app-banner variant="info" icon="mark_email_read">
+    <span>Se generará una <strong>contraseña temporal</strong> que llegará al correo corporativo asignado.
+    El colaborador deberá cambiarla en su primer ingreso.</span>
+  </app-banner>
+
+  <div class="sp-activate-form">
+    @if (activateDomains().length === 0) {
+      <app-banner variant="warning" icon="warning"
+        title="No hay dominios configurados. Ve a Configuración → Dominios antes de activar colaboradores.">
+      </app-banner>
+    } @else {
+      <div class="email-split-field">
+        <label class="email-split-field__label">
+          <span class="material-icons-round">alternate_email</span>
+          Correo corporativo *
+        </label>
+        <div class="email-split-field__row">
+          <input
+            class="email-split-field__input"
+            type="text"
+            placeholder="nombre.apellido"
+            autocomplete="off"
+            [formControl]="corporateEmailCtrl">
+          <span class="email-split-field__at">@</span>
+
+          @if (!activateMultiDomain()) {
+            <span class="domain-chip domain-chip--static">
+              {{ activateSelectedDomain()?.domain }}
+            </span>
+          } @else {
+            <div class="domain-picker">
+              <button
+                class="domain-chip domain-chip--select"
+                type="button"
+                (click)="toggleActivateDomainMenu()">
+                {{ activateSelectedDomain()?.domain ?? 'Seleccionar' }}
+                <span class="material-icons-round domain-chip__caret">
+                  {{ activateDomainOpen() ? 'expand_less' : 'expand_more' }}
+                </span>
+              </button>
+              @if (activateDomainOpen()) {
+                <div class="domain-menu">
+                  @for (d of activateDomains(); track d.id) {
+                    <button
+                      class="domain-menu__item"
+                      [class.domain-menu__item--active]="d.id === activateSelectedDomain()?.id"
+                      type="button"
+                      (click)="selectActivateDomain(d)">
+                      <span class="domain-menu__domain">{{ d.domain }}</span>
+                      @if (d.label) { <span class="domain-menu__label">{{ d.label }}</span> }
+                      @if (d.isPrimary) { <span class="domain-menu__badge">Principal</span> }
+                    </button>
+                  }
+                </div>
+              }
+            </div>
+          }
+        </div>
+        @if (corporateEmailCtrl.touched && corporateEmailCtrl.hasError('required')) {
+          <span class="email-split-field__error">El prefijo del correo es requerido.</span>
+        }
+      </div>
+    }
+  </div>
+
+  <ng-container modal-actions>
+    <app-button variant="ghost" [disabled]="isConverting()" (clicked)="closeActivateModal()">Cancelar</app-button>
+    <app-button
+      variant="primary"
+      icon="person_check"
+      [loading]="isConverting()"
+      [disabled]="isConverting()"
+      (clicked)="confirmActivation()">
+      Activar y enviar credenciales
+    </app-button>
+  </ng-container>
+
+</app-modal>
+
+</app-admin-page-layout>

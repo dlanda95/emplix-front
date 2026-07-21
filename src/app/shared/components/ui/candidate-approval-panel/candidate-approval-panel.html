@@ -1,0 +1,255 @@
+@if (data(); as apv) {
+<div class="apv-layout">
+
+  <!-- Datos del candidato -->
+  <div class="apv-candidate">
+    <div class="apv-candidate__avatar">
+      {{ apv.candidate.firstName[0] }}{{ apv.candidate.lastName[0] }}
+    </div>
+    <div class="apv-candidate__info">
+      <p class="apv-candidate__name">
+        {{ apv.candidate.firstName }}
+        @if (apv.candidate.middleName) { {{ apv.candidate.middleName }} }
+        {{ apv.candidate.lastName }}
+        @if (apv.candidate.secondLastName) { {{ apv.candidate.secondLastName }} }
+      </p>
+      <div class="apv-candidate__meta">
+        @if (apv.candidate.documentType && apv.candidate.documentId) {
+          <span class="apv-candidate__tag">
+            <span class="material-icons-round">badge</span>
+            {{ apv.candidate.documentType }} {{ apv.candidate.documentId }}
+          </span>
+        }
+        @if (apv.candidate.personalEmail) {
+          <span class="apv-candidate__tag">
+            <span class="material-icons-round">mail</span>
+            {{ apv.candidate.personalEmail }}
+          </span>
+        }
+        @if (apv.candidate.cellPhone || apv.candidate.phone) {
+          <span class="apv-candidate__tag">
+            <span class="material-icons-round">phone</span>
+            {{ apv.candidate.cellPhone ?? apv.candidate.phone }}
+          </span>
+        }
+        @if (apv.candidate.position?.name) {
+          <span class="apv-candidate__tag">
+            <span class="material-icons-round">work_outline</span>
+            {{ apv.candidate.position!.name }}
+          </span>
+        }
+        @if (apv.candidate.department?.name) {
+          <span class="apv-candidate__tag">
+            <span class="material-icons-round">account_tree</span>
+            {{ apv.candidate.department!.name }}
+          </span>
+        }
+        <span class="apv-candidate__tag">
+          <span class="material-icons-round">calendar_today</span>
+          Ingreso: {{ apv.candidate.hireDate | date:'dd/MM/yyyy' }}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Estado global -->
+  @if (apv.fullyApproved) {
+    <app-banner variant="success" icon="check_circle" title="Todas las aprobaciones completadas"></app-banner>
+  } @else if (apv.anyRejected) {
+    <app-banner variant="error" icon="cancel" title="El candidato tiene al menos una objeción registrada."></app-banner>
+  }
+
+  <!-- Líneas de aprobadores -->
+  <div>
+    <p class="apv-section-title">
+      <span class="material-icons-round">how_to_reg</span>
+      Aprobadores del proceso
+      <span class="sp-approver-count">{{ apv.approvedCount }}/{{ apv.totalApprovers }}</span>
+    </p>
+    <div class="apv-lines">
+      @for (line of apv.approverLines; track line.approverId) {
+        <div class="apv-line apv-line--{{ line.status | lowercase }}">
+          <div class="apv-line__avatar">
+            {{ line.approverName[0] }}{{ line.approverName.split(' ')[1]?.[0] }}
+          </div>
+          <div class="apv-line__body">
+            <p class="apv-line__name">{{ line.approverName }}</p>
+            @if (line.approverRole) {
+              <p class="apv-line__role">{{ line.approverRole }}</p>
+            }
+            @if (line.comment) {
+              <p class="apv-line__comment">"{{ line.comment }}"</p>
+            }
+          </div>
+          <div class="apv-line__decision">
+            <span class="apv-line__status apv-line__status--{{ line.status | lowercase }}">
+              @if (line.status === 'APPROVED') {
+                <span class="material-icons-round">check_circle</span> Aprobado
+              } @else if (line.status === 'REJECTED') {
+                <span class="material-icons-round">cancel</span> Objetado
+              } @else {
+                <span class="material-icons-round">hourglass_empty</span> Pendiente
+              }
+            </span>
+            @if (line.decidedAt) {
+              <span class="apv-line__date">{{ line.decidedAt | date:'dd/MM/yyyy HH:mm' }}</span>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- Aprobación de RRHH -->
+  <div>
+    <p class="apv-section-title">
+      <span class="material-icons-round">supervised_user_circle</span>
+      Aprobación de Recursos Humanos
+    </p>
+    @if (apv.hrApprovals.length > 0) {
+      <div class="apv-lines">
+        @for (hr of apv.hrApprovals; track hr.approverId) {
+          <div class="apv-line apv-line--{{ hr.status | lowercase }}">
+            <div class="apv-line__avatar">
+              {{ hr.approverName[0] }}{{ hr.approverName.split(' ')[1]?.[0] }}
+            </div>
+            <div class="apv-line__body">
+              <p class="apv-line__name">{{ hr.approverName }}</p>
+              @if (hr.comment) {
+                <p class="apv-line__comment">"{{ hr.comment }}"</p>
+              }
+            </div>
+            <div class="apv-line__decision">
+              <span class="apv-line__status apv-line__status--{{ hr.status | lowercase }}">
+                @if (hr.status === 'APPROVED') {
+                  <span class="material-icons-round">check_circle</span> Aprobado
+                } @else if (hr.status === 'REJECTED') {
+                  <span class="material-icons-round">cancel</span> Objetado
+                } @else {
+                  <span class="material-icons-round">hourglass_empty</span> Pendiente
+                }
+              </span>
+              @if (hr.decidedAt) {
+                <span class="apv-line__date">{{ hr.decidedAt | date:'dd/MM/yyyy HH:mm' }}</span>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    } @else {
+      <p class="sp-info-empty">Sin aprobación de RRHH aún.</p>
+    }
+  </div>
+
+  <!-- Acción: votar -->
+  @if (canApproveAsApprover() || isHRUser()) {
+    <div class="apv-action-box">
+      <p class="apv-action-box__title">
+        <span class="material-icons-round">rate_review</span>
+        @if (isHRUser()) { Tu aprobación como RRHH } @else { Tu aprobación }
+      </p>
+
+      <!-- Aprobador normal -->
+      @if (!isHRUser()) {
+        @if (myApprovalLine(); as myLine) {
+          @if (myLine.status !== 'PENDING' && !isEditing()) {
+            <div class="apv-vote-result apv-vote-result--{{ myLine.status | lowercase }}">
+              <span class="apv-vote-result__icon material-icons-round">
+                {{ myLine.status === 'APPROVED' ? 'check_circle' : 'cancel' }}
+              </span>
+              <div class="apv-vote-result__body">
+                <p class="apv-vote-result__label">
+                  {{ myLine.status === 'APPROVED' ? 'Aprobaste este candidato' : 'Objetaste este candidato' }}
+                </p>
+                @if (myLine.comment) {
+                  <p class="apv-vote-result__comment">"{{ myLine.comment }}"</p>
+                }
+                @if (myLine.decidedAt) {
+                  <span class="apv-vote-result__date">{{ myLine.decidedAt | date:'dd/MM/yyyy HH:mm' }}</span>
+                }
+              </div>
+              <app-button variant="ghost" icon="edit" (clicked)="startEdit(myLine.comment)">Editar</app-button>
+            </div>
+          } @else {
+            @if (isEditing()) {
+              <app-banner variant="info" icon="edit" title="Editando tu voto — los cambios reemplazarán el anterior."></app-banner>
+            }
+            <app-textarea [formControl]="commentCtrl" placeholder="Comentario (opcional) — explica tu decisión..." [rows]="3"></app-textarea>
+            <div class="apv-actions-row">
+              <app-button variant="primary" icon="check_circle"
+                [loading]="isSubmitting()" [disabled]="isSubmitting()"
+                (clicked)="vote('APPROVED')">Aprobar</app-button>
+              <app-button variant="danger" icon="cancel"
+                [loading]="isSubmitting()" [disabled]="isSubmitting()"
+                (clicked)="vote('REJECTED')">Objetar</app-button>
+              @if (isEditing()) {
+                <app-button variant="ghost" [disabled]="isSubmitting()" (clicked)="cancelEdit()">Cancelar</app-button>
+              }
+            </div>
+          }
+        }
+      }
+
+      <!-- HR -->
+      @if (isHRUser()) {
+        @if (apv.hrApprovals.length > 0 && !isEditing()) {
+          @if (apv.hrApprovals[apv.hrApprovals.length - 1]; as lastVote) {
+            <div class="apv-vote-result apv-vote-result--{{ lastVote.status | lowercase }}">
+              <span class="apv-vote-result__icon material-icons-round">
+                {{ lastVote.status === 'APPROVED' ? 'check_circle' : 'cancel' }}
+              </span>
+              <div class="apv-vote-result__body">
+                <p class="apv-vote-result__label">
+                  {{ lastVote.status === 'APPROVED' ? 'Aprobaste como RRHH' : 'Objetaste como RRHH' }}
+                </p>
+                @if (lastVote.comment) {
+                  <p class="apv-vote-result__comment">"{{ lastVote.comment }}"</p>
+                }
+              </div>
+              <app-button variant="ghost" icon="edit" (clicked)="startEdit(lastVote.comment)">Editar</app-button>
+            </div>
+          }
+        } @else {
+          @if (isEditing()) {
+            <app-banner variant="info" icon="edit" title="Editando tu voto de RRHH."></app-banner>
+          }
+          <app-textarea [formControl]="commentCtrl" placeholder="Comentario (opcional) — explica tu decisión..." [rows]="3"></app-textarea>
+          <div class="apv-actions-row">
+            <app-button variant="primary" icon="check_circle"
+              [loading]="isSubmitting()" [disabled]="isSubmitting()"
+              (clicked)="vote('APPROVED')">Aprobar</app-button>
+            <app-button variant="danger" icon="cancel"
+              [loading]="isSubmitting()" [disabled]="isSubmitting()"
+              (clicked)="vote('REJECTED')">Objetar</app-button>
+            @if (isEditing()) {
+              <app-button variant="ghost" [disabled]="isSubmitting()" (clicked)="cancelEdit()">Cancelar</app-button>
+            }
+          </div>
+        }
+      }
+    </div>
+  }
+
+  <!-- Convertir en colaborador -->
+  @if (isHRUser() && apv.fullyApproved && apv.candidate.status === 'SELECTED') {
+    @if (convertError()) {
+      <app-banner variant="error" icon="error" [title]="convertError()"></app-banner>
+    }
+    <div class="apv-convert-box">
+      <span class="apv-convert-box__text">
+        <span class="material-icons-round">verified_user</span>
+        Todas las aprobaciones completadas — listo para incorporar
+      </span>
+      <app-button
+        variant="primary"
+        icon="person_check"
+        [loading]="isConverting()"
+        [disabled]="isConverting()"
+        (clicked)="convertRequested.emit()">
+        Convertir en colaborador
+      </app-button>
+    </div>
+  }
+
+</div>
+}

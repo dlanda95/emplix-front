@@ -1,22 +1,23 @@
 import { Component, inject, signal, effect, computed } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { AppInput, AppSelect, Banner, Button, SectionCard } from '@shared/ui';
+import { pastDateValidator } from '@shared/validators/date-range.validator';
+import { AppInput, AppSelect, Banner, Button, SectionCard, LocationCascade } from '@shared/ui';
 import { OnboardingService } from '../../services/onboarding.service';
 import { DOCUMENT_TYPE_OPTIONS, GENDER_OPTIONS, MARITAL_STATUS_OPTIONS,
          ACADEMIC_LEVEL_OPTIONS } from '@features/portal/models/catalog.model';
 
 @Component({
   selector: 'app-paso-identidad',
-  imports: [ReactiveFormsModule, AppInput, AppSelect, Banner, Button, SectionCard],
+  imports: [ReactiveFormsModule, AppInput, AppSelect, Banner, Button, SectionCard, LocationCascade],
   templateUrl: './paso-identidad.html',
-  styleUrl: './paso-identidad.scss',
 })
 export class PasoIdentidad {
   private readonly fb      = inject(FormBuilder);
   readonly svc             = inject(OnboardingService);
   readonly isSaving    = signal(false);
   readonly saved       = signal(false);
+  readonly today       = new Date().toISOString().slice(0, 10);
   readonly saveError   = signal('');
 
   readonly isDirty   = computed(() => this.svc.isDirty(this.STEP_KEY));
@@ -34,7 +35,7 @@ export class PasoIdentidad {
     secondLastName:[''],
     documentType:  ['DNI', Validators.required],
     documentId:    ['', Validators.required],
-    birthDate:     [''],
+    birthDate:     ['2000-01-01', pastDateValidator],
     gender:        [''],
     maritalStatus: [''],
     nationality:   ['Peruana'],
@@ -57,7 +58,7 @@ export class PasoIdentidad {
       const p = this.svc.profile();
       if (!p) return;
       const draft = this.svc.getDraft(this.STEP_KEY);
-      const values = draft ?? { ...p, birthDate: p.birthDate?.slice(0, 10) ?? '' };
+      const values = draft ?? { ...p, birthDate: p.birthDate?.slice(0, 10) || '2000-01-01' };
       this.form.patchValue(values as any, { emitEvent: false });
     });
 

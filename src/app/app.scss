@@ -1,0 +1,37 @@
+.dev-badge {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 16px;
+  background: #f59e0b;
+  color: #1c1400;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  border-radius: 100px;
+  box-shadow: 0 4px 16px rgba(245, 158, 11, 0.5), 0 1px 4px rgba(0,0,0,0.2);
+  pointer-events: none;
+  user-select: none;
+  font-family: monospace;
+  line-height: 1;
+
+  &::before {
+    content: '';
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #1c1400;
+    opacity: 0.5;
+    animation: dev-pulse 1.8s ease-in-out infinite;
+  }
+}
+
+@keyframes dev-pulse {
+  0%, 100% { opacity: 0.35; transform: scale(1);    }
+  50%       { opacity: 0.8;  transform: scale(1.25); }
+}

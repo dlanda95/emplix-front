@@ -1,0 +1,15 @@
+.bl {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--text-secondary);
+  text-decoration: none;
+  width: fit-content;
+  padding: var(--space-1) 0;
+  transition: color var(--transition-fast);
+
+  .material-icons-round { font-size: 18px; }
+  &:hover { color: var(--color-primary); }
+}

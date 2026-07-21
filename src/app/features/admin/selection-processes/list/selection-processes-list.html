@@ -1,0 +1,216 @@
+<app-admin-page-layout>
+<div class="sp-list">
+
+  <app-page-header
+    title="Procesos de Selección"
+    subtitle="Organiza y gestiona el reclutamiento por proceso">
+    <app-button variant="primary" icon="add_circle" [disabled]="!perms.canCreate()" (clicked)="openCreateModal()">
+      Nuevo proceso
+    </app-button>
+  </app-page-header>
+
+  @if (loadError()) {
+    <app-banner variant="error" icon="error" [title]="loadError()"></app-banner>
+  }
+
+  <div class="sp-list__filters">
+    <app-input placeholder="Buscar por nombre o código..." icon="search" [formControl]="searchCtrl">
+    </app-input>
+  </div>
+
+  @if (isLoading()) {
+    <app-loading-skeleton variant="card"></app-loading-skeleton>
+  } @else if (processes().length === 0 && !loadError()) {
+    <app-empty-state
+      icon="work_history"
+      title="Sin procesos de selección"
+      description="Crea el primer proceso para comenzar a agregar candidatos.">
+    </app-empty-state>
+  } @else {
+
+    <!-- ── Tabla desktop (> 768px) ───────────────────────────────────────── -->
+    <app-section-card title="Procesos" [columns]="1" class="sp-table-card">
+      <app-data-table>
+        <thead>
+          <tr>
+            <th>Código</th>
+            <th>Puesto</th>
+            <th>Área / Subárea</th>
+            <th>Estado</th>
+            <th>Candidatos</th>
+            <th>Apertura</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (p of processes(); track p.id) {
+            <tr class="sp-table-row" (click)="openProcess(p)" tabindex="0" (keydown.enter)="openProcess(p)">
+              <td><span class="sp-code-tag">{{ p.code }}</span></td>
+              <td><strong>{{ p.position?.name ?? '—' }}</strong></td>
+              <td class="dt-muted">{{ deptLabel(p) }}</td>
+              <td>
+                <app-badge [variant]="p.status | spStatusVariant">{{ p.status | spStatusLabel }}</app-badge>
+              </td>
+              <td>
+                <span class="sp-count-cell">
+                  <span class="material-icons-round">group</span>
+                  {{ p._count.candidates }}
+                </span>
+              </td>
+              <td class="dt-muted">{{ p.createdAt | date:'dd/MM/yyyy' }}</td>
+              <td class="dt-actions">
+                <app-button variant="ghost" size="sm" icon="chevron_right" (clicked)="openProcess(p)">Ver</app-button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </app-data-table>
+    </app-section-card>
+
+    <!-- ── Cards mobile (≤ 768px) ────────────────────────────────────────── -->
+    <div class="sp-cards-mobile">
+      @for (p of processes(); track p.id) {
+        <div class="sp-card" (click)="openProcess(p)" role="button" tabindex="0" (keydown.enter)="openProcess(p)">
+          <div class="sp-card__left">
+            <div class="sp-card__icon"><span class="material-icons-round">work_history</span></div>
+            <div class="sp-card__info">
+              <p class="sp-card__code">{{ p.code }}</p>
+              <p class="sp-card__name">{{ p.position?.name ?? '—' }}</p>
+              <p class="sp-card__meta">{{ deptLabel(p) }} · {{ p.createdAt | date:'dd/MM/yyyy' }}</p>
+            </div>
+          </div>
+          <div class="sp-card__right">
+            <span class="sp-count-cell"><span class="material-icons-round">group</span>{{ p._count.candidates }}</span>
+            <app-badge [variant]="p.status | spStatusVariant">{{ p.status | spStatusLabel }}</app-badge>
+            <span class="material-icons-round sp-card__chevron">chevron_right</span>
+          </div>
+        </div>
+      }
+    </div>
+
+    <div class="sp-list__pagination">
+      <app-pagination [page]="page()" [total]="total()" [pageSize]="pageSize" (pageChange)="onPageChange($event)">
+      </app-pagination>
+    </div>
+
+  }
+
+</div>
+</app-admin-page-layout>
+
+<!-- ══ Modal: Nuevo Proceso de Selección ══════════════════════════════════════ -->
+<app-modal [isOpen]="isCreateModalOpen()" title="Nuevo Proceso de Selección" (close)="closeCreateModal()">
+
+  @if (createError()) {
+    <app-banner variant="error" icon="error" [title]="createError()"></app-banner>
+  }
+
+  <form [formGroup]="createForm" class="sp-create-form">
+
+    <!-- ── Sección: Ubicación del puesto ─────────────────────────────────── -->
+    <div class="sp-create-form__section">
+      <p class="sp-create-form__section-title">
+        <span class="material-icons-round">account_tree</span> Ubicación del puesto
+      </p>
+
+      <!-- Área (siempre visible) -->
+      <app-select
+        label="Área *"
+        formControlName="areaId"
+        [options]="areaOptions()">
+      </app-select>
+
+      <!-- Subárea (solo si el área tiene subáreas) -->
+      @if (hasSubareas()) {
+        <app-select
+          label="Subárea"
+          formControlName="subareaId"
+          [options]="subareaOptions()">
+        </app-select>
+      }
+
+      <!-- Puesto (filtrado por área/subárea seleccionada) -->
+      <app-select
+        label="Puesto *"
+        formControlName="positionId"
+        [options]="positionOptions()">
+      </app-select>
+
+      <app-input
+        label="Descripción"
+        formControlName="description"
+        placeholder="Objetivo y alcance de este proceso (opcional)..."
+        hint="Máximo 500 caracteres">
+      </app-input>
+    </div>
+
+    <!-- ── Sección: Aprobadores ──────────────────────────────────────────── -->
+    <div class="sp-create-form__section">
+      <p class="sp-create-form__section-title">
+        <span class="material-icons-round">how_to_reg</span>
+        Aprobadores
+        <span class="sp-approver-count">{{ selectedApprovers().length }}/5</span>
+      </p>
+
+      <!-- Chips de aprobadores seleccionados -->
+      @if (selectedApprovers().length > 0) {
+        <div class="sp-approver-chips">
+          @for (a of selectedApprovers(); track a.id; let i = $index) {
+            <div class="sp-approver-chip">
+              <span class="sp-approver-chip__order">{{ i + 1 }}</span>
+              <span class="sp-approver-chip__name">{{ a.firstName }} {{ a.lastName }}</span>
+              <button type="button" class="sp-approver-chip__remove" (click)="removeApprover(a.id)">
+                <span class="material-icons-round">close</span>
+              </button>
+            </div>
+          }
+        </div>
+      }
+
+      <!-- Buscador de colaboradores (oculto cuando ya hay 5) -->
+      @if (selectedApprovers().length < 5) {
+        <div class="sp-approver-picker">
+          <app-input
+            placeholder="Buscar colaborador por nombre o puesto..."
+            icon="search"
+            [formControl]="approverSearchCtrl">
+          </app-input>
+          <div class="sp-approver-list">
+            @for (e of filteredEmployees(); track e.id) {
+              <button type="button" class="sp-approver-item" (click)="toggleApprover(e)">
+                <span class="sp-approver-item__avatar">
+                  {{ e.firstName[0] }}{{ e.lastName[0] }}
+                </span>
+                <span class="sp-approver-item__info">
+                  <span class="sp-approver-item__name">{{ e.firstName }} {{ e.lastName }}</span>
+                  @if (e.position?.name) {
+                    <span class="sp-approver-item__role">{{ e.position!.name }}</span>
+                  }
+                </span>
+                <span class="material-icons-round sp-approver-item__add">add_circle</span>
+              </button>
+            } @empty {
+              <p class="sp-approver-list__empty">
+                {{ allEmployees().length === 0 ? 'Cargando colaboradores...' : 'No se encontraron resultados.' }}
+              </p>
+            }
+          </div>
+        </div>
+      }
+    </div>
+
+    <!-- ── Código automático ─────────────────────────────────────────────── -->
+    <app-banner variant="info" icon="tag" title="El proceso se identificará por su código">
+      <span>Se generará automáticamente un código único, ej. <strong>PS-2026-000001</strong>.</span>
+    </app-banner>
+
+  </form>
+
+  <ng-container modal-actions>
+    <app-button variant="ghost" (clicked)="closeCreateModal()">Cancelar</app-button>
+    <app-button variant="primary" icon="add_circle" [loading]="isCreating()" [disabled]="isCreating()" (clicked)="createProcess()">
+      Crear proceso
+    </app-button>
+  </ng-container>
+
+</app-modal>

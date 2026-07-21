@@ -1,31 +1,39 @@
 <aside class="sidebar-container" [class.is-collapsed]="collapsed()">
-  
+
   <div class="sidebar-header">
     <div class="logo-box">
       <span class="material-icons-round logo-icon">bolt</span>
     </div>
-    
     <div class="app-info">
       <span class="app-name">Emplix</span>
     </div>
   </div>
 
   <nav class="sidebar-nav">
-    @for (item of menuItems(); track item.label) {
-      
-      @if (!item.children) {
-        <a [routerLink]="item.route" 
-           routerLinkActive="active" 
+    @for (item of menuItems(); track item.label + (item.type ?? '')) {
+
+      @if (item.type === 'section') {
+        <!-- Etiqueta de sección -->
+        <div class="nav-section-label">
+          <span class="text">{{ item.label }}</span>
+        </div>
+      }
+
+      @else if (!item.children) {
+        <!-- Ítem hoja (con ruta directa) -->
+        <a [routerLink]="item.route"
+           routerLinkActive="active"
            class="nav-item"
            [title]="collapsed() ? item.label : ''">
           <span class="material-icons-round icon">{{ item.icon }}</span>
           <span class="text">{{ item.label }}</span>
         </a>
-      } 
-      
+      }
+
       @else {
+        <!-- Grupo expandible -->
         <div class="nav-group">
-          <button class="nav-item parent" 
+          <button class="nav-item parent"
                   (click)="toggleSubmenu(item)"
                   [class.active]="isActive(item)"
                   [class.expanded]="item.expanded">
@@ -37,8 +45,8 @@
           @if (!collapsed() && item.expanded) {
             <div class="submenu fade-in">
               @for (child of item.children; track child.route) {
-                <a [routerLink]="child.route" 
-                   routerLinkActive="active" 
+                <a [routerLink]="child.route"
+                   routerLinkActive="active"
                    class="nav-item child">
                   <span class="material-icons-round icon sub-icon">{{ child.icon }}</span>
                   <span class="text">{{ child.label }}</span>
@@ -48,6 +56,7 @@
           }
         </div>
       }
+
     }
   </nav>
 

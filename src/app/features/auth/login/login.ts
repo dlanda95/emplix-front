@@ -1,13 +1,15 @@
-import { Component, inject, signal, computed } from '@angular/core';
+import { Component, inject, signal, computed, OnInit, HostListener, ElementRef } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators, FormControl, FormGroup } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { MsalService } from '@azure/msal-angular';
 import { finalize } from 'rxjs';
 
-import { AuthService }   from '@core/auth/auth';
-import { TenantService } from '@core/services/tenant.service';
-import { InputField, PrimaryBtn } from '@shared/ui';
+import { AuthService }         from '@core/auth/auth';
+import { TenantService }       from '@core/services/tenant.service';
+import { AppInput, Button } from '@shared/ui';
+import { AuthSplitLayout } from '@shared/ui';
+import { DomainsConfigService, PublicDomain } from '@features/admin/config/domains/domains.service';
 import { environment } from '@env';
 
 type AuthErrorCode =
@@ -23,39 +25,50 @@ type AuthErrorCode =
 
 @Component({
   selector: 'app-login',
-  imports: [ReactiveFormsModule, RouterLink, InputField, PrimaryBtn],
+  imports: [ReactiveFormsModule, RouterLink, AppInput, Button, AuthSplitLayout],
   templateUrl: './login.html',
-  styleUrl: './login.scss',
 })
-export class Login {
+export class Login implements OnInit {
   private readonly fb            = inject(FormBuilder);
   private readonly tenantService = inject(TenantService);
+  private readonly route         = inject(ActivatedRoute);
   readonly authService           = inject(AuthService);
   private readonly router        = inject(Router);
   private readonly msalService   = inject(MsalService);
+  private readonly domainsSvc    = inject(DomainsConfigService);
+  private readonly elRef         = inject(ElementRef);
 
-  readonly step          = signal<1 | 2>(1);
-  readonly loginMode     = signal<'colaborador' | 'candidato'>('colaborador');
-  readonly isLoading     = signal(false);
-  readonly isMsalLoading = signal(false);
-  readonly errorMessage  = signal('');
+  readonly step           = signal<1 | 2>(1);
+  readonly loginMode      = signal<'colaborador' | 'candidato'>('colaborador');
+  readonly isLoading      = signal(false);
+  readonly isMsalLoading  = signal(false);
+  readonly errorMessage   = signal('');
+  readonly sessionExpired    = signal(false);
+  readonly passwordResetDone = signal(false);
 
-  // Refleja si la empresa tiene SSO de Microsoft configurado
+  // Dominios del tenant
+  readonly domains        = signal<PublicDomain[]>([]);
+  readonly selectedDomain = signal<PublicDomain | null>(null);
+  readonly domainOpen     = signal(false);
+
+  readonly hasDomains    = computed(() => this.domains().length > 0);
+  readonly multiDomain   = computed(() => this.domains().length > 1);
+  readonly primaryDomain = computed(() => this.domains().find(d => d.isPrimary) ?? this.domains()[0] ?? null);
+
   readonly hasMicrosoftSSO = computed(() => this.authService.hasMicrosoftSSO());
-
-  readonly isCandidate  = computed(() => this.loginMode() === 'candidato');
-  readonly fieldLabel   = computed(() => this.isCandidate() ? 'Número de Documento' : 'Correo Corporativo');
-  readonly fieldPlaceholder = computed(() => this.isCandidate() ? 'Ej. 12345678' : 'nombre@empresa.com');
-  readonly fieldIcon    = computed(() => this.isCandidate() ? 'badge' : 'email');
-  readonly fieldType    = computed(() => this.isCandidate() ? 'text' : 'email');
-  readonly passwordHint = computed(() => this.isCandidate() ? 'Tu contraseña inicial es tu número de documento' : '');
+  readonly isCandidate     = computed(() => this.loginMode() === 'candidato');
+  readonly fieldLabel      = computed(() => this.isCandidate() ? 'Número de Documento' : (this.hasDomains() ? 'Usuario' : 'Correo Corporativo'));
+  readonly fieldPlaceholder = computed(() => this.isCandidate() ? 'Ej. 12345678' : (this.hasDomains() ? 'nombre.apellido' : 'nombre@empresa.com'));
+  readonly fieldIcon       = computed(() => this.isCandidate() ? 'badge' : (this.hasDomains() ? 'person' : 'email'));
+  readonly fieldType       = computed(() => this.isCandidate() ? 'text' : (this.hasDomains() ? 'text' : 'email'));
+  readonly passwordHint    = computed(() => this.isCandidate() ? 'Tu contraseña inicial es tu número de documento' : '');
 
   tenantForm = this.fb.group({
     slug: [this.authService.currentTenant() || '', [Validators.required, Validators.minLength(3)]],
   });
 
   loginForm = this.fb.group({
-    email:    ['', [Validators.required]],   // acepta email o número de documento
+    email:    ['', [Validators.required]],
     password: ['', [Validators.required, Validators.minLength(6)]],
   });
 
@@ -70,6 +83,18 @@ export class Login {
     }
   }
 
+  ngOnInit(): void {
+    if (this.route.snapshot.queryParams['reason'] === 'session_expired') {
+      this.sessionExpired.set(true);
+    }
+    if (this.route.snapshot.queryParams['success'] === 'password_reset') {
+      this.passwordResetDone.set(true);
+    }
+    if (this.tenantService.getTenant()) {
+      this.loadDomains();
+    }
+  }
+
   getControl(form: FormGroup, name: string): FormControl {
     return form.get(name) as FormControl;
   }
@@ -81,18 +106,30 @@ export class Login {
 
     this.isLoading.set(true);
     this.errorMessage.set('');
-    const slug = this.tenantForm.get('slug')!.value!;
+    const slug = this.tenantForm.get('slug')!.value!.toLowerCase().trim();
 
     this.authService.checkTenantAvailability(slug).subscribe({
       next: () => {
-        this.isLoading.set(false);
         this.tenantService.setTenant(slug);
+        this.loadDomains();
+        this.isLoading.set(false);
         this.step.set(2);
       },
       error: (err: Error) => {
         this.isLoading.set(false);
         this.errorMessage.set(err.message);
       },
+    });
+  }
+
+  private loadDomains(): void {
+    this.domainsSvc.getPublicDomains().subscribe({
+      next: (list) => {
+        this.domains.set(list);
+        const primary = list.find(d => d.isPrimary) ?? list[0] ?? null;
+        this.selectedDomain.set(primary);
+      },
+      // Error silencioso: si no hay dominios configurados, el campo de email se muestra completo
     });
   }
 
@@ -105,17 +142,48 @@ export class Login {
     this.isLoading.set(true);
     this.errorMessage.set('');
 
-    const { email, password } = this.loginForm.value;
-    this.authService.login({ email: email!, password: password! }).subscribe({
+    const rawValue = this.loginForm.value.email!;
+    const password = this.loginForm.value.password!;
+
+    // Si hay dominios y el usuario está en modo colaborador, construimos el email completo
+    const email = ((!this.isCandidate() && this.hasDomains() && this.selectedDomain())
+      ? `${rawValue}@${this.selectedDomain()!.domain}`
+      : rawValue).toLowerCase().trim();
+
+    this.authService.login({ email, password }).subscribe({
       next: () => {
         this.isLoading.set(false);
-        this.router.navigate(this.authService.getPostLoginRoute());
+        if (this.authService.currentUser()?.mustChangePassword) {
+          this.router.navigate(['/auth/change-password']);
+        } else {
+          this.router.navigate(this.authService.getPostLoginRoute());
+        }
       },
       error: (err: HttpErrorResponse) => {
         this.isLoading.set(false);
         this.handleLoginError(err);
       },
     });
+  }
+
+  // ── Selector de dominio ───────────────────────────────────────────────────
+
+  toggleDomainMenu(): void {
+    if (this.multiDomain()) this.domainOpen.update(v => !v);
+  }
+
+  selectDomain(d: PublicDomain): void {
+    this.selectedDomain.set(d);
+    this.domainOpen.set(false);
+  }
+
+  closeDomainMenu(): void { this.domainOpen.set(false); }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    if (this.domainOpen() && !this.elRef.nativeElement.contains(event.target)) {
+      this.domainOpen.set(false);
+    }
   }
 
   // ── PASO 2-B: Login con Microsoft ─────────────────────────────────────────
@@ -134,7 +202,13 @@ export class Login {
       .subscribe({
         next: (result) => {
           this.authService.loginWithMicrosoft(result.idToken).subscribe({
-            next: () => this.router.navigate(this.authService.getPostLoginRoute()),
+            next: () => {
+              if (this.authService.currentUser()?.mustChangePassword) {
+                this.router.navigate(['/auth/change-password']);
+              } else {
+                this.router.navigate(this.authService.getPostLoginRoute());
+              }
+            },
             error: (err: HttpErrorResponse) => this.handleLoginError(err),
           });
         },
@@ -156,6 +230,7 @@ export class Login {
     this.loginMode.set(mode);
     this.errorMessage.set('');
     this.loginForm.reset();
+    this.domainOpen.set(false);
   }
 
   goBack(): void {
@@ -164,6 +239,8 @@ export class Login {
     this.errorMessage.set('');
     this.loginForm.reset();
     this.tenantForm.reset();
+    this.domains.set([]);
+    this.selectedDomain.set(null);
   }
 
   // ── Manejo de errores ─────────────────────────────────────────────────────
@@ -177,7 +254,7 @@ export class Login {
         this.getControl(this.loginForm, 'email').setErrors({
           serverError: this.isCandidate()
             ? (message ?? 'El número de documento no está registrado. Contacta a RRHH.')
-            : (message ?? 'El correo no está registrado en esta empresa.'),
+            : (message ?? 'El usuario no está registrado en esta empresa.'),
         });
         break;
       case 'WRONG_PASSWORD':

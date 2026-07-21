@@ -1,0 +1,50 @@
+<app-drawer [isOpen]="isOpen" title="Editar datos laborales" (close)="onClose()">
+
+  @if (loadingData()) {
+    <p style="font-size:var(--text-sm); color:var(--text-secondary); padding:1rem 0; margin:0;">
+      Cargando opciones...
+    </p>
+  } @else {
+    <form [formGroup]="form" (ngSubmit)="submit()">
+
+      @if (errorMsg()) {
+        <app-banner variant="error" icon="error" [title]="errorMsg()"></app-banner>
+      }
+
+      <app-form-section title="Organización">
+        <app-col-grid>
+          <app-select label="Área / Departamento" formControlName="departmentId" [options]="deptOptions()"></app-select>
+        </app-col-grid>
+        <app-col-grid>
+          <app-select label="Cargo / Posición" formControlName="positionId" [options]="posOptions()"></app-select>
+        </app-col-grid>
+        <app-col-grid>
+          <app-select label="Supervisor directo" formControlName="supervisorId" [options]="empOptions()"></app-select>
+        </app-col-grid>
+      </app-form-section>
+
+      <app-form-section title="Condiciones de empleo">
+        <app-col-grid>
+          <app-select label="Tipo de contrato" formControlName="contractType" [options]="contractOptions()"></app-select>
+        </app-col-grid>
+        <app-col-grid>
+          <app-select label="Turno de trabajo" formControlName="workShiftId" [options]="shiftOptions()"></app-select>
+        </app-col-grid>
+        <app-col-grid>
+          <app-input label="Salario (S/.)" type="number" formControlName="salary" [min]="'0'"></app-input>
+        </app-col-grid>
+      </app-form-section>
+
+    </form>
+  }
+
+  <div drawer-footer>
+    <div style="display:flex; align-items:center; justify-content:flex-end; gap:.75rem; width:100%;">
+      <app-button variant="ghost" (clicked)="onClose()">Cancelar</app-button>
+      <app-button variant="primary" [loading]="saving()" [disabled]="loadingData()" (clicked)="submit()">
+        Guardar cambios
+      </app-button>
+    </div>
+  </div>
+
+</app-drawer>

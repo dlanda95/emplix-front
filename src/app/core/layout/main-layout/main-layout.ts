@@ -1,26 +1,29 @@
-import { Component,inject } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { Sidebar } from '../sidebar/sidebar'; // 🔥 Importar
-import { Topbar } from '../topbar/topbar';
 import { CommonModule } from '@angular/common';
+import { Sidebar } from '../sidebar/sidebar';
+import { Topbar } from '../topbar/topbar';
 import { LayoutService } from '../services/layout';
+import { SessionService } from '@core/auth/session.service';
 
 @Component({
   selector: 'app-main-layout',
-  imports: [RouterOutlet, CommonModule,Sidebar,Topbar],
+  imports: [RouterOutlet, CommonModule, Sidebar, Topbar],
   templateUrl: './main-layout.html',
   styleUrl: './main-layout.scss',
 })
 export class MainLayout {
-private layoutService = inject(LayoutService);
-  
-  // 1. Signal para Desktop (Mini vs Full)
+  private readonly layoutService = inject(LayoutService);
+  readonly session               = inject(SessionService);
+
   desktopCollapsed = this.layoutService.isSidebarCollapsed;
+  mobileOpen       = this.layoutService.mobileMenuOpen;
 
-  // 2. Signal para Móvil (Oculto vs Visible)
-  mobileOpen = this.layoutService.mobileMenuOpen;
+  constructor() {
+    this.session.init();
+  }
 
-  closeMobileSidebar() {
+  closeMobileSidebar(): void {
     this.layoutService.closeMobileMenu();
   }
 }

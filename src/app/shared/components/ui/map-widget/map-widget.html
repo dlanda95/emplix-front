@@ -1,13 +1,13 @@
 <div class="map-card">
-  
+
   <div class="map-visual">
     <span class="material-icons-round map-icon">location_on</span>
     <span class="map-label">Ver en Mapa</span>
   </div>
 
   <div class="map-footer">
-    <p class="address-summary">{{ address || 'Dirección no especificada' }}</p>
-    <p class="city-summary">{{ city || 'Ciudad no especificada' }}</p>
+    <p class="address-summary">{{ address() || 'Dirección no especificada' }}</p>
+    <p class="city-summary">{{ city() || 'Ciudad no especificada' }}</p>
   </div>
 
 </div>

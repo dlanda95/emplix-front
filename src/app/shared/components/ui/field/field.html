@@ -1,7 +1,7 @@
 <div class="field-group">
-      <label class="field-label">{{ label }}</label>
-      <div class="field-value">
-        {{ value || '' }}
-        <ng-content></ng-content>
-      </div>
-    </div>
+  <label class="field-label">{{ label() }}</label>
+  <div class="field-value">
+    {{ value() ?? '' }}
+    <ng-content></ng-content>
+  </div>
+</div>

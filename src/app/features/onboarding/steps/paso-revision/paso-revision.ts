@@ -10,7 +10,6 @@ import { DOCUMENT_TYPE_OPTIONS, catalogLabel } from '@features/portal/models/cat
   selector: 'app-paso-revision',
   imports: [CommonModule, Banner, Button, Field, SectionCard, Modal],
   templateUrl: './paso-revision.html',
-  styleUrl: './paso-revision.scss',
 })
 export class PasoRevision {
   readonly svc          = inject(OnboardingService);

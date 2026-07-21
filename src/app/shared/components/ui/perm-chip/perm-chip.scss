@@ -1,0 +1,19 @@
+.pc {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: var(--text-xs);
+  padding: 2px 8px;
+  border-radius: 100px;
+  background: var(--bg-body);
+  color: var(--text-secondary);
+  opacity: 0.5;
+
+  .material-icons-round { font-size: 12px; }
+
+  &--on {
+    opacity: 1;
+    background: var(--color-success-soft);
+    color: var(--color-success);
+  }
+}

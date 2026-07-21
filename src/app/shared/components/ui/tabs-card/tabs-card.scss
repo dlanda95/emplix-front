@@ -75,20 +75,20 @@
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 0.45rem;
-  padding: 0.8rem 1.1rem;
-  margin: 0.3rem 0.1rem 0; // offset top → pill hover no tapa la línea base
+  gap: 0.375rem;
+  padding: 0.625rem 0.875rem;
+  margin: 0.25rem 0.1rem 0;
   border-radius: 8px 8px 0 0;
 
   font-family: inherit;
-  font-size: var(--text-base);
+  font-size: var(--text-sm);
   font-weight: 500;
   color: var(--text-secondary);
   white-space: nowrap;
   transition: color 0.18s ease, background-color 0.18s ease;
 
   .icon {
-    font-size: 1.1rem;
+    font-size: 1rem;
     opacity: 0.55;
     transition: opacity 0.18s, color 0.18s;
     line-height: 1;
@@ -123,9 +123,9 @@
   .tabs-container::after { left: 1rem; right: 1rem; }
   .tabs-nav { padding: 0 1rem; }
   .tab-btn  {
-    padding: 0.65rem 0.875rem;
+    padding: 0.5rem 0.75rem;
     font-size: var(--text-sm);
-    gap: 0.35rem;
-    .icon { font-size: 1rem; }
+    gap: 0.3rem;
+    .icon { font-size: 0.875rem; }
   }
 }

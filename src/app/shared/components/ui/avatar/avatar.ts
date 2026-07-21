@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, computed, input } from '@angular/core';
 
 export type AvatarSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
 
@@ -20,21 +20,21 @@ const PALETTES = [
   styleUrl: './avatar.scss',
 })
 export class Avatar {
-  @Input({ required: true }) name!: string;
-  @Input() src?: string;
-  @Input() size: AvatarSize = 'md';
+  readonly name = input.required<string>();
+  readonly src  = input<string | undefined>(undefined);
+  readonly size = input<AvatarSize>('md');
 
-  get initials(): string {
-    return this.name
+  readonly initials = computed(() =>
+    this.name()
       .trim()
       .split(/\s+/)
       .slice(0, 2)
       .map(w => w[0]?.toUpperCase() ?? '')
-      .join('');
-  }
+      .join('')
+  );
 
-  get palette() {
-    const idx = this.name.charCodeAt(0) % PALETTES.length;
+  readonly palette = computed(() => {
+    const idx = this.name().charCodeAt(0) % PALETTES.length;
     return PALETTES[idx];
-  }
+  });
 }

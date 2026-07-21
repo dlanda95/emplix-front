@@ -1,0 +1,132 @@
+<!-- ══ Modal: Registrar Candidato ══════════════════════════════════════════════ -->
+<app-modal [isOpen]="isOpen()" title="Registrar Candidato" (close)="close()">
+
+  @if (createError()) {
+    <app-banner variant="error" icon="error" [title]="createError()"></app-banner>
+  }
+
+  <form [formGroup]="form" class="create-candidate-form">
+
+    <div class="create-candidate-form__row">
+      <app-input label="Primer Nombre *"  formControlName="firstName"  placeholder="Ej. Juan"></app-input>
+      <app-input label="Segundo Nombre"   formControlName="middleName" placeholder="Ej. Carlos"></app-input>
+    </div>
+
+    <app-input label="Apellido Paterno *" formControlName="lastName" placeholder="Ej. García"></app-input>
+
+    <div class="create-candidate-form__row">
+      <app-select label="Tipo de Documento *" formControlName="documentType" [options]="documentTypes"></app-select>
+      <app-input
+        label="Nro. de Documento *"
+        formControlName="documentId"
+        placeholder="Ej. 12345678"
+        [hint]="documentHint"
+        [maxlength]="docMaxLength()"
+        [numericOnly]="docNumericOnly()"
+        [inputmode]="docNumericOnly() ? 'numeric' : 'text'">
+      </app-input>
+    </div>
+
+    <app-input
+      label="Correo Personal *"
+      type="email"
+      icon="email"
+      formControlName="personalEmail"
+      placeholder="correo@dominio.com"
+      hint="Se usará para enviar las credenciales de acceso">
+    </app-input>
+
+    <app-input
+      label="Fecha de Ingreso Estimada *"
+      type="date"
+      formControlName="hireDate"
+      min="1900-01-01"
+      max="2100-12-31">
+    </app-input>
+
+    @if (form.get('hireDate')?.touched && form.get('hireDate')?.errors) {
+      <span class="create-candidate-form__date-error">
+        @if (form.get('hireDate')?.hasError('required'))       { Campo obligatorio }
+        @else if (form.get('hireDate')?.hasError('dateOutOfRange')) { El año debe estar entre 1900 y 2100 }
+        @else if (form.get('hireDate')?.hasError('invalidDate'))    { La fecha no es válida }
+      </span>
+    }
+
+    <app-banner variant="info" icon="key" title="Acceso automático">
+      <p style="margin:0;">Al registrar se generará una contraseña segura y se enviará al correo personal del candidato.</p>
+    </app-banner>
+
+  </form>
+
+  <ng-container modal-actions>
+    <app-button variant="ghost"   (clicked)="close()">Cancelar</app-button>
+    <app-button variant="primary" icon="person_add"
+      [loading]="isCreating()" [disabled]="isCreating()"
+      (clicked)="submit()">
+      Registrar y generar acceso
+    </app-button>
+  </ng-container>
+
+</app-modal>
+
+<!-- ══ Modal: Credenciales generadas ══════════════════════════════════════════ -->
+<app-modal [isOpen]="showCredentialsModal()" title="Acceso generado" (close)="closeCredentials()">
+
+  @if (credentialData(); as cred) {
+
+    <div class="credentials-header">
+      <div class="credentials-header__icon-wrap">
+        <span class="material-icons-round">check_circle</span>
+      </div>
+      <p class="credentials-header__text">
+        <strong>{{ cred.employee.firstName }} {{ cred.employee.lastName }}</strong>
+        ya tiene acceso a la plataforma.
+      </p>
+    </div>
+
+    <div class="credentials-cards">
+
+      <div class="credentials-card">
+        <p class="credentials-card__label">Usuario</p>
+        <div class="credentials-card__row">
+          <span class="credentials-card__value">{{ cred.employee.documentId }}</span>
+          <app-button variant="ghost" size="sm"
+            [icon]="copiedField() === 'user' ? 'check' : 'content_copy'"
+            (clicked)="copyToClipboard('user')">
+            {{ copiedField() === 'user' ? 'Copiado' : 'Copiar' }}
+          </app-button>
+        </div>
+      </div>
+
+      <div class="credentials-card">
+        <p class="credentials-card__label">Contraseña Temporal</p>
+        <div class="credentials-card__row">
+          <span class="credentials-card__value credentials-card__value--primary">{{ cred.temporaryPassword }}</span>
+          <app-button variant="ghost" size="sm"
+            [icon]="copiedField() === 'pass' ? 'check' : 'content_copy'"
+            (clicked)="copyToClipboard('pass')">
+            {{ copiedField() === 'pass' ? 'Copiado' : 'Copiar' }}
+          </app-button>
+        </div>
+      </div>
+
+    </div>
+
+    @if (cred.emailSent) {
+      <app-banner variant="info" icon="mark_email_read" title="Correo enviado">
+        Credenciales enviadas a <strong>{{ cred.employee.personalEmail }}</strong>
+      </app-banner>
+    } @else {
+      <app-banner variant="warning" icon="mail_off" title="Correo no enviado">
+        El candidato fue registrado correctamente, pero el correo no pudo enviarse.
+        Comparte las credenciales manualmente.
+      </app-banner>
+    }
+
+  }
+
+  <ng-container modal-actions>
+    <app-button variant="primary" (clicked)="closeCredentials()">Entendido</app-button>
+  </ng-container>
+
+</app-modal>

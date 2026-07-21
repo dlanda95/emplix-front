@@ -1,0 +1,59 @@
+@use 'abstracts/variables' as *;
+
+.pagination {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  flex-wrap: wrap;
+
+  &__btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    height: 36px;
+    padding: 0 var(--space-2);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    background: var(--bg-surface);
+    color: var(--text-secondary);
+    font-size: var(--text-sm);
+    font-weight: var(--font-medium);
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+
+    .material-icons-round { font-size: 18px; }
+
+    &:hover:not(:disabled):not(.pagination__btn--active) {
+      background: var(--bg-hover);
+      color: var(--text-main);
+    }
+
+    &--active {
+      background: var(--color-primary);
+      border-color: var(--color-primary);
+      color: #fff;
+      cursor: default;
+    }
+
+    &:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+  }
+
+  &__ellipsis {
+    min-width: 36px;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: var(--text-sm);
+    pointer-events: none;
+  }
+
+  &__info {
+    margin-left: var(--space-3);
+    font-size: var(--text-sm);
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+}

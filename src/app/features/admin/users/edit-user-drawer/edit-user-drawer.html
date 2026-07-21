@@ -1,0 +1,87 @@
+<app-drawer
+  [isOpen]="isOpen"
+  title="Editar usuario"
+  [subtitle]="displayName"
+  width="sm"
+  (close)="onClose()">
+
+  @if (errorMsg()) {
+    <app-banner variant="error" icon="error" [title]="errorMsg()"></app-banner>
+  }
+
+  @if (!user?.isSystemUser) {
+    <app-banner variant="info" icon="info" title="Edición no disponible">
+      La edición de empleados se gestiona desde su ficha de colaborador.
+    </app-banner>
+  } @else {
+    <form [formGroup]="form">
+
+      <div style="
+        background:var(--bg-body);
+        border:1px solid var(--border-color);
+        border-radius:var(--radius-md);
+        padding:var(--space-4);
+        display:flex;
+        flex-direction:column;
+        gap:var(--space-3);
+        margin-bottom:var(--space-5);
+      ">
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:var(--space-3);">
+          <span style="font-size:var(--text-xs); font-weight:var(--font-semibold); text-transform:uppercase; letter-spacing:.05em; color:var(--text-secondary); white-space:nowrap;">Correo</span>
+          <span style="font-size:var(--text-sm); color:var(--text-main); text-align:right; word-break:break-all;">{{ user!.email }}</span>
+        </div>
+        @if (user!.systemUserType) {
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:var(--space-3);">
+            <span style="font-size:var(--text-xs); font-weight:var(--font-semibold); text-transform:uppercase; letter-spacing:.05em; color:var(--text-secondary); white-space:nowrap;">Tipo actual</span>
+            <span style="display:inline-flex; align-items:center; gap:var(--space-2); font-size:var(--text-sm); font-weight:var(--font-medium);"
+              [style.color]="user!.systemUserType.color">
+              <span style="width:8px; height:8px; border-radius:50%; flex-shrink:0;"
+                [style.background]="user!.systemUserType.color"></span>
+              {{ user!.systemUserType.name }}
+            </span>
+          </div>
+        }
+      </div>
+
+      <app-form-section title="Cambiar tipo de acceso" icon="swap_horiz">
+        @if (loadingTypes()) {
+          <app-loading-skeleton variant="text" [lines]="2"></app-loading-skeleton>
+        } @else {
+          <app-select
+            label="Nuevo tipo de usuario"
+            formControlName="systemUserTypeId"
+            [options]="typeOptions()"
+            placeholder="Seleccionar tipo">
+          </app-select>
+
+          @if (selectedType()) {
+            <app-type-preview
+              [color]="selectedType()!.color"
+              [name]="selectedType()!.name"
+              [description]="selectedType()!.description ?? ''"
+              [permissions]="selectedType()!.permissions">
+            </app-type-preview>
+          }
+        }
+      </app-form-section>
+
+    </form>
+  }
+
+  <div drawer-footer>
+    <div style="display:flex; align-items:center; justify-content:flex-end; gap:var(--space-3); width:100%;">
+      <app-button variant="ghost" (clicked)="onClose()">Cancelar</app-button>
+      @if (user?.isSystemUser) {
+        <app-button
+          variant="primary"
+          icon="save"
+          [loading]="saving()"
+          [disabled]="saving() || !hasChanged || form.invalid"
+          (clicked)="submit()">
+          Guardar cambios
+        </app-button>
+      }
+    </div>
+  </div>
+
+</app-drawer>

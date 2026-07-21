@@ -1,0 +1,151 @@
+<div style="display:flex; flex-direction:column; gap:var(--space-6); padding-bottom:var(--space-8);">
+
+  <app-page-header
+    title="Usuarios del Sistema"
+    subtitle="Cuentas con acceso al panel de administración sin ficha de empleado">
+    <app-button icon="person_add" variant="primary" [disabled]="!perms.canCreate()" (clicked)="showUserDrawer.set(true)">
+      Nuevo usuario
+    </app-button>
+  </app-page-header>
+
+  @if (loadError()) {
+    <app-banner variant="error" icon="error" [title]="loadError()"></app-banner>
+  }
+
+  @if (isLoading()) {
+    <app-col-grid>
+      <app-loading-skeleton variant="card"></app-loading-skeleton>
+      <app-loading-skeleton variant="card"></app-loading-skeleton>
+    </app-col-grid>
+    <app-loading-skeleton variant="card" [lines]="6"></app-loading-skeleton>
+
+  } @else if (!loadError()) {
+
+    <app-col-grid>
+      <app-stat-card label="Usuarios activos" [value]="totalActive().toString()" icon="verified_user"   variant="primary"></app-stat-card>
+      <app-stat-card label="Tipos de acceso"  [value]="totalTypes().toString()"  icon="manage_accounts" variant="info"></app-stat-card>
+    </app-col-grid>
+
+    <div style="display:flex; flex-direction:column; gap:var(--space-3);">
+      <div style="max-width:360px;">
+        <app-input
+          label="Buscar usuario..."
+          placeholder="Nombre, email o tipo de acceso"
+          [formControl]="searchCtrl">
+        </app-input>
+      </div>
+      <app-filter-chips
+        [items]="filterChips()"
+        [active]="activeFilter()"
+        (activeChange)="activeFilter.set($any($event))">
+      </app-filter-chips>
+    </div>
+
+    @if (filtered().length === 0) {
+      <app-empty-state
+        icon="manage_accounts"
+        title="Sin usuarios"
+        description="No hay usuarios que coincidan con tu búsqueda o filtro activo.">
+      </app-empty-state>
+
+    } @else {
+
+      <app-section-card title="Directorio de accesos" [columns]="1">
+        <app-data-table>
+          <thead>
+            <tr>
+              <th>Usuario</th>
+              <th>Tipo de acceso</th>
+              <th>Estado</th>
+              <th>Alta</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (u of filtered(); track u.id) {
+              <tr [style.opacity]="u.isActive ? '1' : '0.55'">
+
+                <td>
+                  <div style="display:flex; align-items:center; gap:var(--space-3);">
+                    <app-avatar [name]="displayName(u)" size="sm"></app-avatar>
+                    <div style="display:flex; flex-direction:column; gap:2px; min-width:0;">
+                      <span style="font-size:var(--text-base); font-weight:var(--font-medium); color:var(--text-main); white-space:nowrap;">{{ displayName(u) }}</span>
+                      <span style="font-size:var(--text-xs); color:var(--text-secondary); white-space:nowrap;">{{ u.email }}</span>
+                    </div>
+                  </div>
+                </td>
+
+                <td>
+                  @if (u.systemUserType) {
+                    <div style="display:flex; align-items:center; gap:var(--space-2);">
+                      <span style="width:8px; height:8px; border-radius:50%; flex-shrink:0;"
+                        [style.background]="u.systemUserType.color"></span>
+                      <span style="font-size:var(--text-sm); font-weight:var(--font-semibold);"
+                        [style.color]="u.systemUserType.color">{{ u.systemUserType.name }}</span>
+                    </div>
+                  } @else {
+                    <app-badge variant="neutral">Sin tipo asignado</app-badge>
+                  }
+                </td>
+
+                <td>
+                  <app-badge [variant]="u.isActive ? 'success' : 'neutral'">
+                    {{ u.isActive ? 'Activo' : 'Inactivo' }}
+                  </app-badge>
+                </td>
+
+                <td class="dt-muted">{{ u.createdAt | date:'dd/MM/yyyy' }}</td>
+
+                <td class="dt-actions">
+                  <app-button variant="ghost" size="sm" icon="edit"
+                    [disabled]="!perms.canManageUsers()"
+                    (clicked)="openEdit(u)">
+                    Editar
+                  </app-button>
+                  <app-button variant="ghost" size="sm"
+                    [icon]="u.isActive ? 'block' : 'check_circle'"
+                    [disabled]="!perms.canEdit()"
+                    (clicked)="requestToggle(u)">
+                    {{ u.isActive ? 'Desactivar' : 'Activar' }}
+                  </app-button>
+                </td>
+
+              </tr>
+            }
+          </tbody>
+        </app-data-table>
+
+        <p style="margin-top:var(--space-4); font-size:var(--text-sm); color:var(--text-secondary); text-align:right; margin-bottom:0;">
+          Mostrando {{ filtered().length }} de {{ users().length }} usuarios
+        </p>
+      </app-section-card>
+    }
+  }
+
+</div>
+
+<app-create-user-drawer
+  [isOpen]="showUserDrawer()"
+  (close)="showUserDrawer.set(false)"
+  (created)="onUserCreated()">
+</app-create-user-drawer>
+
+<app-edit-user-drawer
+  [isOpen]="showEditDrawer()"
+  [user]="editTarget()"
+  (close)="showEditDrawer.set(false)"
+  (updated)="onUserUpdated()">
+</app-edit-user-drawer>
+
+<app-confirm-modal
+  [isOpen]="confirmToggleUser() !== null"
+  icon="warning"
+  confirmVariant="danger"
+  [title]="confirmToggleUser()?.isActive ? 'Desactivar usuario' : 'Activar usuario'"
+  [message]="confirmToggleUser()?.isActive
+    ? 'El usuario perderá acceso inmediatamente al panel de administración.'
+    : 'El usuario recuperará acceso al panel de administración.'"
+  [confirmLabel]="confirmToggleUser()?.isActive ? 'Sí, desactivar' : 'Sí, activar'"
+  (confirmed)="confirmToggle()"
+  (cancelled)="confirmToggleUser.set(null)">
+</app-confirm-modal>

@@ -1,3 +1,4 @@
+<app-admin-page-layout>
 <div class="colabs-page">
 
   <app-page-header
@@ -15,47 +16,87 @@
     </app-banner>
   }
 
-  <div class="colabs-toolbar">
+  <!-- ── Toolbar ──────────────────────────────────────────────────────────── -->
+  <div class="sreq-toolbar">
     <app-filter-chips
       [items]="statusChips"
       [active]="statusFilter()"
       (activeChange)="onFilterChange($event)">
     </app-filter-chips>
+    <div class="sreq-search">
+      <app-input
+        label="Buscar colaborador..."
+        placeholder="Nombre o documento"
+        [formControl]="searchCtrl">
+      </app-input>
+    </div>
   </div>
 
-  <app-section-card title="Listado">
+  <!-- ── Loading ──────────────────────────────────────────────────────────── -->
+  @if (isLoading()) {
+    <app-loading-skeleton variant="card" [lines]="5"></app-loading-skeleton>
+  }
 
-    @if (isLoading()) {
-      <app-loading-skeleton variant="card" [lines]="5"></app-loading-skeleton>
-    } @else if (filtered().length === 0) {
-      <app-empty-state
-        icon="check_circle"
-        title="Sin solicitudes"
-        description="No hay solicitudes en esta categoría.">
-      </app-empty-state>
-    } @else {
-      <div class="sreq-list">
-        @for (req of filtered(); track req.id) {
-          <div class="sreq-card" [class.sreq-card--pending]="req.status === 'PENDING'">
+  <!-- ── Empty ────────────────────────────────────────────────────────────── -->
+  @else if (requests().length === 0) {
+    <app-empty-state
+      icon="check_circle"
+      title="Sin solicitudes"
+      description="No hay solicitudes que coincidan con los filtros seleccionados.">
+    </app-empty-state>
+  }
 
-            <div class="sreq-header">
-              <div class="colabs-cell">
-                <app-avatar [name]="employeeName(req)" size="md"></app-avatar>
-                <div class="colabs-cell__info">
-                  <span class="colabs-cell__name">{{ employeeName(req) }}</span>
-                  <span class="colabs-cell__email">{{ req.user?.email }}</span>
-                  @if (req.user?.employee?.position; as pos) {
-                    <span class="sreq-position">{{ pos.name }}</span>
-                  }
+  @else {
+
+    <!-- ── Tabla desktop ─────────────────────────────────────────────────── -->
+    <app-section-card title="Listado" [columns]="1" class="sreq-table-card">
+      <app-data-table>
+        <thead>
+          <tr>
+            <th>Colaborador</th>
+            <th>Sección</th>
+            <th class="dt-center">Cambios</th>
+            <th>Fecha</th>
+            <th>Estado</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (req of requests(); track req.id) {
+            <tr [class.sreq-row--pending]="req.status === 'PENDING'">
+
+              <!-- Colaborador -->
+              <td>
+                <div class="colabs-cell">
+                  <app-avatar [name]="employeeName(req)" size="sm"></app-avatar>
+                  <div class="colabs-cell__info">
+                    <span class="colabs-cell__name">{{ employeeName(req) }}</span>
+                    <span class="colabs-cell__email">{{ req.user?.email }}</span>
+                    @if (req.user?.employee?.position; as pos) {
+                      <span class="sreq-position">{{ pos.name }}</span>
+                    }
+                  </div>
                 </div>
-              </div>
+              </td>
 
-              <div class="sreq-meta">
+              <!-- Sección -->
+              <td>
                 <span class="sreq-section">
                   <span class="material-icons-round sreq-section__icon">{{ detectSection(req.data).icon }}</span>
                   {{ detectSection(req.data).label }}
                 </span>
-                <span class="sreq-date">{{ req.createdAt | date:'dd/MM/yyyy, HH:mm' }}</span>
+              </td>
+
+              <!-- N° cambios -->
+              <td class="dt-center">
+                <span class="sreq-changes-badge">{{ diffCount(req) }}</span>
+              </td>
+
+              <!-- Fecha -->
+              <td class="dt-muted sreq-date">{{ req.createdAt | date:'dd/MM/yyyy, HH:mm' }}</td>
+
+              <!-- Estado -->
+              <td>
                 @if (req.status === 'PENDING') {
                   <app-badge variant="warning">Pendiente</app-badge>
                 } @else if (req.status === 'APPROVED') {
@@ -63,70 +104,216 @@
                 } @else {
                   <app-badge variant="error">Rechazado</app-badge>
                 }
+              </td>
+
+              <!-- Acciones -->
+              <td class="dt-actions">
+                <app-button variant="ghost" size="sm" icon="visibility" (clicked)="openDetail(req)">
+                  Ver detalle
+                </app-button>
+                @if (req.status === 'PENDING' && perms.canApprove()) {
+                  <app-button variant="ghost" size="sm" icon="close"
+                    [disabled]="isProcessing()"
+                    (clicked)="openRejectModal(req.id)">
+                    Rechazar
+                  </app-button>
+                  <app-button variant="primary" size="sm" icon="check"
+                    [disabled]="isProcessing()"
+                    (clicked)="approve(req.id)">
+                    Aprobar
+                  </app-button>
+                }
+              </td>
+
+            </tr>
+          }
+        </tbody>
+      </app-data-table>
+    </app-section-card>
+
+    <!-- ── Cards mobile ──────────────────────────────────────────────────── -->
+    <div class="sreq-list sreq-cards-mobile">
+      @for (req of requests(); track req.id) {
+        <div class="sreq-card" [class.sreq-card--pending]="req.status === 'PENDING'">
+
+          <div class="sreq-header">
+            <div class="colabs-cell">
+              <app-avatar [name]="employeeName(req)" size="md"></app-avatar>
+              <div class="colabs-cell__info">
+                <span class="colabs-cell__name">{{ employeeName(req) }}</span>
+                <span class="colabs-cell__email">{{ req.user?.email }}</span>
+                @if (req.user?.employee?.position; as pos) {
+                  <span class="sreq-position">{{ pos.name }}</span>
+                }
               </div>
             </div>
 
-            @if (buildDiff(req.data).length > 0) {
-              <div class="sreq-diff">
-                <p class="sreq-diff__title">Cambios solicitados</p>
-                <div class="sreq-diff__grid">
-                  @for (d of buildDiff(req.data); track d.field) {
-                    <div class="sreq-diff__row">
-                      <span class="sreq-diff__label">{{ d.label }}</span>
-                      <span class="sreq-diff__old">{{ d.old }}</span>
-                      <span class="material-icons-round sreq-diff__arrow">arrow_forward</span>
-                      <span class="sreq-diff__new">{{ d.new }}</span>
-                    </div>
-                  }
-                </div>
-              </div>
-            } @else {
-              <div class="sreq-diff sreq-diff--empty">
-                <span class="material-icons-round">info_outline</span>
-                No se detectaron diferencias con los datos actuales.
-              </div>
-            }
-
-            @if (req.status === 'REJECTED' && req.reason) {
-              <div class="sreq-reject-reason">
-                <span class="material-icons-round">block</span>
-                <span><strong>Motivo del rechazo:</strong> {{ req.reason }}</span>
-              </div>
-            }
-
-            @if (req.status === 'PENDING') {
-              <div class="sreq-actions">
-                <app-button
-                  variant="ghost"
-                  icon="close"
-                  size="sm"
-                  [disabled]="isProcessing()"
-                  (clicked)="openRejectModal(req.id)">
-                  Rechazar
-                </app-button>
-                <app-button
-                  variant="primary"
-                  icon="check"
-                  size="sm"
-                  [disabled]="isProcessing()"
-                  (clicked)="approve(req.id)">
-                  Aprobar cambio
-                </app-button>
-              </div>
-            }
-
+            <div class="sreq-meta">
+              <span class="sreq-section">
+                <span class="material-icons-round sreq-section__icon">{{ detectSection(req.data).icon }}</span>
+                {{ detectSection(req.data).label }}
+              </span>
+              <span class="sreq-date">{{ req.createdAt | date:'dd/MM/yyyy, HH:mm' }}</span>
+              @if (req.status === 'PENDING') {
+                <app-badge variant="warning">Pendiente</app-badge>
+              } @else if (req.status === 'APPROVED') {
+                <app-badge variant="success">Aprobado</app-badge>
+              } @else {
+                <app-badge variant="error">Rechazado</app-badge>
+              }
+            </div>
           </div>
-        }
-      </div>
 
-      <p class="colabs-count">{{ filtered().length }} solicitud{{ filtered().length !== 1 ? 'es' : '' }}</p>
-    }
+          @if (buildDiff(req.data).length > 0) {
+            <div class="sreq-diff">
+              <p class="sreq-diff__title">Cambios solicitados</p>
+              <div class="sreq-diff__grid">
+                @for (d of buildDiff(req.data); track d.field) {
+                  <div class="sreq-diff__row">
+                    <span class="sreq-diff__label">{{ d.label }}</span>
+                    <span class="sreq-diff__old">{{ d.old }}</span>
+                    <span class="material-icons-round sreq-diff__arrow">arrow_forward</span>
+                    <span class="sreq-diff__new">{{ d.new }}</span>
+                  </div>
+                }
+              </div>
+            </div>
+          } @else {
+            <div class="sreq-diff sreq-diff--empty">
+              <span class="material-icons-round">info_outline</span>
+              No se detectaron diferencias con los datos actuales.
+            </div>
+          }
 
-  </app-section-card>
+          @if (req.status === 'REJECTED' && req.reason) {
+            <div class="sreq-reject-reason">
+              <span class="material-icons-round">block</span>
+              <span><strong>Motivo del rechazo:</strong> {{ req.reason }}</span>
+            </div>
+          }
+
+          @if (req.status === 'PENDING') {
+            <div class="sreq-actions">
+              <app-button variant="ghost" icon="close" size="sm"
+                [disabled]="isProcessing() || !perms.canApprove()"
+                (clicked)="openRejectModal(req.id)">
+                Rechazar
+              </app-button>
+              <app-button variant="primary" icon="check" size="sm"
+                [disabled]="isProcessing() || !perms.canApprove()"
+                (clicked)="approve(req.id)">
+                Aprobar cambio
+              </app-button>
+            </div>
+          }
+
+        </div>
+      }
+    </div>
+
+    <div class="sreq-pagination">
+      <app-pagination
+        [page]="page()"
+        [total]="total()"
+        [pageSize]="pageSize"
+        (pageChange)="onPageChange($event)">
+      </app-pagination>
+    </div>
+
+  }
 
 </div>
+</app-admin-page-layout>
 
-<!-- Modal de rechazo -->
+<!-- ── Modal: detalle de solicitud ─────────────────────────────────────────── -->
+@if (detailRequest(); as req) {
+  <app-modal
+    [isOpen]="true"
+    title="Detalle de solicitud"
+    size="lg"
+    (close)="closeDetail()">
+
+    <!-- Encabezado del colaborador -->
+    <div class="sreq-modal-colab">
+      <app-avatar [name]="employeeName(req)" size="lg"></app-avatar>
+      <div class="sreq-modal-colab__info">
+        <span class="sreq-modal-colab__name">{{ employeeName(req) }}</span>
+        <span class="sreq-modal-colab__email">{{ req.user?.email }}</span>
+        @if (req.user?.employee?.position; as pos) {
+          <span class="sreq-modal-colab__pos">{{ pos.name }}</span>
+        }
+      </div>
+      <div class="sreq-modal-colab__meta">
+        <span class="sreq-section">
+          <span class="material-icons-round sreq-section__icon">{{ detectSection(req.data).icon }}</span>
+          {{ detectSection(req.data).label }}
+        </span>
+        <span class="sreq-date">{{ req.createdAt | date:'dd/MM/yyyy, HH:mm' }}</span>
+        @if (req.status === 'PENDING') {
+          <app-badge variant="warning">Pendiente</app-badge>
+        } @else if (req.status === 'APPROVED') {
+          <app-badge variant="success">Aprobado</app-badge>
+        } @else {
+          <app-badge variant="error">Rechazado</app-badge>
+        }
+      </div>
+    </div>
+
+    <!-- Diff -->
+    @if (buildDiff(req.data).length > 0) {
+      <div class="sreq-diff sreq-diff--modal">
+        <p class="sreq-diff__title">Cambios solicitados</p>
+        <div class="sreq-diff__grid">
+          @for (d of buildDiff(req.data); track d.field) {
+            <div class="sreq-diff__row sreq-diff__row--lg">
+              <span class="sreq-diff__label">{{ d.label }}</span>
+              <span class="sreq-diff__old">{{ d.old }}</span>
+              <span class="material-icons-round sreq-diff__arrow">arrow_forward</span>
+              <span class="sreq-diff__new">{{ d.new }}</span>
+            </div>
+          }
+        </div>
+      </div>
+    } @else {
+      <div class="sreq-diff sreq-diff--empty">
+        <span class="material-icons-round">info_outline</span>
+        No se detectaron diferencias con los datos actuales.
+      </div>
+    }
+
+    <!-- Motivo de rechazo si aplica -->
+    @if (req.status === 'REJECTED' && req.reason) {
+      <div class="sreq-reject-reason" style="margin-top:1rem;">
+        <span class="material-icons-round">block</span>
+        <span><strong>Motivo del rechazo:</strong> {{ req.reason }}</span>
+      </div>
+    }
+
+    <!-- Acciones si está pendiente -->
+    @if (req.status === 'PENDING' && perms.canApprove()) {
+      <ng-container modal-actions>
+        <app-button variant="ghost" (clicked)="closeDetail()">Cerrar</app-button>
+        <app-button variant="ghost" icon="close"
+          [disabled]="isProcessing()"
+          (clicked)="openRejectModal(req.id)">
+          Rechazar
+        </app-button>
+        <app-button variant="primary" icon="check"
+          [loading]="isProcessing()"
+          (clicked)="approve(req.id)">
+          Aprobar cambio
+        </app-button>
+      </ng-container>
+    } @else {
+      <ng-container modal-actions>
+        <app-button variant="ghost" (clicked)="closeDetail()">Cerrar</app-button>
+      </ng-container>
+    }
+
+  </app-modal>
+}
+
+<!-- ── Modal: rechazo ──────────────────────────────────────────────────────── -->
 <app-modal
   [isOpen]="rejectModal()"
   title="Rechazar solicitud"

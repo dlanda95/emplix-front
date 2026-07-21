@@ -1,7 +1,8 @@
 import { Component, inject, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { AppInput, AppSelect, ChangeRequestBar, Field, SectionCard } from '@shared/ui';
+import { pastDateValidator } from '@shared/validators/date-range.validator';
+import { AppInput, AppSelect, ChangeRequestBar, Field, LocationCascade, SectionCard } from '@shared/ui';
 import { CollaboratorService } from '@features/portal/services/collaborator.service';
 import { CollaboratorProfile } from '@features/portal/models/collaborator.model';
 import { ProfileUpdateRequest } from '@features/portal/models/profile-update.model';
@@ -15,9 +16,8 @@ const norm = (v: unknown): string | null =>
 
 @Component({
   selector: 'app-mis-datos',
-  imports: [AppInput, AppSelect, ChangeRequestBar, CommonModule, Field, ReactiveFormsModule, SectionCard],
+  imports: [AppInput, AppSelect, ChangeRequestBar, CommonModule, Field, LocationCascade, ReactiveFormsModule, SectionCard],
   templateUrl: './mis-datos.html',
-  styleUrl: './mis-datos.scss',
 })
 export class MisDatos {
   private readonly fb                  = inject(FormBuilder);
@@ -28,6 +28,7 @@ export class MisDatos {
   readonly isPending         = signal(false);
   readonly profile           = signal<CollaboratorProfile | undefined>(undefined);
 
+  readonly today                = new Date().toISOString().slice(0, 10);
   readonly genderOptions        = GENDER_OPTIONS;
   readonly maritalStatusOptions = MARITAL_STATUS_OPTIONS;
   readonly academicLevelOptions = ACADEMIC_LEVEL_OPTIONS;
@@ -40,7 +41,7 @@ export class MisDatos {
     secondLastName:[''],
     documentType:  ['DNI'],
     documentId:    [''],
-    birthDate:     [''],
+    birthDate:     ['2000-01-01', pastDateValidator],
     gender:        [''],
     maritalStatus: [''],
     nationality:   [''],
@@ -60,14 +61,21 @@ export class MisDatos {
     this.loadProfile();
     effect(() => {
       const data = this.profile();
-      if (data) this.editForm.patchValue(data);
+      if (data) this.patchWithDefaults(data);
+    });
+  }
+
+  private patchWithDefaults(data: CollaboratorProfile): void {
+    this.editForm.patchValue({
+      ...data,
+      birthDate: data.birthDate?.slice(0, 10) || '2000-01-01',
     });
   }
 
   cancelEdit(): void {
     this.isEditing.set(false);
     const data = this.profile();
-    if (data) this.editForm.patchValue(data);
+    if (data) this.patchWithDefaults(data);
   }
 
   submitRequest(): void {

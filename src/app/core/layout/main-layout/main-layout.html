@@ -1,21 +1,33 @@
 <div class="dashboard-layout">
-  
-  <div class="mobile-backdrop" 
+
+  <div class="mobile-backdrop"
        [class.show]="mobileOpen()"
        (click)="closeMobileSidebar()">
   </div>
 
-  <aside class="dashboard-sidebar" 
+  <aside class="dashboard-sidebar"
          [class.is-collapsed]="desktopCollapsed()"
          [class.is-mobile-open]="mobileOpen()">
-         
     <app-sidebar></app-sidebar>
-    
   </aside>
 
   <main class="dashboard-main">
     <app-topbar></app-topbar>
-    
+
+    @if (session.minutesLeft() !== null) {
+      <div class="session-warning">
+        <span class="material-icons-round session-warning__icon">schedule</span>
+        <span class="session-warning__text">
+          Tu sesión expira en
+          <strong>{{ session.minutesLeft() }} minuto{{ session.minutesLeft() === 1 ? '' : 's' }}</strong>.
+          Guarda tus cambios para no perder el trabajo.
+        </span>
+        <button class="session-warning__dismiss" (click)="session.dismiss()" aria-label="Cerrar aviso">
+          <span class="material-icons-round">close</span>
+        </button>
+      </div>
+    }
+
     <div class="content-scrollable">
       <div class="content-wrapper">
         <router-outlet></router-outlet>

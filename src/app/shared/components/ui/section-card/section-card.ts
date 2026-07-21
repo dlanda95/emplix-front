@@ -1,14 +1,13 @@
-import { Component, Input } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, input } from '@angular/core';
+import { NgClass } from '@angular/common';
+
 @Component({
   selector: 'app-section-card',
-  imports: [CommonModule],
+  imports: [NgClass],
   templateUrl: './section-card.html',
   styleUrl: './section-card.scss',
 })
 export class SectionCard {
-
-  @Input({ required: true }) title!: string;
-  @Input() columns: number = 3; // Por defecto 3 columnas
-
+  readonly title   = input.required<string>();
+  readonly columns = input(3);
 }

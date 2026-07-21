@@ -1,4 +1,4 @@
-import { Component, Input, inject } from '@angular/core';
+import { Component, inject, input } from '@angular/core';
 import { AuthService } from '../../../../core/auth/auth';
 
 @Component({
@@ -10,15 +10,10 @@ import { AuthService } from '../../../../core/auth/auth';
 export class LogoutBtn {
   private authService = inject(AuthService);
 
-  // @Input para permitir versión "compacta" (solo icono) si el sidebar se colapsa
-  @Input() collapsed = false;
-  
-  // @Input para permitir versión "oscura" o "clara" si lo usas en fondos distintos
-  @Input() variant: 'default' | 'ghost' = 'default';
+  readonly collapsed = input(false);
+  readonly variant   = input<'default'|'ghost'>('default');
 
-  onLogout() {
-    // Podríamos agregar un confirm("¿Estás seguro?") aquí si quisieras
+  onLogout(): void {
     this.authService.logout();
   }
-
 }

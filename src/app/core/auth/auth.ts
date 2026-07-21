@@ -6,6 +6,7 @@ import { catchError, map } from 'rxjs/operators';
 import { throwError } from 'rxjs';
 import { API_ENDPOINTS } from '@core/config/api.config';
 import { User, AuthResponse } from './models/user.model';
+import { SessionService } from './session.service';
 
 export type AuthMethod = 'EMAIL' | 'MICROSOFT' | 'GOOGLE';
 
@@ -19,8 +20,9 @@ export interface TenantInfo {
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private readonly http   = inject(HttpClient);
-  private readonly router = inject(Router);
+  private readonly http    = inject(HttpClient);
+  private readonly router  = inject(Router);
+  private readonly session = inject(SessionService);
 
   private readonly _currentUser       = signal<User | null>(this.loadUserFromStorage());
   private readonly _currentTenant     = signal<string | null>(localStorage.getItem('saved_tenant'));
@@ -70,23 +72,39 @@ export class AuthService {
     );
   }
 
-  /** Ruta inicial después de autenticarse, según el rol y estado del empleado */
+  /** Ruta inicial después de autenticarse */
   getPostLoginRoute(): string[] {
-    const user = this._currentUser();
-    if (!user) return ['/auth/login'];
-    if (user.role === 'COMPANY_ADMIN' || user.role === 'HR_MANAGER' || user.role === 'HR_ANALYST') {
-      return ['/admin/candidatos'];
-    }
-    if (user.employeeStatus === 'SELECTED') {
-      return ['/onboarding'];
-    }
-    return ['/portal'];
+    return this.isAuthenticated() ? ['/dashboard'] : ['/auth/login'];
   }
 
   register(userData: any): Observable<any> {
     return this.http.post<any>(API_ENDPOINTS.auth.register, userData).pipe(
       map(res => res?.data ?? res),
       tap(data => this.saveSession(data)),
+    );
+  }
+
+  forgotPassword(email: string): Observable<{ message: string }> {
+    return this.http.post<any>(API_ENDPOINTS.auth.forgotPassword, { email }).pipe(
+      map(res => res?.data ?? res),
+    );
+  }
+
+  verifyResetToken(token: string): Observable<{ valid: boolean }> {
+    return this.http.get<any>(`${API_ENDPOINTS.auth.verifyResetToken}?token=${encodeURIComponent(token)}`).pipe(
+      map(res => res?.data ?? res),
+    );
+  }
+
+  resetPassword(token: string, password: string): Observable<{ message: string }> {
+    return this.http.post<any>(API_ENDPOINTS.auth.resetPassword, { token, password }).pipe(
+      map(res => res?.data ?? res),
+    );
+  }
+
+  changePassword(currentPassword: string, newPassword: string): Observable<{ message: string }> {
+    return this.http.post<any>(API_ENDPOINTS.auth.changePassword, { currentPassword, newPassword }).pipe(
+      map(res => res?.data ?? res),
     );
   }
 
@@ -110,6 +128,7 @@ export class AuthService {
   }
 
   logout(): void {
+    this.session.clear();
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     this._currentUser.set(null);
@@ -119,15 +138,16 @@ export class AuthService {
 
   private saveSession(data: AuthResponse): void {
     if (!data?.token) return;
-    // Combinar status del empleado en el objeto user para disponibilizarlo en guards
     const user = {
       ...data.user,
-      employeeStatus:   data.employeeStatus   ?? data.user.employeeStatus   ?? null,
-      onboardingStatus: data.onboardingStatus ?? data.user.onboardingStatus ?? null,
+      employeeStatus:    data.employeeStatus   ?? data.user.employeeStatus   ?? null,
+      onboardingStatus:  data.onboardingStatus ?? data.user.onboardingStatus ?? null,
+      mustChangePassword: data.user.mustChangePassword ?? false,
     };
     localStorage.setItem('token', data.token);
     localStorage.setItem('user', JSON.stringify(user));
     this._currentUser.set(user);
+    this.session.init();
   }
 
   private loadUserFromStorage(): User | null {

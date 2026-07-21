@@ -1,0 +1,33 @@
+<div class="loc-cascade">
+  @if (showCountry()) {
+    <div class="loc-cascade__field">
+      <app-select
+        label="País"
+        [options]="countryOptions()"
+        [formControl]="_uiCountry">
+      </app-select>
+    </div>
+  }
+
+  <div class="loc-cascade__field" [class.loc-cascade__field--disabled]="regionDisabled()">
+    <app-select
+      label="Departamento"
+      [options]="regionOptions()"
+      [formControl]="_uiRegion">
+    </app-select>
+    @if (regionDisabled()) {
+      <span class="loc-cascade__hint">Selecciona un país primero</span>
+    }
+  </div>
+
+  <div class="loc-cascade__field" [class.loc-cascade__field--disabled]="districtDisabled()">
+    <app-select
+      label="Distrito"
+      [options]="districtOptions()"
+      [formControl]="_uiDistrict">
+    </app-select>
+    @if (districtDisabled()) {
+      <span class="loc-cascade__hint">Selecciona un departamento primero</span>
+    }
+  </div>
+</div>

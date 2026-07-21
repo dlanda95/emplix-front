@@ -1,0 +1,147 @@
+<app-admin-page-layout>
+<div class="domains-page">
+
+  <div class="domains-page__header">
+    <app-page-header
+      title="Dominios corporativos"
+      subtitle="Define qué dominios de correo pueden usar los colaboradores para iniciar sesión">
+    </app-page-header>
+    @if (perms.canManageConfig()) {
+      <app-button icon="add" variant="primary" (clicked)="openModal()">
+        Agregar dominio
+      </app-button>
+    }
+  </div>
+
+  @if (loadError()) {
+    <app-banner variant="error" icon="error" [title]="loadError()"></app-banner>
+  }
+
+  @if (isLoading()) {
+    <app-loading-skeleton variant="card" [lines]="4"></app-loading-skeleton>
+  } @else {
+
+    <!-- Dominio primario destacado -->
+    @if (primary()) {
+      <div class="primary-card">
+        <div class="primary-card__icon">
+          <span class="material-icons-round">verified</span>
+        </div>
+        <div class="primary-card__info">
+          <p class="primary-card__label">Dominio principal</p>
+          <p class="primary-card__domain">&#64;{{ primary()!.domain }}</p>
+          @if (primary()!.label) {
+            <p class="primary-card__subtitle">{{ primary()!.label }}</p>
+          }
+        </div>
+        <p class="primary-card__hint">
+          Este dominio se muestra por defecto en el inicio de sesión
+        </p>
+      </div>
+    }
+
+    @if (domains().length === 0) {
+      <app-empty-state
+        icon="domain"
+        title="Sin dominios configurados"
+        description="Agrega al menos un dominio para activar el selector en el login. Mientras tanto, los usuarios deberán escribir su correo completo.">
+      </app-empty-state>
+    } @else {
+
+      <app-section-card title="Todos los dominios" [columns]="1">
+        <table class="domains-table">
+          <thead>
+            <tr>
+              <th>Dominio</th>
+              <th>Nombre amigable</th>
+              <th>Estado</th>
+              <th>Tipo</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (d of domains(); track d.id) {
+              <tr class="domains-table__row" [class.domains-table__row--inactive]="!d.isActive">
+                <td>
+                  <span class="domain-name">&#64;{{ d.domain }}</span>
+                </td>
+                <td class="domains-table__muted">
+                  {{ d.label ?? '—' }}
+                </td>
+                <td>
+                  <app-badge [variant]="d.isActive ? 'success' : 'neutral'">
+                    {{ d.isActive ? 'Activo' : 'Inactivo' }}
+                  </app-badge>
+                </td>
+                <td>
+                  @if (d.isPrimary) {
+                    <app-badge variant="primary">Principal</app-badge>
+                  } @else {
+                    <span class="domains-table__muted">Secundario</span>
+                  }
+                </td>
+                <td class="domains-table__actions">
+                  @if (perms.canManageConfig()) {
+                    @if (!d.isPrimary && d.isActive) {
+                      <app-button variant="ghost" size="sm" icon="star" (clicked)="setPrimary(d)">
+                        Hacer principal
+                      </app-button>
+                    }
+                    @if (!d.isPrimary) {
+                      <app-button
+                        variant="ghost"
+                        size="sm"
+                        [icon]="d.isActive ? 'block' : 'check_circle'"
+                        (clicked)="toggleActive(d)">
+                        {{ d.isActive ? 'Desactivar' : 'Activar' }}
+                      </app-button>
+                      <app-button variant="ghost" size="sm" icon="delete" (clicked)="delete(d)">
+                        Eliminar
+                      </app-button>
+                    }
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </app-section-card>
+    }
+  }
+
+</div>
+
+<!-- Modal: agregar dominio -->
+<app-modal
+  [isOpen]="isModalOpen()"
+  title="Agregar dominio"
+  (close)="isModalOpen.set(false)">
+
+  @if (saveError()) {
+    <app-banner variant="error" icon="error" [title]="saveError()"></app-banner>
+  }
+
+  <form [formGroup]="form" (ngSubmit)="create()" class="domain-form">
+    <app-input
+      label="Dominio"
+      placeholder="expertiatravel.com"
+      hint="Sin el @ ni la parte del usuario"
+      formControlName="domain">
+    </app-input>
+    <app-input
+      label="Nombre amigable (opcional)"
+      placeholder="ej. Expertia Travel"
+      hint="Se muestra en el selector del login"
+      formControlName="label">
+    </app-input>
+  </form>
+
+  <div modal-footer>
+    <app-button variant="ghost" (clicked)="isModalOpen.set(false)">Cancelar</app-button>
+    <app-button variant="primary" icon="save" [loading]="isSaving()" (clicked)="create()">
+      Guardar
+    </app-button>
+  </div>
+
+</app-modal>
+</app-admin-page-layout>

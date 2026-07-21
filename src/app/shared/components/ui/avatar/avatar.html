@@ -1,15 +1,15 @@
-@if (src) {
+@if (src()) {
   <img
-    class="avatar avatar-{{ size }}"
-    [src]="src"
-    [alt]="name" />
+    class="avatar avatar-{{ size() }}"
+    [src]="src()"
+    [alt]="name()" />
 } @else {
   <div
-    class="avatar avatar-{{ size }}"
-    [style.background]="palette.bg"
-    [style.color]="palette.color"
+    class="avatar avatar-{{ size() }}"
+    [style.background]="palette().bg"
+    [style.color]="palette().color"
     role="img"
-    [attr.aria-label]="name">
-    {{ initials }}
+    [attr.aria-label]="name()">
+    {{ initials() }}
   </div>
 }

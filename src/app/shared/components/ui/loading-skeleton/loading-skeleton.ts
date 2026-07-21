@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, computed, input } from '@angular/core';
 
 @Component({
   selector: 'app-loading-skeleton',
@@ -7,10 +7,7 @@ import { Component, Input } from '@angular/core';
   styleUrl: './loading-skeleton.scss',
 })
 export class LoadingSkeleton {
-  @Input() variant: 'text' | 'card' | 'avatar' | 'stat' = 'text';
-  @Input() lines = 3;
-
-  get lineArray(): number[] {
-    return Array.from({ length: this.lines }, (_, i) => i);
-  }
+  readonly variant   = input<'text'|'card'|'avatar'|'stat'>('text');
+  readonly lines     = input(3);
+  readonly lineArray = computed(() => Array.from({ length: this.lines() }, (_, i) => i));
 }

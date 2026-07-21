@@ -1,14 +1,12 @@
-import { Component, Input } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, input } from '@angular/core';
+import { NgClass } from '@angular/common';
+
 @Component({
   selector: 'app-badge',
-  imports: [CommonModule],
+  imports: [NgClass],
   templateUrl: './badge.html',
   styleUrl: './badge.scss',
 })
 export class Badge {
-
-  @Input() variant: 'success' | 'warning' | 'error' | 'neutral' | 'primary' = 'neutral';
+  readonly variant = input<'success'|'warning'|'error'|'neutral'|'primary'>('neutral');
 }
-
-

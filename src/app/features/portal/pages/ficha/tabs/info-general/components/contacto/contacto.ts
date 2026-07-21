@@ -1,7 +1,7 @@
 import { Component, inject, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { AppInput, Button, ChangeRequestBar, Field, FormRow, FormSection, Modal, SectionCard } from '@shared/ui';
+import { AppInput, Button, ChangeRequestBar, Field, ColGrid, FormSection, Modal, SectionCard } from '@shared/ui';
 import { CollaboratorService } from '@features/portal/services/collaborator.service';
 import { CollaboratorProfile } from '@features/portal/models/collaborator.model';
 
@@ -9,10 +9,9 @@ import { CollaboratorProfile } from '@features/portal/models/collaborator.model'
   selector: 'app-contacto',
   imports: [
     CommonModule, ReactiveFormsModule,
-    AppInput, Button, ChangeRequestBar, Field, FormRow, FormSection, Modal, SectionCard,
+    AppInput, Button, ChangeRequestBar, Field, ColGrid, FormSection, Modal, SectionCard,
   ],
   templateUrl: './contacto.html',
-  styleUrl: './contacto.scss',
 })
 export class Contacto {
   private readonly fb                  = inject(FormBuilder);

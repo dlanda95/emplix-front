@@ -1,14 +1,12 @@
-import { Component, Input } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, input } from '@angular/core';
+
 @Component({
   selector: 'app-field',
-  imports: [CommonModule],
+  imports: [],
   templateUrl: './field.html',
   styleUrl: './field.scss',
 })
 export class Field {
-
-  @Input({ required: true }) label!: string;
-  @Input() value?: string | number | null;
-
+  readonly label = input.required<string>();
+  readonly value = input<string|number|null|undefined>(undefined);
 }

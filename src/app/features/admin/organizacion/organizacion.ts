@@ -5,6 +5,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import {
   Badge, Banner, Button, EmptyState, FilterChips, LoadingSkeleton,
   Modal, PageHeader, SectionCard, AppInput, AppSelect, TabsCard,
+  AdminPageLayout,
 } from '@shared/ui';
 import type { FilterChipItem, SelectOption, TabItem } from '@shared/ui';
 import {
@@ -14,6 +15,7 @@ import {
   AREA_TYPE_LABELS, AREA_TYPE_VARIANTS, ROLE_TYPE_LABELS,
   AreaType, RoleType,
 } from '../services/organization.service';
+import { PermissionsService } from '@core/auth/permissions.service';
 
 const AREA_TABS: TabItem[] = [
   { id: 'areas',     label: 'Áreas',   icon: 'account_tree' },
@@ -50,14 +52,16 @@ const LEVEL_OPTIONS: SelectOption[] = Array.from({ length: 10 }, (_, i) => ({
     CommonModule, ReactiveFormsModule,
     Badge, Banner, Button, EmptyState, FilterChips, LoadingSkeleton,
     Modal, PageHeader, SectionCard, AppInput, AppSelect, TabsCard,
+    AdminPageLayout,
   ],
   templateUrl: './organizacion.html',
-  styleUrl:    './organizacion.scss',
+  host: { style: 'display:block' },
 })
 export class Organizacion {
   private readonly svc        = inject(OrganizationAdminService);
   private readonly fb         = inject(FormBuilder);
   private readonly destroyRef = inject(DestroyRef);
+  readonly perms              = inject(PermissionsService);
 
   // ── Estado ────────────────────────────────────────────────────────────────
   readonly activeTab     = signal<string>('areas');

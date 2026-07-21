@@ -68,21 +68,21 @@
 
   <form [formGroup]="form" style="display:flex; flex-direction:column; gap:0.75rem;">
 
-    <app-form-row [cols]="2">
+    <app-col-grid [cols]="2">
       <app-select label="Nivel académico"    formControlName="level"       [options]="levelOptions"></app-select>
       <app-input  label="Institución"        formControlName="institution" placeholder="Ej. PUCP"></app-input>
-    </app-form-row>
+    </app-col-grid>
 
-    <app-form-row [cols]="2">
+    <app-col-grid [cols]="2">
       <app-input label="Carrera / Programa" formControlName="program" placeholder="Ej. Ingeniería de Sistemas"></app-input>
       <app-input label="País"               formControlName="country" placeholder="Ej. Perú"></app-input>
-    </app-form-row>
+    </app-col-grid>
 
-    <app-form-row [cols]="3">
+    <app-col-grid [cols]="3">
       <app-input label="Año inicio"  formControlName="startYear" type="number" placeholder="2018"></app-input>
       <app-input label="Año fin"     formControlName="endYear"   type="number" placeholder="2022 (opcional)"></app-input>
       <app-select label="Estado"     formControlName="status"    [options]="statusOptions"></app-select>
-    </app-form-row>
+    </app-col-grid>
 
   </form>
 

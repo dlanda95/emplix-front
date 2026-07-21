@@ -1,13 +1,13 @@
-@if (variant === 'card') {
+@if (variant() === 'card') {
   <div class="skeleton-card">
     <div class="skeleton-header shimmer"></div>
     <div class="skeleton-body">
-      @for (line of lineArray; track line) {
-        <div class="skeleton-line shimmer" [style.width]="line === lineArray.length - 1 ? '60%' : '100%'"></div>
+      @for (line of lineArray(); track line) {
+        <div class="skeleton-line shimmer" [style.width]="line === lineArray().length - 1 ? '60%' : '100%'"></div>
       }
     </div>
   </div>
-} @else if (variant === 'stat') {
+} @else if (variant() === 'stat') {
   <div class="skeleton-stat">
     <div class="skeleton-icon shimmer"></div>
     <div class="skeleton-stat-content">
@@ -15,12 +15,12 @@
       <div class="skeleton-line shimmer" style="width: 40%; height: 2rem"></div>
     </div>
   </div>
-} @else if (variant === 'avatar') {
+} @else if (variant() === 'avatar') {
   <div class="skeleton-avatar shimmer"></div>
 } @else {
   <div class="skeleton-text">
-    @for (line of lineArray; track line) {
-      <div class="skeleton-line shimmer" [style.width]="line === lineArray.length - 1 ? '70%' : '100%'"></div>
+    @for (line of lineArray(); track line) {
+      <div class="skeleton-line shimmer" [style.width]="line === lineArray().length - 1 ? '70%' : '100%'"></div>
     }
   </div>
 }

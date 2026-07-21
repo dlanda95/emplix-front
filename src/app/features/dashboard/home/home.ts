@@ -1,40 +1,67 @@
-import { Component, inject } from '@angular/core';
+import { Component, DestroyRef, inject, signal, computed, OnInit } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
+import { forkJoin } from 'rxjs';
 import { AuthService } from '@core/auth/auth';
-import { StatCard, PrimaryBtn, Avatar } from '@shared/ui';
-
-interface Stat {
-  label:   string;
-  value:   string;
-  icon:    string;
-  variant: 'primary' | 'success' | 'warning' | 'info';
-}
-
-interface ActivityItem {
-  user:   string;
-  action: string;
-  time:   string;
-}
+import { StatCard, Avatar, LoadingSkeleton, Banner, AdminPageLayout } from '@shared/ui';
+import { DashboardService, DashboardStats, RecentRequest } from '../dashboard.service';
 
 @Component({
   selector: 'app-home',
-  imports: [StatCard, PrimaryBtn, Avatar],
+  imports: [CommonModule, RouterLink, StatCard, Avatar, LoadingSkeleton, Banner, AdminPageLayout],
   templateUrl: './home.html',
-  styleUrl: './home.scss',
 })
-export class Home {
-  private readonly authService = inject(AuthService);
-  readonly currentUser = this.authService.currentUser;
+export class Home implements OnInit {
+  private readonly auth       = inject(AuthService);
+  private readonly svc        = inject(DashboardService);
+  private readonly destroyRef = inject(DestroyRef);
 
-  readonly stats: Stat[] = [
-    { label: 'Empleados Activos',      value: '124', icon: 'groups',              variant: 'primary' },
-    { label: 'Asistencia Hoy',         value: '92%', icon: 'fact_check',           variant: 'success' },
-    { label: 'Solicitudes Pendientes', value: '5',   icon: 'notifications_active', variant: 'warning' },
-    { label: 'Nuevas Contrataciones',  value: '3',   icon: 'person_add',           variant: 'info'    },
-  ];
+  readonly currentUser = this.auth.currentUser;
+  readonly isLoading   = signal(true);
+  readonly loadError   = signal('');
+  readonly stats       = signal<DashboardStats | null>(null);
+  readonly recent      = signal<RecentRequest[]>([]);
 
-  readonly activities: ActivityItem[] = [
-    { user: 'Ana García',  action: 'registró su entrada',    time: '08:02 AM' },
-    { user: 'Carlos Ruiz', action: 'solicitó vacaciones',    time: '08:15 AM' },
-    { user: 'Sistema',     action: 'generó reporte mensual', time: '09:00 AM' },
-  ];
+  readonly statCards = computed(() => {
+    const s = this.stats();
+    return [
+      { label: 'Empleados Activos',       value: s ? s.totalEmployees.toString()    : '—', icon: 'groups',               variant: 'primary'  as const },
+      { label: 'Solicitudes Pendientes',  value: s ? s.pendingRequests.toString()   : '—', icon: 'notifications_active',  variant: 'warning'  as const },
+      { label: 'Ingresos este mes',       value: s ? s.newHiresThisMonth.toString() : '—', icon: 'person_add',            variant: 'info'     as const },
+      { label: 'Candidatos en proceso',   value: s ? s.pendingCandidates.toString() : '—', icon: 'how_to_reg',            variant: 'success'  as const },
+    ];
+  });
+
+  ngOnInit(): void {
+    forkJoin({
+      stats:  this.svc.getStats(),
+      recent: this.svc.getRecentRequests(),
+    }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: ({ stats, recent }) => {
+        this.stats.set(stats);
+        this.recent.set(recent);
+        this.isLoading.set(false);
+      },
+      error: () => {
+        this.loadError.set('No se pudieron cargar las estadísticas.');
+        this.isLoading.set(false);
+      },
+    });
+  }
+
+  typeLabel(type: string): string {
+    return this.svc.typeLabel(type);
+  }
+
+  timeAgo(dateStr: string): string {
+    const diff = Date.now() - new Date(dateStr).getTime();
+    const mins  = Math.floor(diff / 60_000);
+    const hours = Math.floor(diff / 3_600_000);
+    const days  = Math.floor(diff / 86_400_000);
+    if (mins < 1)   return 'ahora mismo';
+    if (mins < 60)  return `hace ${mins} min`;
+    if (hours < 24) return `hace ${hours} h`;
+    return `hace ${days} d`;
+  }
 }

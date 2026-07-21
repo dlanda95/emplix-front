@@ -3,45 +3,43 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
-import { forkJoin } from 'rxjs';
-import { Badge, Banner, Button, Field, LoadingSkeleton, SectionCard, Modal, AppSelect, AppInput } from '@shared/ui';
+import { forkJoin, switchMap } from 'rxjs';
+import { Badge, Banner, Button, Field, LoadingSkeleton, SectionCard, Modal, AppSelect, AppInput, AdminPageLayout } from '@shared/ui';
+import { CandidateDocPanel } from '@shared/components/ui/candidate-doc-panel/candidate-doc-panel';
 import { OnboardingLabelPipe, OnboardingVariantPipe } from '../onboarding-status.pipe';
 import type { SelectOption } from '@shared/ui';
 import { CandidatesService } from '../../services/candidates.service';
 import type { CandidateDetail as CandidateDetailModel, DeptWithPositions, EmployeeMinimal } from '../../services/candidates.service';
+import { ApprovalsService } from '../../services/approvals.service';
 import {
   catalogLabel,
   DOCUMENT_TYPE_OPTIONS, GENDER_OPTIONS, MARITAL_STATUS_OPTIONS, ACADEMIC_LEVEL_OPTIONS,
   AFP_TYPE_OPTIONS, AFP_ENTITY_OPTIONS,
 } from '@features/portal/models/catalog.model';
 
-const DOC_LABELS: { prefix: string; label: string }[] = [
-  { prefix: 'DNI_CE',          label: 'Documento de Identidad'          },
-  { prefix: 'CV_',             label: 'Currículum Vitae'                 },
-  { prefix: 'RECIBO_DOMICILIO',label: 'Recibo de Servicios (Domicilio)' },
-  { prefix: 'CONTRATO_',       label: 'Contrato'                        },
-  { prefix: 'CERT_',           label: 'Certificado'                     },
-];
 
 @Component({
   selector: 'app-candidate-detail',
-  imports: [CommonModule, ReactiveFormsModule, Badge, Banner, Button, Field, LoadingSkeleton, SectionCard, Modal, AppSelect, AppInput, OnboardingLabelPipe, OnboardingVariantPipe],
+  imports: [CommonModule, ReactiveFormsModule, Badge, Banner, Button, Field, LoadingSkeleton, SectionCard, Modal, AppSelect, AppInput, OnboardingLabelPipe, OnboardingVariantPipe, AdminPageLayout, CandidateDocPanel],
   templateUrl: './candidate-detail.html',
-  styleUrl: './candidate-detail.scss',
+  host: { style: 'display:block' },
 })
 export class CandidateDetail implements OnInit {
-  private readonly svc        = inject(CandidatesService);
-  private readonly route      = inject(ActivatedRoute);
-  private readonly nav        = inject(Router);
-  private readonly fb         = inject(FormBuilder);
-  private readonly destroyRef = inject(DestroyRef);
+  private readonly svc          = inject(CandidatesService);
+  private readonly approvalsSvc = inject(ApprovalsService);
+  private readonly route        = inject(ActivatedRoute);
+  private readonly nav          = inject(Router);
+  private readonly fb           = inject(FormBuilder);
+  private readonly destroyRef   = inject(DestroyRef);
 
-  readonly candidate      = signal<CandidateDetailModel | null>(null);
-  readonly isLoading      = signal(true);
-  readonly isActivating   = signal(false);
-  readonly activateError  = signal('');
-  readonly isActivateModal = signal(false);
-  readonly hrSaved        = signal(false);
+  readonly candidate             = signal<CandidateDetailModel | null>(null);
+  readonly isLoading             = signal(true);
+  readonly isActivating          = signal(false);
+  readonly activateError         = signal('');
+  readonly isActivateModal       = signal(false);
+  readonly hrSaved               = signal(false);
+  readonly isEditingAssignment   = signal(false);
+  readonly prefilledFromProcess  = signal(false);
 
   // Catálogos org
   readonly departments = signal<DeptWithPositions[]>([]);
@@ -53,6 +51,9 @@ export class CandidateDetail implements OnInit {
 
   // URLs de documentos (cargadas asíncronamente)
   readonly docUrls = signal<Record<string, string>>({});
+
+  // Estado de aprobaciones del proceso vinculado
+  readonly fullyApproved = signal(false);
 
   hrForm = this.fb.group({
     areaId:       [''],   // UI only — no se envía al backend
@@ -111,8 +112,9 @@ export class CandidateDetail implements OnInit {
   // ── Ciclo de vida ────────────────────────────────────────────────────────────
 
   ngOnInit(): void {
-    const id = this.route.snapshot.paramMap.get('id');
-    if (!id) { this.nav.navigate(['/admin/candidatos']); return; }
+    const id          = this.route.snapshot.paramMap.get('candidateId');
+    const processCode = this.route.snapshot.paramMap.get('code') ?? '';
+    if (!id) { this.nav.navigate(['/admin/procesos-seleccion']); return; }
 
     // Subscripciones reactivas de cascada (usuario cambia el select)
     this.hrForm.get('areaId')!.valueChanges
@@ -142,23 +144,34 @@ export class CandidateDetail implements OnInit {
         this.candidate.set(candidate);
         this.isLoading.set(false);
 
-        // Determinar si el departamento guardado es un área o subárea
+        const hasAssignment = !!(candidate.department?.name || candidate.position?.name || candidate.supervisor);
+        this.isEditingAssignment.set(!hasAssignment);
+
         const savedDeptId = candidate.department?.id ?? candidate.departmentId ?? '';
         const savedPosId  = candidate.position?.id   ?? candidate.positionId   ?? '';
         const savedSupId  = candidate.supervisor?.id  ?? candidate.supervisorId ?? '';
 
-        const isTopArea  = depts.find(d => d.id === savedDeptId);
-        const parentArea = !isTopArea && depts.find(d => d.children.some(c => c.id === savedDeptId));
+        if (savedDeptId || savedPosId) {
+          // Ya tiene asignación manual: resolver si es área o subárea
+          this._applyDeptToForm(savedDeptId, savedPosId, savedSupId, depts);
+        } else if (candidate.selectionProcess) {
+          // Sin asignación manual: pre-llenar desde el proceso de selección
+          const sp = candidate.selectionProcess;
+          const spDeptId = sp.department?.id ?? '';
+          const spPosId  = sp.position?.id   ?? '';
+          this._applyDeptToForm(spDeptId, spPosId, '', depts);
+          if (spDeptId || spPosId) this.prefilledFromProcess.set(true);
+        }
 
-        if (isTopArea) {
-          this.uiAreaId.set(savedDeptId);
-          this.hrForm.patchValue({ areaId: savedDeptId, subareaId: '', positionId: savedPosId, supervisorId: savedSupId }, { emitEvent: false });
-        } else if (parentArea) {
-          this.uiAreaId.set(parentArea.id);
-          this.uiSubareaId.set(savedDeptId);
-          this.hrForm.patchValue({ areaId: parentArea.id, subareaId: savedDeptId, positionId: savedPosId, supervisorId: savedSupId }, { emitEvent: false });
-        } else {
-          this.hrForm.patchValue({ positionId: savedPosId, supervisorId: savedSupId }, { emitEvent: false });
+        // Cargar aprobaciones del proceso vinculado
+        if (candidate.selectionProcess) {
+          this.approvalsSvc
+            .getCandidateApprovals(candidate.selectionProcess.id, candidate.id)
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe({
+              next: data => this.fullyApproved.set(data.fullyApproved),
+              error: () => {},
+            });
         }
 
         // Cargar URLs de docs adjuntos
@@ -169,7 +182,7 @@ export class CandidateDetail implements OnInit {
           });
         }
       },
-      error: () => { this.isLoading.set(false); this.nav.navigate(['/admin/candidatos']); },
+      error: () => { this.isLoading.set(false); this.nav.navigate(['/admin/procesos-seleccion', processCode]); },
     });
   }
 
@@ -184,14 +197,20 @@ export class CandidateDetail implements OnInit {
       positionId:   v.positionId   || null,
       supervisorId: v.supervisorId || null,
     };
-    this.svc.updateHrData(id, payload).subscribe({
-      next: updated => {
-        this.candidate.set(updated);
+    this.svc.updateHrData(id, payload).pipe(
+      switchMap(() => this.svc.get(id)),
+    ).subscribe({
+      next: full => {
+        this.candidate.set(full);
+        this.isEditingAssignment.set(false);
         this.hrSaved.set(true);
-        setTimeout(() => this.hrSaved.set(false), 2500);
+        setTimeout(() => this.hrSaved.set(false), 3000);
       },
     });
   }
+
+  startEditAssignment(): void  { this.isEditingAssignment.set(true); }
+  cancelEditAssignment(): void { this.isEditingAssignment.set(false); }
 
   openActivate(): void  { this.isActivateModal.set(true); this.activateError.set(''); }
   closeActivate(): void { this.isActivateModal.set(false); }
@@ -217,6 +236,39 @@ export class CandidateDetail implements OnInit {
 
   // ── Helpers ──────────────────────────────────────────────────────────────────
 
+  /** Muestra "Área" o "Área / Subárea" según el departamento del candidato */
+  deptDisplayLabel(c: CandidateDetailModel): string {
+    if (!c.department) return '—';
+    if (c.department.parent) return `${c.department.parent.name} / ${c.department.name}`;
+    return c.department.name;
+  }
+
+  /** Muestra el departamento del proceso de selección como breadcrumb */
+  processDeptLabel(c: CandidateDetailModel): string {
+    const d = c.selectionProcess?.department;
+    if (!d) return '—';
+    return d.parent ? `${d.parent.name} / ${d.name}` : d.name;
+  }
+
+  /** Resuelve si el deptId guardado es área o subárea y parchea el formulario */
+  private _applyDeptToForm(
+    deptId: string, posId: string, supId: string, depts: DeptWithPositions[],
+  ): void {
+    const isTopArea  = depts.find(d => d.id === deptId);
+    const parentArea = !isTopArea && depts.find(d => d.children.some(c => c.id === deptId));
+
+    if (isTopArea) {
+      this.uiAreaId.set(deptId);
+      this.hrForm.patchValue({ areaId: deptId, subareaId: '', positionId: posId, supervisorId: supId }, { emitEvent: false });
+    } else if (parentArea) {
+      this.uiAreaId.set(parentArea.id);
+      this.uiSubareaId.set(deptId);
+      this.hrForm.patchValue({ areaId: parentArea.id, subareaId: deptId, positionId: posId, supervisorId: supId }, { emitEvent: false });
+    } else {
+      this.hrForm.patchValue({ positionId: posId, supervisorId: supId }, { emitEvent: false });
+    }
+  }
+
   docTypeLabel(val: string | null | undefined): string {
     return catalogLabel(DOCUMENT_TYPE_OPTIONS, val);
   }
@@ -241,16 +293,17 @@ export class CandidateDetail implements OnInit {
     return catalogLabel(AFP_ENTITY_OPTIONS, val);
   }
 
-  docLabel(doc: { name?: string; originalName?: string }): string {
-    const upper = (doc.name ?? '').toUpperCase();
-    const match = DOC_LABELS.find(d => upper.startsWith(d.prefix));
-    return match?.label ?? doc.originalName ?? doc.name ?? 'Documento';
-  }
-
   get canActivate(): boolean {
     const c = this.candidate();
-    return c?.onboardingStatus === 'DOCS_SUBMITTED' || c?.onboardingStatus === 'COMPLETED';
+    if (!c) return false;
+    const statusOk = c.onboardingStatus === 'DOCS_SUBMITTED' || c.onboardingStatus === 'COMPLETED';
+    if (!statusOk) return false;
+    if (c.selectionProcess) return this.fullyApproved();
+    return true;
   }
 
-  back(): void { this.nav.navigate(['/admin/candidatos']); }
+  back(): void {
+    const code = this.route.snapshot.paramMap.get('code') ?? '';
+    this.nav.navigate(['/admin/procesos-seleccion', code]);
+  }
 }

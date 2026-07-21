@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { environment } from '@env';
+import type { EmployeeDocument } from '@features/portal/models/document.model';
 
 export interface AreaPosition {
   id:   string;
@@ -31,6 +32,7 @@ export interface EmployeeMinimal {
 
 export interface CandidateSummary {
   id:               string;
+  status:           'SELECTED' | 'ACTIVE' | 'TERMINATED' | 'ON_LEAVE';
   firstName:        string;
   lastName:         string;
   middleName?:      string | null;
@@ -45,6 +47,7 @@ export interface CandidateSummary {
 
 export interface CandidateDetail {
   id:               string;
+  status:           'SELECTED' | 'ACTIVE' | 'TERMINATED' | 'ON_LEAVE';
   firstName:        string;
   lastName:         string;
   middleName:       string | null;
@@ -69,21 +72,49 @@ export interface CandidateDetail {
   departmentId:     string | null;
   positionId:       string | null;
   supervisorId:     string | null;
-  department:       { id: string; name: string } | null;
+  department:       { id: string; name: string; parent: { id: string; name: string } | null } | null;
   position:         { id: string; name: string } | null;
   supervisor:       { id: string; firstName: string; lastName: string } | null;
-  documents:        { id: string; name: string; originalName?: string }[];
+  documents:        EmployeeDocument[];
+  selectionProcess: {
+    id:         string;
+    code:       string;
+    department: { id: string; name: string; parent: { id: string; name: string } | null } | null;
+    position:   { id: string; name: string } | null;
+  } | null;
 }
 
 export interface CreateCandidatePayload {
-  firstName:    string;
-  lastName:     string;
-  middleName?:  string;
-  documentType: string;
-  documentId:   string;
-  hireDate:     string;
-  positionId?:  string;
-  departmentId?:string;
+  firstName:     string;
+  lastName:      string;
+  middleName?:   string;
+  documentType:  string;
+  documentId:    string;
+  personalEmail: string;
+  hireDate:      string;
+  positionId?:   string;
+  departmentId?: string;
+}
+
+export interface CreateCandidateResult {
+  employee:          CandidateDetail;
+  temporaryPassword: string;
+  emailSent:         boolean;
+  emailError?:       string;
+}
+
+export interface PagedResult<T> {
+  data:       T[];
+  total:      number;
+  page:       number;
+  totalPages: number;
+}
+
+export interface CandidateListParams {
+  page?:             number;
+  limit?:            number;
+  search?:           string;
+  onboardingStatus?: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -91,16 +122,21 @@ export class CandidatesService {
   private readonly http     = inject(HttpClient);
   private readonly endpoint = `${environment.apiUrl}/candidates`;
 
-  list(): Observable<CandidateSummary[]> {
-    return this.http.get<CandidateSummary[]>(this.endpoint);
+  list(params: CandidateListParams = {}): Observable<PagedResult<CandidateSummary>> {
+    const p: Record<string, string> = {};
+    if (params.page)             p['page']             = String(params.page);
+    if (params.limit)            p['limit']            = String(params.limit);
+    if (params.search?.trim())   p['search']           = params.search.trim();
+    if (params.onboardingStatus) p['onboardingStatus'] = params.onboardingStatus;
+    return this.http.get<PagedResult<CandidateSummary>>(this.endpoint, { params: p });
   }
 
   get(id: string): Observable<CandidateDetail> {
     return this.http.get<CandidateDetail>(`${this.endpoint}/${id}`);
   }
 
-  create(payload: CreateCandidatePayload): Observable<CandidateDetail> {
-    return this.http.post<CandidateDetail>(this.endpoint, payload);
+  create(payload: CreateCandidatePayload): Observable<CreateCandidateResult> {
+    return this.http.post<CreateCandidateResult>(this.endpoint, payload);
   }
 
   updateHrData(id: string, data: Record<string, unknown>): Observable<CandidateDetail> {
@@ -122,7 +158,9 @@ export class CandidatesService {
   }
 
   listActiveEmployees(): Observable<EmployeeMinimal[]> {
-    return this.http.get<EmployeeMinimal[]>(`${environment.apiUrl}/employees`);
+    return this.http.get<any>(`${environment.apiUrl}/employees`).pipe(
+      map(r => Array.isArray(r) ? r : (r?.data ?? r?.items ?? [])),
+    );
   }
 
   getDocUrl(docId: string): Observable<string> {

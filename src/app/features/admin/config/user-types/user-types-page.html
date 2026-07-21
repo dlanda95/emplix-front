@@ -1,0 +1,240 @@
+<app-admin-page-layout>
+<div class="config-page">
+
+  <app-page-header
+    title="Tipos de Usuario del Sistema"
+    subtitle="Define roles y permisos para los usuarios sin ficha de empleado">
+    <app-button icon="add" variant="primary" [disabled]="!perms.canManageConfig()" (clicked)="startNew()">
+      Nuevo tipo
+    </app-button>
+  </app-page-header>
+
+  @if (loadError()) {
+    <app-banner variant="error" icon="error" [title]="loadError()"></app-banner>
+  }
+
+  <!-- ── Editor inline ─────────────────────────────────────────────────────── -->
+  @if (showForm()) {
+    <app-section-card [title]="editingId() ? 'Editar tipo' : 'Nuevo tipo de usuario'" [columns]="1">
+      <form [formGroup]="form" class="type-form">
+        @if (errorMsg()) {
+          <app-banner variant="error" icon="error" [title]="errorMsg()"></app-banner>
+        }
+
+        <div class="type-form__row">
+          <div class="type-form__field">
+            <label class="field-label">Nombre *</label>
+            <input class="field-input" formControlName="name" placeholder="Ej. Auditor">
+          </div>
+          <div class="type-form__field">
+            <label class="field-label">
+              Slug * <span class="field-hint">(solo letras, guiones, números)</span>
+            </label>
+            <input class="field-input" formControlName="slug" placeholder="auditor">
+          </div>
+        </div>
+
+        <div class="type-form__field">
+          <label class="field-label">Descripción</label>
+          <input class="field-input" formControlName="description" placeholder="Breve descripción del tipo">
+        </div>
+
+        <div class="type-form__field">
+          <label class="field-label">Color identificador</label>
+          <div class="color-palette">
+            @for (c of COLOR_PALETTE; track c) {
+              <button type="button" class="color-swatch"
+                [style.background]="c"
+                [class.color-swatch--active]="form.get('color')?.value === c"
+                (click)="setColor(c)">
+              </button>
+            }
+          </div>
+        </div>
+
+        <div class="perms-grid">
+          <p class="perms-grid__label">Permisos</p>
+          @for (p of permLabels; track p.key) {
+            <label class="perm-toggle">
+              <input type="checkbox" [formControlName]="p.key">
+              <span class="perm-toggle__box">
+                <span class="material-icons-round">{{ p.icon }}</span>
+                <span>{{ p.label }}</span>
+              </span>
+            </label>
+          }
+        </div>
+
+        <div class="type-form__actions">
+          <app-button variant="ghost" (clicked)="cancelForm()">Cancelar</app-button>
+          <app-button variant="primary" icon="save" [loading]="saving()" (clicked)="save()">
+            {{ editingId() ? 'Guardar cambios' : 'Crear tipo' }}
+          </app-button>
+        </div>
+      </form>
+    </app-section-card>
+  }
+
+  <!-- ── Skeleton ───────────────────────────────────────────────────────────── -->
+  @if (isLoading()) {
+    <app-loading-skeleton variant="card" [lines]="4"></app-loading-skeleton>
+  }
+
+  <!-- ── Empty ─────────────────────────────────────────────────────────────── -->
+  @else if (visibleTypes().length === 0 && !showForm()) {
+    <app-empty-state icon="shield_person" title="Sin tipos definidos"
+      description="Crea el primer tipo de usuario del sistema.">
+    </app-empty-state>
+  }
+
+  <!-- ── Tabla desktop (> tablet) ──────────────────────────────────────────── -->
+  @else {
+    <app-section-card title="Tipos configurados" [columns]="1" class="ut-table-card">
+      <app-data-table>
+        <thead>
+          <tr>
+            <th>Tipo</th>
+            <th>Descripción</th>
+            <th>Permisos</th>
+            <th>Estado</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (t of visibleTypes(); track t.id) {
+            <tr [class.ut-row--inactive]="!t.isActive">
+
+              <!-- Tipo: punto de color + nombre + slug -->
+              <td>
+                <div class="ut-name-cell">
+                  <span class="ut-dot" [style.background]="t.color"></span>
+                  <div class="ut-name-info">
+                    <span class="ut-name">{{ t.name }}</span>
+                    <span class="sp-code-tag">{{ t.slug }}</span>
+                  </div>
+                </div>
+              </td>
+
+              <!-- Descripción -->
+              <td class="dt-muted ut-desc-cell">{{ t.description || '—' }}</td>
+
+              <!-- Permisos como chips compactos -->
+              <td>
+                <div class="perms-row">
+                  @for (p of permLabels; track p.key) {
+                    <span class="perm-chip" [class.perm-chip--on]="permOf(t, p.key)">
+                      <span class="material-icons-round">{{ p.icon }}</span>
+                      {{ p.label }}
+                    </span>
+                  }
+                </div>
+              </td>
+
+              <!-- Badges de estado -->
+              <td>
+                <div class="ut-badges-cell">
+                  @if (t.isSystem) {
+                    <app-badge variant="warning">Sistema</app-badge>
+                  }
+                  <app-badge [variant]="t.isActive ? 'success' : 'neutral'">
+                    {{ t.isActive ? 'Activo' : 'Inactivo' }}
+                  </app-badge>
+                  @if (t._count) {
+                    <app-badge variant="neutral">{{ t._count.users }} usuarios</app-badge>
+                  }
+                </div>
+              </td>
+
+              <!-- Acciones -->
+              <td class="dt-actions">
+                <app-button variant="ghost" size="sm" icon="edit"
+                  [disabled]="!perms.canManageConfig()"
+                  (clicked)="startEdit(t)">
+                  Editar
+                </app-button>
+                <app-button variant="ghost" size="sm"
+                  [icon]="t.isActive ? 'block' : 'check_circle'"
+                  [disabled]="!perms.canManageConfig()"
+                  (clicked)="toggleActive(t)">
+                  {{ t.isActive ? 'Desactivar' : 'Activar' }}
+                </app-button>
+                @if (!t.isSystem) {
+                  <app-button variant="danger" size="sm" icon="delete"
+                    [disabled]="!perms.canDelete()"
+                    (clicked)="delete(t)">
+                    Eliminar
+                  </app-button>
+                }
+              </td>
+
+            </tr>
+          }
+        </tbody>
+      </app-data-table>
+    </app-section-card>
+
+    <!-- ── Cards mobile (≤ tablet) ──────────────────────────────────────────── -->
+    <div class="types-grid ut-cards-mobile">
+      @for (t of visibleTypes(); track t.id) {
+        <div class="type-card" [class.type-card--inactive]="!t.isActive">
+
+          <div class="type-card__header">
+            <div class="type-card__dot" [style.background]="t.color"></div>
+            <div class="type-card__info">
+              <span class="type-card__name">{{ t.name }}</span>
+              <span class="type-card__slug">{{ t.slug }}</span>
+            </div>
+            <div class="type-card__badges">
+              @if (t.isSystem) {
+                <app-badge variant="warning">Sistema</app-badge>
+              }
+              <app-badge [variant]="t.isActive ? 'success' : 'neutral'">
+                {{ t.isActive ? 'Activo' : 'Inactivo' }}
+              </app-badge>
+              @if (t._count) {
+                <app-badge variant="neutral">{{ t._count.users }} usuarios</app-badge>
+              }
+            </div>
+          </div>
+
+          @if (t.description) {
+            <p class="type-card__desc">{{ t.description }}</p>
+          }
+
+          <div class="perms-row">
+            @for (p of permLabels; track p.key) {
+              <span class="perm-chip" [class.perm-chip--on]="permOf(t, p.key)">
+                <span class="material-icons-round">{{ p.icon }}</span>
+                <span>{{ p.label }}</span>
+              </span>
+            }
+          </div>
+
+          <div class="type-card__actions">
+            <app-button variant="ghost" size="sm" icon="edit"
+              [disabled]="!perms.canManageConfig()"
+              (clicked)="startEdit(t)">
+              Editar
+            </app-button>
+            <app-button variant="ghost" size="sm"
+              [icon]="t.isActive ? 'block' : 'check_circle'"
+              [disabled]="!perms.canManageConfig()"
+              (clicked)="toggleActive(t)">
+              {{ t.isActive ? 'Desactivar' : 'Activar' }}
+            </app-button>
+            @if (!t.isSystem) {
+              <app-button variant="danger" size="sm" icon="delete"
+                [disabled]="!perms.canDelete()"
+                (clicked)="delete(t)">
+                Eliminar
+              </app-button>
+            }
+          </div>
+
+        </div>
+      }
+    </div>
+  }
+
+</div>
+</app-admin-page-layout>

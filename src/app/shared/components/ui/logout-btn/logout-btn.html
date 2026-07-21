@@ -1,13 +1,13 @@
 <button
   class="logout-btn"
-  [class.collapsed]="collapsed"
-  [class.ghost]="variant === 'ghost'"
+  [class.collapsed]="collapsed()"
+  [class.ghost]="variant() === 'ghost'"
   (click)="onLogout()"
   title="Cerrar Sesión">
 
   <span class="material-icons-round icon">logout</span>
 
-  @if (!collapsed) {
+  @if (!collapsed()) {
     <span class="label">Cerrar Sesión</span>
   }
 

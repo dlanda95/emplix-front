@@ -125,10 +125,10 @@
 
   <form [formGroup]="form" style="display:flex;flex-direction:column;gap:1rem;">
 
-    <app-form-row [cols]="2">
+    <app-col-grid [cols]="2">
       <app-input label="Nombre *"   formControlName="firstName"  placeholder="Nombre"></app-input>
       <app-input label="Apellido *" formControlName="lastName"   placeholder="Apellido"></app-input>
-    </app-form-row>
+    </app-col-grid>
 
     <app-select label="Parentesco *"
                 formControlName="relationship"
@@ -136,20 +136,20 @@
                 placeholder="Seleccionar parentesco...">
     </app-select>
 
-    <app-form-row [cols]="2">
+    <app-col-grid [cols]="2">
       <app-select label="Tipo de documento"
                   formControlName="documentType"
                   [options]="docTypeOptions">
       </app-select>
       <app-input label="Nro. documento" formControlName="documentId" placeholder="Ej. 12345678"></app-input>
-    </app-form-row>
+    </app-col-grid>
 
-    <app-form-row [cols]="2">
+    <app-col-grid [cols]="2">
       <app-input label="Fecha de nacimiento" type="date" formControlName="birthDate"></app-input>
       <app-input label="Teléfono" type="tel" formControlName="phone" placeholder="Ej. 987654321"></app-input>
-    </app-form-row>
+    </app-col-grid>
 
-    <app-form-row [cols]="2">
+    <app-col-grid [cols]="2">
       <label style="display:flex;align-items:center;gap:0.5rem;font-size:var(--text-sm);cursor:pointer;">
         <input type="checkbox" formControlName="isDependent" style="width:16px;height:16px;accent-color:var(--color-primary);">
         <span>Es dependiente</span>
@@ -158,7 +158,7 @@
         <input type="checkbox" formControlName="isHeir" style="width:16px;height:16px;accent-color:var(--color-primary);">
         <span>Es heredero/a</span>
       </label>
-    </app-form-row>
+    </app-col-grid>
 
   </form>
 

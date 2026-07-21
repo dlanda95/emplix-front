@@ -1,32 +1,81 @@
-import { Component, Input, forwardRef } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { ControlValueAccessor, NG_VALUE_ACCESSOR, FormsModule } from '@angular/forms';
-
+import { Component, Optional, Self, input, signal } from '@angular/core';
+import { ControlValueAccessor, NgControl } from '@angular/forms';
 
 @Component({
   selector: 'app-input',
-  imports: [CommonModule, FormsModule],
+  imports: [],
   templateUrl: './input.html',
   styleUrl: './input.scss',
-
-  providers: [{
-    provide: NG_VALUE_ACCESSOR,
-    useExisting: forwardRef(() => AppInput),
-    multi: true
-  }],
 })
 export class AppInput implements ControlValueAccessor {
-  @Input({ required: true }) label!: string;
-  @Input() type: string = 'text';
-  @Input() placeholder: string = '';
-  @Input() disabled: boolean = false;
+  readonly label       = input('');
+  readonly type        = input('text');
+  readonly placeholder = input('');
+  readonly icon        = input('');
+  readonly hint        = input('');
+  readonly readonly    = input(false);
+  readonly min         = input<string | undefined>(undefined);
+  readonly max         = input<string | undefined>(undefined);
+  readonly maxlength   = input<number | undefined>(undefined);
+  readonly inputmode   = input<string>('text');
+  readonly numericOnly = input(false);
 
-  value: string = '';
-  onChange: any = () => {};
-  onTouched: any = () => {};
+  readonly focused = signal(false);
+  isDisabled = false;
 
-  writeValue(val: string): void { this.value = val; }
-  registerOnChange(fn: any): void { this.onChange = fn; }
-  registerOnTouched(fn: any): void { this.onTouched = fn; }
-  setDisabledState(isDisabled: boolean): void { this.disabled = isDisabled; }
+  _value: any = '';
+  private _onChange: (v: any) => void = () => {};
+  private _onTouched: () => void = () => {};
+
+  constructor(@Optional() @Self() public ngControl: NgControl) {
+    if (ngControl) ngControl.valueAccessor = this;
+  }
+
+  get control() { return this.ngControl?.control; }
+
+  get isInvalid(): boolean {
+    return !!this.control && this.control.invalid && this.control.touched;
+  }
+
+  get hasServerError(): boolean {
+    return !!this.control?.hasError('serverError');
+  }
+
+  get showErrorMessage(): boolean {
+    return this.isInvalid && (this.focused() || this.hasServerError);
+  }
+
+  onFocus(): void {
+    this.focused.set(true);
+    this.clearServerError();
+  }
+
+  onBlur(): void {
+    this.focused.set(false);
+    this._onTouched();
+    this.control?.markAsTouched();
+  }
+
+  onInput(event: Event): void {
+    const target = event.target as HTMLInputElement;
+    let v = this.numericOnly() ? target.value.replace(/\D/g, '') : target.value;
+    const max = this.maxlength();
+    if (max !== undefined && v.length > max) v = v.slice(0, max);
+    if (target.value !== v) target.value = v;
+    this._value = v;
+    this._onChange(v);
+  }
+
+  writeValue(value: any): void { this._value = value ?? ''; }
+  registerOnChange(fn: any): void { this._onChange = fn; }
+  registerOnTouched(fn: any): void { this._onTouched = fn; }
+  setDisabledState(isDisabled: boolean): void { this.isDisabled = isDisabled; }
+
+  private clearServerError(): void {
+    if (!this.control) return;
+    const errors = this.control.errors;
+    if (!errors || !('serverError' in errors)) return;
+    const { serverError: _, ...rest } = errors;
+    this.control.setErrors(Object.keys(rest).length ? rest : null);
+  }
 }

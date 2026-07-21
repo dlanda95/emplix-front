@@ -1,0 +1,75 @@
+<app-drawer
+  [isOpen]="isOpen"
+  title="Crear Usuario del Sistema"
+  subtitle="Acceso al panel sin ficha de empleado"
+  width="sm"
+  (close)="onClose()">
+
+  @if (success()) {
+    <app-success-screen
+      icon="how_to_reg"
+      title="¡Usuario creado!"
+      description="El usuario ya puede ingresar al sistema."
+      [email]="createdEmail()">
+    </app-success-screen>
+  } @else {
+    <form [formGroup]="form">
+      @if (errorMsg()) {
+        <app-banner variant="error" icon="error" [title]="errorMsg()"></app-banner>
+      }
+
+      <app-form-section title="Datos del usuario" icon="person">
+        <app-col-grid>
+          <app-input label="Nombres *" formControlName="firstName" placeholder="Ej. Carlos"></app-input>
+          <app-input label="Apellidos *" formControlName="lastName" placeholder="Ej. Ramírez"></app-input>
+        </app-col-grid>
+        <app-input label="Correo electrónico *" formControlName="email" type="email"
+          placeholder="usuario@empresa.com"></app-input>
+        <app-input label="Contraseña temporal *" formControlName="password" type="password"
+          placeholder="Mínimo 8 caracteres"></app-input>
+      </app-form-section>
+
+      <app-form-section title="Tipo de acceso al sistema" icon="shield_person">
+        @if (loadingTypes()) {
+          <app-loading-skeleton variant="text" [lines]="2"></app-loading-skeleton>
+        } @else {
+          <app-select
+            label="Tipo de usuario *"
+            formControlName="systemUserTypeId"
+            [options]="typeOptions()"
+            placeholder="Seleccionar tipo">
+          </app-select>
+
+          @if (selectedType()) {
+            <app-type-preview
+              [color]="selectedType()!.color"
+              [name]="selectedType()!.name"
+              [description]="selectedType()!.description ?? ''"
+              [permissions]="selectedType()!.permissions">
+            </app-type-preview>
+          }
+
+          <p style="display:flex; align-items:flex-start; gap:.5rem; font-size:var(--text-sm); color:var(--text-secondary); margin:.5rem 0 0;">
+            <span class="material-icons-round" style="font-size:16px; color:var(--color-info); flex-shrink:0; margin-top:1px;">info</span>
+            Sin acceso al portal de empleados. Gestiona los tipos en
+            <strong>Configuración → Tipos de usuario</strong>.
+          </p>
+        }
+      </app-form-section>
+    </form>
+  }
+
+  <div drawer-footer>
+    @if (success()) {
+      <app-button variant="primary" (clicked)="confirmSuccess()">Entendido</app-button>
+    } @else {
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:var(--space-3); width:100%;">
+        <app-button variant="ghost" (clicked)="onClose()">Cancelar</app-button>
+        <app-button variant="primary" icon="person_add" [loading]="saving()" (clicked)="submit()">
+          Crear usuario
+        </app-button>
+      </div>
+    }
+  </div>
+
+</app-drawer>

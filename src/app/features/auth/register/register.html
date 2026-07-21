@@ -1,3 +1,4 @@
+<app-auth-split-layout>
 <div class="register-container">
   
   <aside class="brand-panel">
@@ -43,14 +44,14 @@
         <form [formGroup]="registerForm" class="auth-form" (submit)="$event.preventDefault()">
           
           <div class="input-group-email" [class.is-locked]="step() === 2">
-            <app-input-field 
-              label="Correo Electrónico" 
-              placeholder="nombre@empresa.com" 
-              type="email" 
+            <app-input
+              label="Correo Electrónico"
+              placeholder="nombre@empresa.com"
+              type="email"
               icon="mail"
-              [control]="getControl('email')"
+              formControlName="email"
               [readonly]="step() === 2">
-            </app-input-field>
+            </app-input>
 
             @if (step() === 2) {
               <button type="button" class="edit-btn" (click)="changeEmail()">Cambiar</button>
@@ -59,35 +60,32 @@
 
           @if (step() === 2) {
             <div class="step-content expand-animation">
-              
+
               <div class="form-row two-cols">
-                <app-input-field label="Nombre" [control]="getControl('firstName')"></app-input-field>
-                <app-input-field label="Segundo Nombre" [control]="getControl('middleName')"></app-input-field>
+                <app-input label="Nombre" formControlName="firstName"></app-input>
+                <app-input label="Segundo Nombre" formControlName="middleName"></app-input>
               </div>
-              
+
               <div class="form-row two-cols">
-                <app-input-field label="Primer Apellido" [control]="getControl('lastName')"></app-input-field>
-                <app-input-field label="Segundo Apellido" [control]="getControl('secondLastName')"></app-input-field>
+                <app-input label="Primer Apellido" formControlName="lastName"></app-input>
+                <app-input label="Segundo Apellido" formControlName="secondLastName"></app-input>
               </div>
 
               <div class="form-row">
-                <app-input-field label="Contraseña" type="password" icon="lock" [control]="getControl('password')"></app-input-field>
+                <app-input label="Contraseña" type="password" icon="lock" formControlName="password"></app-input>
               </div>
-              
+
               <div class="form-row">
-                <app-input-field label="Confirmar" type="password" icon="verified_user" [control]="getControl('confirmPassword')"></app-input-field>
+                <app-input label="Confirmar" type="password" icon="verified_user" formControlName="confirmPassword"></app-input>
               </div>
 
             </div>
           }
 
           <div class="form-actions">
-            <app-primary-btn 
-              [fullWidth]="true" 
-              [loading]="isLoading()" 
-              (click)="onSubmit()">
+            <app-button [fullWidth]="true" [loading]="isLoading()" (clicked)="onSubmit()">
               {{ step() === 1 ? 'Continuar' : 'Crear Cuenta' }}
-            </app-primary-btn>
+            </app-button>
           </div>
 
         </form>
@@ -97,4 +95,4 @@
         </div>
 
       </div> </div> </main>
-</div>
+</div></app-auth-split-layout>
