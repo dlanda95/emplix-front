@@ -46,8 +46,12 @@ export { AdminPageLayout }      from './admin-page-layout/admin-page-layout';
 export { CreateCandidateModal } from './create-candidate-modal/create-candidate-modal';
 export { DOCUMENT_FORMAT_RULES } from './create-candidate-modal/create-candidate-modal';
 export { PortalTabLayout }   from './portal-tab-layout/portal-tab-layout';
+export { AppTextarea }               from './app-textarea/app-textarea';
 export { HRAnalysisPanel }            from './hr-analysis-panel/hr-analysis-panel';
 export { CandidateComparisonPanel }  from './candidate-comparison-panel/candidate-comparison-panel';
+export { CandidateApprovalPanel }    from './candidate-approval-panel/candidate-approval-panel';
+export { LocationCascade }           from './location-cascade/location-cascade';
+export { CandidateDocPanel }         from './candidate-doc-panel/candidate-doc-panel';
 
 export type { AvatarSize }       from './avatar/avatar';
 export type { TypePermissions }  from './type-preview/type-preview';

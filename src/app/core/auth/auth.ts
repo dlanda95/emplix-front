@@ -102,6 +102,12 @@ export class AuthService {
     );
   }
 
+  changePassword(currentPassword: string, newPassword: string): Observable<{ message: string }> {
+    return this.http.post<any>(API_ENDPOINTS.auth.changePassword, { currentPassword, newPassword }).pipe(
+      map(res => res?.data ?? res),
+    );
+  }
+
   checkEmailAvailability(email: string): Observable<boolean> {
     return this.http.post<any>(API_ENDPOINTS.auth.checkEmail, { email }).pipe(
       map(res => !!(res?.data ?? res).exists),
@@ -134,8 +140,9 @@ export class AuthService {
     if (!data?.token) return;
     const user = {
       ...data.user,
-      employeeStatus:   data.employeeStatus   ?? data.user.employeeStatus   ?? null,
-      onboardingStatus: data.onboardingStatus ?? data.user.onboardingStatus ?? null,
+      employeeStatus:    data.employeeStatus   ?? data.user.employeeStatus   ?? null,
+      onboardingStatus:  data.onboardingStatus ?? data.user.onboardingStatus ?? null,
+      mustChangePassword: data.user.mustChangePassword ?? false,
     };
     localStorage.setItem('token', data.token);
     localStorage.setItem('user', JSON.stringify(user));

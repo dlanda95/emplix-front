@@ -153,7 +153,11 @@ export class Login implements OnInit {
     this.authService.login({ email, password }).subscribe({
       next: () => {
         this.isLoading.set(false);
-        this.router.navigate(this.authService.getPostLoginRoute());
+        if (this.authService.currentUser()?.mustChangePassword) {
+          this.router.navigate(['/auth/change-password']);
+        } else {
+          this.router.navigate(this.authService.getPostLoginRoute());
+        }
       },
       error: (err: HttpErrorResponse) => {
         this.isLoading.set(false);
@@ -198,7 +202,13 @@ export class Login implements OnInit {
       .subscribe({
         next: (result) => {
           this.authService.loginWithMicrosoft(result.idToken).subscribe({
-            next: () => this.router.navigate(this.authService.getPostLoginRoute()),
+            next: () => {
+              if (this.authService.currentUser()?.mustChangePassword) {
+                this.router.navigate(['/auth/change-password']);
+              } else {
+                this.router.navigate(this.authService.getPostLoginRoute());
+              }
+            },
             error: (err: HttpErrorResponse) => this.handleLoginError(err),
           });
         },

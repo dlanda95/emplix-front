@@ -38,10 +38,11 @@ export interface CandidateBasic {
 }
 
 export interface HrApprovalRecord {
-  approverId:  string;
-  status:      ApprovalStatus;
-  comment:     string | null;
-  decidedAt:   string | null;
+  approverId:   string;
+  approverName: string;
+  status:       ApprovalStatus;
+  comment:      string | null;
+  decidedAt:    string | null;
 }
 
 export interface CandidateApprovalsResponse {
@@ -85,10 +86,10 @@ export class ApprovalsService {
     );
   }
 
-  convertToEmployee(processId: string, candidateId: string): Observable<unknown> {
-    return this.http.post(
+  convertToEmployee(processId: string, candidateId: string, corporateEmail: string): Observable<{ emailSent: boolean; emailError?: string; deliveryEmail?: string }> {
+    return this.http.post<{ emailSent: boolean; emailError?: string; deliveryEmail?: string }>(
       `${this.base}/${processId}/candidates/${candidateId}/convert`,
-      {},
+      { corporateEmail },
     );
   }
 

@@ -6,7 +6,7 @@
   <div class="ccp-stats">
     <span class="ccp-stats__label">
       <span class="material-icons-round">analytics</span>
-      Comparativo de {{ rows().length }} candidato{{ rows().length === 1 ? '' : 's' }}
+      {{ rows().length }} candidato{{ rows().length === 1 ? '' : 's' }}
     </span>
     <div class="ccp-stats__pills">
       @for (s of stats(); track s.key) {
@@ -18,11 +18,10 @@
     </div>
   </div>
 
-  <!-- ── Matrix ─────────────────────────────────────────────────────────────── -->
+  <!-- ══ DESKTOP / LAPTOP: tabla comparativa ═══════════════════════════════════ -->
   <div class="ccp-scroll">
     <table class="ccp-table">
 
-      <!-- Candidate headers -->
       <thead>
         <tr>
           <th class="ccp-th ccp-th--label"></th>
@@ -33,15 +32,18 @@
                   {{ initials(row.candidate) }}
                 </div>
                 <div class="ccp-cand-head__info">
-                  <p class="ccp-cand-head__name">
-                    {{ row.candidate.firstName }} {{ row.candidate.lastName }}
-                  </p>
+                  <p class="ccp-cand-head__name">{{ row.candidate.firstName }} {{ row.candidate.lastName }}</p>
                   @if (row.candidate.position?.name) {
                     <p class="ccp-cand-head__pos">{{ row.candidate.position!.name }}</p>
                   }
                 </div>
               </div>
-              <!-- Recommendation badge -->
+              @if (row.analysis?.createdByName) {
+                <p class="ccp-cand-head__analyst">
+                  <span class="material-icons-round">badge</span>
+                  {{ row.analysis!.createdByName }}
+                </p>
+              }
               <span class="ccp-rec-badge ccp-rec-badge--{{ recMeta[rec(row)].cls }}">
                 <span class="material-icons-round">{{ recMeta[rec(row)].icon }}</span>
                 {{ recMeta[rec(row)].label }}
@@ -51,7 +53,6 @@
         </tr>
       </thead>
 
-      <!-- Section rows -->
       <tbody>
         @for (section of sections; track section.key) {
           <tr class="ccp-row">
@@ -73,18 +74,17 @@
           </tr>
         }
 
-        <!-- Recommendation notes row -->
-        <tr class="ccp-row ccp-row--notes">
+        <tr class="ccp-row ccp-row--salary">
           <td class="ccp-td ccp-td--label">
             <span class="ccp-dim">
-              <span class="material-icons-round">comment</span>
-              Notas finales
+              <span class="material-icons-round">payments</span>
+              Pretensión salarial
             </span>
           </td>
           @for (row of rows(); track row.candidate.id) {
             <td class="ccp-td ccp-td--cell ccp-col--{{ recMeta[rec(row)].cls }}">
-              @if (row.analysis?.recommendationNotes) {
-                <p class="ccp-cell-text">{{ row.analysis!.recommendationNotes }}</p>
+              @if (row.analysis?.salaryExpectation != null) {
+                <p class="ccp-cell-text ccp-salary-val">S/ {{ row.analysis!.salaryExpectation | number:'1.0-0' }}</p>
               } @else {
                 <span class="ccp-empty-cell">—</span>
               }
@@ -94,6 +94,70 @@
       </tbody>
 
     </table>
+  </div>
+
+  <!-- ══ MOBILE / TABLET: tarjeta por candidato ════════════════════════════════ -->
+  <div class="ccp-card-list">
+    @for (row of rows(); track row.candidate.id) {
+      <div class="ccp-cand-card">
+
+        <!-- Encabezado de la tarjeta -->
+        <div class="ccp-cand-card__head ccp-col--{{ recMeta[rec(row)].cls }}">
+          <div class="ccp-avatar ccp-avatar--{{ recMeta[rec(row)].cls }}">
+            {{ initials(row.candidate) }}
+          </div>
+          <div class="ccp-cand-card__identity">
+            <p class="ccp-cand-card__name">{{ row.candidate.firstName }} {{ row.candidate.lastName }}</p>
+            @if (row.candidate.position?.name) {
+              <p class="ccp-cand-card__pos">{{ row.candidate.position!.name }}</p>
+            }
+            @if (row.analysis?.createdByName) {
+              <p class="ccp-cand-card__analyst">
+                <span class="material-icons-round">badge</span>
+                {{ row.analysis!.createdByName }}
+              </p>
+            }
+          </div>
+          <span class="ccp-rec-badge ccp-rec-badge--{{ recMeta[rec(row)].cls }}">
+            <span class="material-icons-round">{{ recMeta[rec(row)].icon }}</span>
+            {{ recMeta[rec(row)].label }}
+          </span>
+        </div>
+
+        <!-- Pretensión salarial destacada -->
+        @if (row.analysis?.salaryExpectation != null) {
+          <div class="ccp-cand-card__salary">
+            <span class="ccp-cand-card__salary-label">
+              <span class="material-icons-round">payments</span>
+              Pretensión salarial
+            </span>
+            <strong class="ccp-cand-card__salary-val">
+              S/ {{ row.analysis!.salaryExpectation | number:'1.0-0' }}
+            </strong>
+          </div>
+        }
+
+        <!-- Secciones de análisis -->
+        @if (!hasContent(row)) {
+          <p class="ccp-cand-card__empty">Sin análisis registrado por RR.HH.</p>
+        } @else {
+          <div class="ccp-cand-card__sections">
+            @for (section of sections; track section.key) {
+              @if (cellValue(row, section.key)) {
+                <div class="ccp-cand-card__section">
+                  <p class="ccp-cand-card__section-label">
+                    <span class="material-icons-round">{{ section.icon }}</span>
+                    {{ section.label }}
+                  </p>
+                  <p class="ccp-cand-card__section-content">{{ cellValue(row, section.key) }}</p>
+                </div>
+              }
+            }
+          </div>
+        }
+
+      </div>
+    }
   </div>
 
 }

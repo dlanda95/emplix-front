@@ -32,6 +32,7 @@ export interface EmployeeMinimal {
 
 export interface CandidateSummary {
   id:               string;
+  status:           'SELECTED' | 'ACTIVE' | 'TERMINATED' | 'ON_LEAVE';
   firstName:        string;
   lastName:         string;
   middleName?:      string | null;
@@ -46,6 +47,7 @@ export interface CandidateSummary {
 
 export interface CandidateDetail {
   id:               string;
+  status:           'SELECTED' | 'ACTIVE' | 'TERMINATED' | 'ON_LEAVE';
   firstName:        string;
   lastName:         string;
   middleName:       string | null;

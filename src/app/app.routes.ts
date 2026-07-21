@@ -19,8 +19,9 @@ export const routes: Routes = [
       { path: '',         redirectTo: 'login', pathMatch: 'full' },
       { path: 'login',            component: Login    },
       { path: 'register',         component: Register },
-      { path: 'forgot-password',  loadComponent: () => import('@features/auth/forgot-password/forgot-password').then(m => m.ForgotPassword) },
-      { path: 'reset-password',   loadComponent: () => import('@features/auth/reset-password/reset-password').then(m => m.ResetPassword)   },
+      { path: 'forgot-password',   loadComponent: () => import('@features/auth/forgot-password/forgot-password').then(m => m.ForgotPassword)     },
+      { path: 'reset-password',    loadComponent: () => import('@features/auth/reset-password/reset-password').then(m => m.ResetPassword)       },
+      { path: 'change-password',   loadComponent: () => import('@features/auth/change-password/change-password').then(m => m.ChangePassword)     },
     ],
   },
 

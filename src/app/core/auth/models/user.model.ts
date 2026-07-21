@@ -27,16 +27,17 @@ export interface SystemUserTypeRef {
 }
 
 export interface User {
-  id:               string;
-  firstName:        string;
-  lastName:         string;
-  email:            string;
-  role:             UserRole;
-  tenantSlug:       string;
-  isSystemUser?:    boolean;
-  systemUserType?:  SystemUserTypeRef | null;
-  employeeStatus?:  EmployeeStatus  | null;
-  onboardingStatus?:OnboardingStatus | null;
+  id:                 string;
+  firstName:          string;
+  lastName:           string;
+  email:              string;
+  role:               UserRole;
+  tenantSlug:         string;
+  isSystemUser?:      boolean;
+  systemUserType?:    SystemUserTypeRef | null;
+  employeeStatus?:    EmployeeStatus  | null;
+  onboardingStatus?:  OnboardingStatus | null;
+  mustChangePassword?: boolean;
 }
 
 export const HR_ROLES: UserRole[] = ['COMPANY_ADMIN', 'HR_MANAGER', 'HR_ANALYST'];

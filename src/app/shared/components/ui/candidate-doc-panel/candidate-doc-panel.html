@@ -1,0 +1,177 @@
+<div class="cdp-panel">
+
+  <!-- ── Barra de filtros ───────────────────────────────────────────────────── -->
+  @if (docCategoryChips().length > 1) {
+    <div class="cdp-filter-bar">
+      <app-filter-chips
+        [items]="docCategoryChips()"
+        [active]="activeCategory()"
+        (activeChange)="activeCategory.set($any($event))">
+      </app-filter-chips>
+      <span class="cdp-count-badge">
+        {{ filteredDocs().length }}
+        doc{{ filteredDocs().length !== 1 ? 's' : '' }}
+      </span>
+    </div>
+  }
+
+  @if (filteredDocs().length === 0) {
+    <app-empty-state
+      icon="folder_open"
+      title="Sin documentos en esta categoría"
+      description="El candidato no ha subido documentos de este tipo.">
+    </app-empty-state>
+
+  } @else {
+
+    <!-- ══ Vista tabla — desktop / tablet ════════════════════════════════════ -->
+    <div class="cdp-table-wrap">
+      <table class="cdp-table">
+        <thead>
+          <tr>
+            <th class="cdp-th cdp-th--file">Archivo</th>
+            <th class="cdp-th cdp-th--size">Tamaño</th>
+            <th class="cdp-th cdp-th--date">Fecha</th>
+            <th class="cdp-th cdp-th--actions">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (doc of filteredDocs(); track doc.id) {
+            <tr class="cdp-row" [class.cdp-row--active]="isActivePreview(doc)">
+
+              <td class="cdp-td cdp-td--file">
+                <div class="cdp-file-icon" [style.background]="fileIcon(doc).bg">
+                  <span class="material-icons-round" [style.color]="fileIcon(doc).color">
+                    {{ fileIcon(doc).icon }}
+                  </span>
+                </div>
+                <div class="cdp-file-info">
+                  <span class="cdp-file-name" [title]="displayName(doc)">{{ displayName(doc) }}</span>
+                  <span class="cdp-type-badge">{{ typeLabel(doc) }}</span>
+                </div>
+              </td>
+
+              <td class="cdp-td cdp-td--size">{{ formatSize(doc.size) }}</td>
+              <td class="cdp-td cdp-td--date">{{ formatDate(doc.createdAt) }}</td>
+
+              <td class="cdp-td cdp-td--actions">
+                <div class="cdp-row-actions">
+                  @if (canInlinePreview(doc)) {
+                    <button
+                      class="cdp-btn cdp-btn--eye"
+                      [class.cdp-btn--active]="isActivePreview(doc)"
+                      (click)="openPreview(doc)"
+                      [title]="isActivePreview(doc) ? 'Cerrar vista previa' : 'Vista previa'">
+                      <span class="material-icons-round">
+                        {{ isActivePreview(doc) ? 'visibility_off' : 'visibility' }}
+                      </span>
+                    </button>
+                  } @else {
+                    <button class="cdp-btn cdp-btn--ext" (click)="openPreview(doc)" title="Abrir en visor externo">
+                      <span class="material-icons-round">open_in_new</span>
+                    </button>
+                  }
+                  <button class="cdp-btn cdp-btn--dl" (click)="download(doc)" title="Descargar">
+                    <span class="material-icons-round">download</span>
+                  </button>
+                </div>
+              </td>
+
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ══ Vista cards — mobile ══════════════════════════════════════════════ -->
+    <div class="cdp-card-list">
+      @for (doc of filteredDocs(); track doc.id) {
+        <div class="cdp-card" [class.cdp-card--active]="isActivePreview(doc)">
+
+          <div class="cdp-card__icon" [style.background]="fileIcon(doc).bg">
+            <span class="material-icons-round" [style.color]="fileIcon(doc).color">
+              {{ fileIcon(doc).icon }}
+            </span>
+          </div>
+
+          <div class="cdp-card__body">
+            <p class="cdp-card__name" [title]="displayName(doc)">{{ displayName(doc) }}</p>
+            <div class="cdp-card__meta">
+              <span class="cdp-type-badge">{{ typeLabel(doc) }}</span>
+              <span class="cdp-card__dot">·</span>
+              <span>{{ formatSize(doc.size) }}</span>
+              <span class="cdp-card__dot">·</span>
+              <span>{{ formatDate(doc.createdAt) }}</span>
+            </div>
+          </div>
+
+          <div class="cdp-card__actions">
+            @if (canInlinePreview(doc)) {
+              <button
+                class="cdp-card__btn"
+                [class.cdp-card__btn--active]="isActivePreview(doc)"
+                (click)="openPreview(doc)"
+                [title]="isActivePreview(doc) ? 'Cerrar vista previa' : 'Vista previa'">
+                <span class="material-icons-round">
+                  {{ isActivePreview(doc) ? 'visibility_off' : 'visibility' }}
+                </span>
+              </button>
+            } @else {
+              <button class="cdp-card__btn" (click)="openPreview(doc)" title="Abrir en visor externo">
+                <span class="material-icons-round">open_in_new</span>
+              </button>
+            }
+            <button class="cdp-card__btn cdp-card__btn--dl" (click)="download(doc)" title="Descargar">
+              <span class="material-icons-round">download</span>
+            </button>
+          </div>
+
+        </div>
+      }
+    </div>
+
+    <!-- ══ Panel de vista previa ═════════════════════════════════════════════ -->
+    @if (previewDoc(); as doc) {
+      <div class="cdp-preview">
+
+        <div class="cdp-preview__bar">
+          <div class="cdp-preview__bar-left">
+            <div class="cdp-preview__bar-icon" [style.background]="fileIcon(doc).bg">
+              <span class="material-icons-round" [style.color]="fileIcon(doc).color">
+                {{ fileIcon(doc).icon }}
+              </span>
+            </div>
+            <span class="cdp-preview__bar-name" [title]="displayName(doc)">{{ displayName(doc) }}</span>
+          </div>
+          <div class="cdp-preview__bar-actions">
+            <button class="cdp-preview__dl-btn" (click)="download(doc)" title="Descargar">
+              <span class="material-icons-round">download</span>
+              <span>Descargar</span>
+            </button>
+            <button class="cdp-preview__close-btn" (click)="closePreview()" title="Cerrar visor">
+              <span class="material-icons-round">close</span>
+            </button>
+          </div>
+        </div>
+
+        @if (isImage(doc)) {
+          <div class="cdp-preview__img-wrap">
+            <img
+              [src]="previewImageUrl()"
+              [alt]="displayName(doc)"
+              class="cdp-preview__img">
+          </div>
+        } @else {
+          <iframe
+            [src]="previewUrl()"
+            class="cdp-preview__frame"
+            [title]="displayName(doc)">
+          </iframe>
+        }
+
+      </div>
+    }
+
+  }
+
+</div>

@@ -1,0 +1,411 @@
+@use 'abstracts/mixins' as m;
+
+// ─── Stats bar ────────────────────────────────────────────────────────────────
+.ccp-stats {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  flex-wrap: wrap;
+  padding: 0.75rem 1rem;
+  background: var(--bg-body);
+  border: 1px solid var(--border-color);
+  border-radius: 0.625rem;
+  margin-bottom: 1rem;
+
+  &__label {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: var(--text-xs);
+    font-weight: 600;
+    color: var(--text-secondary);
+    white-space: nowrap;
+
+    .material-icons-round { font-size: 1rem; }
+  }
+
+  &__pills {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    flex: 1;
+  }
+}
+
+.ccp-stat-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.2rem 0.65rem;
+  border-radius: 999px;
+  font-size: var(--text-xs);
+  font-weight: 600;
+
+  .material-icons-round { font-size: 0.85rem; }
+
+  &--success { background: #dcfce7; color: #166534; }
+  &--info    { background: #dbeafe; color: #1e40af; }
+  &--error   { background: #fee2e2; color: #991b1b; }
+  &--neutral { background: #f1f5f9; color: #475569; }
+}
+
+// ─── Colores por recomendación (compartidos tabla + cards) ────────────────────
+.ccp-col--success { background: #f0fdf4; }
+.ccp-col--info    { background: #eff6ff; }
+.ccp-col--error   { background: #fef2f2; }
+.ccp-col--neutral { background: #f8fafc; }
+
+.ccp-avatar {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: var(--text-sm);
+  flex-shrink: 0;
+  text-transform: uppercase;
+
+  &--success { background: #22c55e; }
+  &--info    { background: #3b82f6; }
+  &--error   { background: #ef4444; }
+  &--neutral { background: #94a3b8; }
+}
+
+.ccp-rec-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.2rem 0.65rem;
+  border-radius: 999px;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  white-space: nowrap;
+
+  .material-icons-round { font-size: 0.85rem; }
+
+  &--success { background: #f0fdf4; color: #166534; border: 1px solid #86efac; }
+  &--info    { background: #eff6ff; color: #1e40af; border: 1px solid #93c5fd; }
+  &--error   { background: #fef2f2; color: #991b1b; border: 1px solid #fca5a5; }
+  &--neutral { background: #f8fafc; color: #475569; border: 1px solid #cbd5e1; }
+}
+
+// ══ TABLA — desktop ════════════════════════════════════════════════════════════
+.ccp-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border: 1px solid var(--border-color);
+  border-radius: 0.75rem;
+  box-shadow: var(--shadow-sm);
+
+  @include m.respond-to('tablet') { display: none; }
+}
+
+.ccp-table {
+  border-collapse: collapse;
+  min-width: 100%;
+  width: max-content;
+  font-size: var(--text-sm);
+}
+
+.ccp-th,
+.ccp-td {
+  padding: 0;
+  border-bottom: 1px solid var(--border-color);
+  border-right: 1px solid var(--border-color);
+  vertical-align: top;
+
+  &:last-child { border-right: none; }
+}
+
+.ccp-th--label,
+.ccp-td--label {
+  position: sticky;
+  left: 0;
+  z-index: 3;
+  background: var(--bg-surface);
+  min-width: 165px;
+  max-width: 185px;
+}
+
+.ccp-th--label { z-index: 4; }
+
+.ccp-th--candidate {
+  min-width: 220px;
+  max-width: 280px;
+  padding: 1.125rem 1rem 1rem;
+  border-bottom: 2px solid var(--border-color);
+
+  &.ccp-col--success { border-top: 3px solid #22c55e; }
+  &.ccp-col--info    { border-top: 3px solid #3b82f6; }
+  &.ccp-col--error   { border-top: 3px solid #ef4444; }
+  &.ccp-col--neutral { border-top: 3px solid #94a3b8; }
+}
+
+.ccp-cand-head {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-bottom: 0.625rem;
+
+  &__info { min-width: 0; }
+
+  &__name {
+    margin: 0;
+    font-weight: 700;
+    font-size: var(--text-sm);
+    color: var(--text-main);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__pos {
+    margin: 0;
+    font-size: var(--text-xs);
+    color: var(--text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__analyst {
+    margin: 0.25rem 0 0.5rem;
+    font-size: var(--text-xs);
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 0.2rem;
+
+    .material-icons-round { font-size: 0.8rem; }
+  }
+}
+
+.ccp-td--label { padding: 0.75rem 1rem; }
+
+.ccp-dim {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: var(--text-xs);
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+
+  .material-icons-round { font-size: 0.95rem; }
+}
+
+.ccp-td--cell { padding: 0.75rem 1rem; }
+
+.ccp-cell-text {
+  margin: 0;
+  color: var(--text-main);
+  font-size: var(--text-sm);
+  line-height: 1.55;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.ccp-empty-cell {
+  color: var(--text-secondary);
+  opacity: 0.35;
+  font-size: var(--text-base);
+}
+
+.ccp-salary-val {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-primary);
+}
+
+.ccp-row--salary .ccp-td { border-bottom: none; }
+
+// ══ CARDS — mobile / tablet ════════════════════════════════════════════════════
+.ccp-card-list {
+  display: none;
+  flex-direction: column;
+  gap: 1rem;
+
+  @include m.respond-to('tablet') { display: flex; }
+}
+
+.ccp-cand-card {
+  border: 1px solid var(--border-color);
+  border-radius: 0.75rem;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  background: var(--bg-surface);
+
+  // Acento de color en el borde superior según recomendación
+  &:has(.ccp-col--success) { border-top: 3px solid #22c55e; }
+  &:has(.ccp-col--info)    { border-top: 3px solid #3b82f6; }
+  &:has(.ccp-col--error)   { border-top: 3px solid #ef4444; }
+  &:has(.ccp-col--neutral) { border-top: 3px solid #94a3b8; }
+
+  &__head {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 1rem 0.875rem;
+    flex-wrap: wrap;
+
+    // el badge de rec queda alineado a la derecha
+    .ccp-rec-badge { margin-left: auto; }
+  }
+
+  &__identity { flex: 1; min-width: 0; }
+
+  &__name {
+    margin: 0 0 0.15rem;
+    font-weight: 700;
+    font-size: var(--text-base);
+    color: var(--text-main);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__pos {
+    margin: 0;
+    font-size: var(--text-xs);
+    color: var(--text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__analyst {
+    margin: 0.15rem 0 0;
+    font-size: var(--text-xs);
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+
+    .material-icons-round { font-size: 0.8rem; color: var(--color-primary); }
+  }
+
+  // Pretensión salarial destacada dentro de la card
+  &__salary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.625rem 1rem;
+    background: rgba(var(--color-primary-rgb), 0.05);
+    border-top: 1px solid rgba(var(--color-primary-rgb), 0.12);
+    border-bottom: 1px solid rgba(var(--color-primary-rgb), 0.12);
+  }
+
+  &__salary-label {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: var(--text-xs);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-secondary);
+
+    .material-icons-round { font-size: 0.9rem; }
+  }
+
+  &__salary-val {
+    font-size: 1.125rem;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    color: var(--color-primary);
+    letter-spacing: -0.02em;
+  }
+
+  // Secciones de análisis
+  &__sections {
+    display: flex;
+    flex-direction: column;
+  }
+
+  &__section {
+    padding: 0.75rem 1rem;
+    border-top: 1px solid var(--border-color);
+
+    &:first-child { border-top: 1px solid var(--border-color); }
+  }
+
+  &__section-label {
+    margin: 0 0 0.375rem;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.65rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--text-secondary);
+
+    .material-icons-round { font-size: 0.85rem; }
+  }
+
+  &__section-content {
+    margin: 0;
+    font-size: var(--text-sm);
+    color: var(--text-main);
+    line-height: 1.65;
+    white-space: pre-wrap;
+  }
+
+  &__empty {
+    margin: 0;
+    padding: 1.25rem 1rem;
+    font-size: var(--text-sm);
+    color: var(--text-muted);
+    font-style: italic;
+    text-align: center;
+    border-top: 1px solid var(--border-color);
+  }
+}
+
+// ─── Tema oscuro ──────────────────────────────────────────────────────────────
+@media (prefers-color-scheme: dark) {
+  .ccp-th--label,
+  .ccp-td--label { background: var(--bg-surface); }
+
+  .ccp-stat-pill--success { background: rgba(22,163,74,.15);  color: #86efac; }
+  .ccp-stat-pill--info    { background: rgba(59,130,246,.15); color: #93c5fd; }
+  .ccp-stat-pill--error   { background: rgba(239,68,68,.15);  color: #fca5a5; }
+  .ccp-stat-pill--neutral { background: rgba(148,163,184,.1); color: #94a3b8; }
+
+  .ccp-col--success { background: rgba(22,163,74,.07);   }
+  .ccp-col--info    { background: rgba(59,130,246,.07);  }
+  .ccp-col--error   { background: rgba(239,68,68,.07);   }
+  .ccp-col--neutral { background: rgba(148,163,184,.05); }
+
+  .ccp-rec-badge--success { background: rgba(22,163,74,.2);  color: #86efac; border-color: rgba(22,163,74,.4);   }
+  .ccp-rec-badge--info    { background: rgba(59,130,246,.2); color: #93c5fd; border-color: rgba(59,130,246,.4);  }
+  .ccp-rec-badge--error   { background: rgba(239,68,68,.2);  color: #fca5a5; border-color: rgba(239,68,68,.4);   }
+  .ccp-rec-badge--neutral { background: rgba(148,163,184,.1);color: #94a3b8; border-color: rgba(148,163,184,.2); }
+}
+
+:root[data-theme="dark"] {
+  .ccp-th--label,
+  .ccp-td--label { background: var(--bg-surface); }
+
+  .ccp-stat-pill--success { background: rgba(22,163,74,.15);  color: #86efac; }
+  .ccp-stat-pill--info    { background: rgba(59,130,246,.15); color: #93c5fd; }
+  .ccp-stat-pill--error   { background: rgba(239,68,68,.15);  color: #fca5a5; }
+  .ccp-stat-pill--neutral { background: rgba(148,163,184,.1); color: #94a3b8; }
+
+  .ccp-col--success { background: rgba(22,163,74,.07);   }
+  .ccp-col--info    { background: rgba(59,130,246,.07);  }
+  .ccp-col--error   { background: rgba(239,68,68,.07);   }
+  .ccp-col--neutral { background: rgba(148,163,184,.05); }
+
+  .ccp-rec-badge--success { background: rgba(22,163,74,.2);  color: #86efac; border-color: rgba(22,163,74,.4);   }
+  .ccp-rec-badge--info    { background: rgba(59,130,246,.2); color: #93c5fd; border-color: rgba(59,130,246,.4);  }
+  .ccp-rec-badge--error   { background: rgba(239,68,68,.2);  color: #fca5a5; border-color: rgba(239,68,68,.4);   }
+  .ccp-rec-badge--neutral { background: rgba(148,163,184,.1);color: #94a3b8; border-color: rgba(148,163,184,.2); }
+}

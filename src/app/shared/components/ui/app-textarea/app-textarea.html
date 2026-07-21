@@ -1,0 +1,29 @@
+<div class="textarea-wrapper">
+
+  @if (label()) {
+    <label class="textarea-label">{{ label() }}</label>
+  }
+
+  <textarea
+    class="native-textarea"
+    [class.has-error]="isInvalid"
+    [class.is-focused]="focused()"
+    [placeholder]="placeholder()"
+    [rows]="rows()"
+    [disabled]="isDisabled"
+    [readonly]="readonly()"
+    [value]="_value"
+    (input)="onInput($event)"
+    (focus)="onFocus()"
+    (blur)="onBlur()">
+  </textarea>
+
+  @if (isInvalid && control?.hasError('required')) {
+    <div class="error-msg">Campo obligatorio</div>
+  }
+
+  @if (hint() && !isInvalid) {
+    <div class="hint-msg">{{ hint() }}</div>
+  }
+
+</div>

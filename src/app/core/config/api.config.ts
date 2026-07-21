@@ -13,6 +13,7 @@ export const API_ENDPOINTS = {
     forgotPassword:     `${base}/auth/forgot-password`,
     verifyResetToken:   `${base}/auth/verify-reset-token`,
     resetPassword:      `${base}/auth/reset-password`,
+    changePassword:     `${base}/auth/change-password`,
   },
   employees: {
     me:   `${base}/employees/me`,

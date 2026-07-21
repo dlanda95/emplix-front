@@ -15,10 +15,14 @@
       }
     </div>
 
-    <app-input label="Dirección (Calle / Av. / Jr. + Nro.)" formControlName="address"         placeholder="Ej. Av. Larco 500"></app-input>
-    <app-input label="Distrito"                              formControlName="district"         placeholder="Ej. Miraflores"></app-input>
-    <app-input label="Departamento"                          formControlName="departmentdirec"  placeholder="Ej. Lima"></app-input>
-    <app-input label="Referencia (opcional)"                 formControlName="addressRef"       placeholder="Ej. Frente al parque"></app-input>
+    <app-input label="Dirección (Calle / Av. / Jr. + Nro.)" formControlName="address"   placeholder="Ej. Av. Larco 500"></app-input>
+    <app-input label="Referencia (opcional)"                formControlName="addressRef" placeholder="Ej. Frente al parque"></app-input>
+    <app-location-cascade
+      [showCountry]="false"
+      [regionCtrl]="form.controls.departmentdirec"
+      [districtCtrl]="form.controls.district"
+      [provinceCtrl]="form.controls.province">
+    </app-location-cascade>
 
   </app-section-card>
 

@@ -1,0 +1,28 @@
+.loc-cascade {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  width: 100%;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.loc-cascade__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  position: relative;
+
+  &--disabled {
+    opacity: 0.55;
+    pointer-events: none;
+  }
+}
+
+.loc-cascade__hint {
+  font-size: 0.6875rem;
+  color: var(--text-secondary);
+  padding-left: 0.25rem;
+}

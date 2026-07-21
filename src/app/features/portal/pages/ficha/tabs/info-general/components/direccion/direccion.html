@@ -59,10 +59,12 @@
           formControlName="address"
           placeholder="Ej. Av. Larco 123, Urb. El Olivar">
         </app-input>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;">
-          <app-input label="Distrito"     formControlName="district"        placeholder="Ej. Miraflores"></app-input>
-          <app-input label="Departamento" formControlName="departmentdirec" placeholder="Ej. Lima"></app-input>
-        </div>
+        <app-location-cascade
+          [showCountry]="false"
+          [regionCtrl]="addressForm.controls['departmentdirec']"
+          [districtCtrl]="addressForm.controls['district']"
+          [provinceCtrl]="addressForm.controls['province']">
+        </app-location-cascade>
         <app-input label="Referencia (opcional)" formControlName="addressRef" placeholder="Ej. Frente al parque central"></app-input>
       </form>
     </div>

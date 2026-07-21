@@ -1,12 +1,12 @@
 import { Component, inject, signal, effect, computed } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
-import { AppInput, Banner, Button, SectionCard } from '@shared/ui';
+import { AppInput, Banner, Button, LocationCascade, SectionCard } from '@shared/ui';
 import { OnboardingService } from '../../services/onboarding.service';
 
 @Component({
   selector: 'app-paso-residencia',
-  imports: [ReactiveFormsModule, AppInput, Banner, Button, SectionCard],
+  imports: [ReactiveFormsModule, AppInput, Banner, Button, LocationCascade, SectionCard],
   templateUrl: './paso-residencia.html',
 })
 export class PasoResidencia {

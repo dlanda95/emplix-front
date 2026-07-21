@@ -42,9 +42,11 @@
         <app-field label="Departamento" [value]="data.birthRegion"></app-field>
         <app-field label="Distrito"     [value]="data.birthDistrict"></app-field>
       } @else {
-        <app-input label="País"         formControlName="birthCountry"  placeholder="Ej. Perú"></app-input>
-        <app-input label="Departamento" formControlName="birthRegion"   placeholder="Ej. Lima"></app-input>
-        <app-input label="Distrito"     formControlName="birthDistrict" placeholder="Ej. Miraflores"></app-input>
+        <app-location-cascade
+          [countryCtrl]="editForm.controls['birthCountry']"
+          [regionCtrl]="editForm.controls['birthRegion']"
+          [districtCtrl]="editForm.controls['birthDistrict']">
+        </app-location-cascade>
       }
     </app-section-card>
 
@@ -63,10 +65,13 @@
       } @else {
         <app-select label="Tipo de Documento"          formControlName="documentType"  [options]="documentTypeOptions"></app-select>
         <app-input  label="Brevete"                    formControlName="licenseNumber"  placeholder="Ej. Q12345678"></app-input>
-        <app-input  label="Dirección (Doc. Identidad)" formControlName="docAddress"     placeholder="Ej. Av. Larco 500"></app-input>
-        <app-input  label="Distrito (Doc. Identidad)"  formControlName="docDistrict"    placeholder="Ej. Miraflores"></app-input>
-        <app-input  label="Departamento (Doc. Id.)"    formControlName="docDepartment"  placeholder="Ej. Lima"></app-input>
-        <app-input  label="Referencia (Doc. Id.)"      formControlName="docAddressRef"  placeholder="Ej. Frente al parque"></app-input>
+        <app-input label="Dirección (Doc. Identidad)" formControlName="docAddress"    placeholder="Ej. Av. Larco 500"></app-input>
+        <app-input label="Referencia (Doc. Id.)"      formControlName="docAddressRef" placeholder="Ej. Frente al parque"></app-input>
+        <app-location-cascade
+          [showCountry]="false"
+          [regionCtrl]="editForm.controls['docDepartment']"
+          [districtCtrl]="editForm.controls['docDistrict']">
+        </app-location-cascade>
       }
     </app-section-card>
 

@@ -1,7 +1,7 @@
 import { Component, inject, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { AppInput, Banner, Button, ChangeRequestBar, Field, MapWidget, Modal, SectionCard, SplitLayout } from '@shared/ui';
+import { AppInput, Banner, Button, ChangeRequestBar, Field, LocationCascade, MapWidget, Modal, SectionCard, SplitLayout } from '@shared/ui';
 import { CollaboratorService } from '@features/portal/services/collaborator.service';
 import { CollaboratorProfile } from '@features/portal/models/collaborator.model';
 
@@ -9,7 +9,7 @@ import { CollaboratorProfile } from '@features/portal/models/collaborator.model'
   selector: 'app-direccion',
   imports: [
     ReactiveFormsModule, CommonModule,
-    AppInput, Banner, Button, ChangeRequestBar, Field, MapWidget, Modal, SectionCard, SplitLayout,
+    AppInput, Banner, Button, ChangeRequestBar, Field, LocationCascade, MapWidget, Modal, SectionCard, SplitLayout,
   ],
   templateUrl: './direccion.html',
 })

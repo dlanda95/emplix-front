@@ -19,7 +19,7 @@
         <app-badge [variant]="c.onboardingStatus | onboardingVariant">
           {{ c.onboardingStatus | onboardingLabel }}
         </app-badge>
-        @if (c.onboardingStatus === 'DOCS_SUBMITTED' || c.onboardingStatus === 'COMPLETED') {
+        @if (c.status === 'SELECTED' && (c.onboardingStatus === 'DOCS_SUBMITTED' || c.onboardingStatus === 'COMPLETED')) {
           <app-button
             variant="primary"
             icon="person_check"
@@ -210,35 +210,12 @@
     </div>
 
     <!-- ── Documentos del candidato (sección full-width) ──────────────────── -->
-    @if (c.documents.length > 0) {
-      <app-section-card title="Documentos del candidato" [columns]="1" class="cand-docs-section">
-
-        <app-filter-chips
-          [items]="docCategoryChips()"
-          [active]="activeDocCat()"
-          (activeChange)="activeDocCat.set($any($event))">
-        </app-filter-chips>
-
-        @if (filteredDocs().length > 0) {
-          <div class="cand-doc-grid">
-            @for (doc of filteredDocs(); track doc.id) {
-              <app-doc-card
-                [doc]="doc"
-                [showDelete]="false"
-                (download)="downloadDoc(doc)">
-              </app-doc-card>
-            }
-          </div>
-        } @else {
-          <app-empty-state
-            icon="folder_open"
-            title="Sin documentos en esta categoría"
-            description="El candidato no ha subido documentos de este tipo.">
-          </app-empty-state>
-        }
-
-      </app-section-card>
-    }
+    <app-section-card title="Documentos del candidato" [columns]="1" class="cand-docs-section">
+      <app-candidate-doc-panel
+        [docs]="c.documents"
+        [docUrls]="docUrls()">
+      </app-candidate-doc-panel>
+    </app-section-card>
 
     <!-- ── Modal: Activar colaborador ────────────────────────────────────── -->
     <app-modal [isOpen]="isActivateModal()" title="Activar Colaborador" (close)="closeActivate()">

@@ -16,6 +16,7 @@ const SECTIONS: { key: keyof HRAnalysis; label: string; icon: string }[] = [
   { key: 'interviewResults',     label: 'Resultados de entrevistas',  icon: 'record_voice_over' },
   { key: 'competencyEvaluation', label: 'Evaluación de competencias', icon: 'psychology'        },
   { key: 'identifiedRisks',      label: 'Riesgos identificados',      icon: 'warning'           },
+  { key: 'recommendationNotes',  label: 'Notas finales',              icon: 'comment'           },
 ];
 
 const REC_META: Record<HRRecommendation, { label: string; icon: string; cls: string }> = {
@@ -29,6 +30,7 @@ const REC_META: Record<HRRecommendation, { label: string; icon: string; cls: str
   selector: 'app-candidate-comparison-panel',
   imports: [CommonModule, EmptyState],
   templateUrl: './candidate-comparison-panel.html',
+  styleUrl: './candidate-comparison-panel.scss',
   host: { style: 'display:block' },
 })
 export class CandidateComparisonPanel {
@@ -65,5 +67,11 @@ export class CandidateComparisonPanel {
 
   cellValue(row: ComparisonRow, key: keyof HRAnalysis): string {
     return (row.analysis as any)?.[key] ?? '';
+  }
+
+  hasContent(row: ComparisonRow): boolean {
+    if (!row.analysis) return false;
+    return this.sections.some(s => !!(row.analysis as any)?.[s.key])
+        || row.analysis.salaryExpectation != null;
   }
 }

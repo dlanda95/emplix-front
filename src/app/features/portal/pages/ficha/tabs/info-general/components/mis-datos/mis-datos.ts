@@ -2,7 +2,7 @@ import { Component, inject, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { pastDateValidator } from '@shared/validators/date-range.validator';
-import { AppInput, AppSelect, ChangeRequestBar, Field, SectionCard } from '@shared/ui';
+import { AppInput, AppSelect, ChangeRequestBar, Field, LocationCascade, SectionCard } from '@shared/ui';
 import { CollaboratorService } from '@features/portal/services/collaborator.service';
 import { CollaboratorProfile } from '@features/portal/models/collaborator.model';
 import { ProfileUpdateRequest } from '@features/portal/models/profile-update.model';
@@ -16,7 +16,7 @@ const norm = (v: unknown): string | null =>
 
 @Component({
   selector: 'app-mis-datos',
-  imports: [AppInput, AppSelect, ChangeRequestBar, CommonModule, Field, ReactiveFormsModule, SectionCard],
+  imports: [AppInput, AppSelect, ChangeRequestBar, CommonModule, Field, LocationCascade, ReactiveFormsModule, SectionCard],
   templateUrl: './mis-datos.html',
 })
 export class MisDatos {

@@ -1,4 +1,4 @@
-import { Component, DestroyRef, OnInit, ViewChild, computed, inject, signal } from '@angular/core';
+import { Component, DestroyRef, ElementRef, HostListener, OnInit, ViewChild, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -9,9 +9,11 @@ import {
   LoadingSkeleton, Modal, Pagination, SectionCard,
   CreateCandidateModal, HRAnalysisPanel, CandidateComparisonPanel,
 } from '@shared/ui';
+import { CandidateApprovalPanel } from '@shared/components/ui/candidate-approval-panel/candidate-approval-panel';
 import { SelectionProcessesService, SelectionProcess } from '../../services/selection-processes.service';
 import { CandidatesService, CandidateSummary, CreateCandidateResult, DeptWithPositions, EmployeeMinimal } from '../../services/candidates.service';
 import { HRAnalysisService, HRAnalysis } from '../../services/hr-analysis.service';
+import { DomainsConfigService, PublicDomain } from '../../config/domains/domains.service';
 import {
   ApprovalsService,
   CandidateApprovalsResponse,
@@ -49,7 +51,7 @@ const PROCESS_STATUS_OPTIONS: SelectOption[] = [
     CommonModule, ReactiveFormsModule,
     AdminPageLayout, AppInput, AppSelect, Badge, Banner, Button, DataTable, EmptyState,
     LoadingSkeleton, Modal, Pagination, SectionCard,
-    CreateCandidateModal, HRAnalysisPanel, CandidateComparisonPanel,
+    CreateCandidateModal, HRAnalysisPanel, CandidateComparisonPanel, CandidateApprovalPanel,
     OnboardingLabelPipe, OnboardingVariantPipe,
     SelectionProcessStatusLabelPipe, SelectionProcessStatusVariantPipe,
   ],
@@ -75,6 +77,8 @@ export class SelectionProcessDetail implements OnInit {
   get isHRUser(): boolean     { return isHR(this.auth.currentUser()?.role); }
 
   private readonly hrAnalysisSvc = inject(HRAnalysisService);
+  private readonly domainsSvc    = inject(DomainsConfigService);
+  private readonly elRef         = inject(ElementRef);
 
   // ── Proceso ────────────────────────────────────────────────────────────────
   readonly process          = signal<SelectionProcess | null>(null);
@@ -187,7 +191,15 @@ export class SelectionProcessDetail implements OnInit {
   readonly isConverting           = signal(false);
   readonly convertError           = signal('');
 
-  readonly approvalCommentCtrl = new FormControl('');
+  // ── Modal: activar colaborador (asignar correo corporativo) ───────────────
+  readonly isActivateModalOpen      = signal(false);
+  readonly corporateEmailCtrl       = new FormControl('', [Validators.required]);
+  readonly activateError            = signal('');
+  readonly activateEmailWarning     = signal('');
+  readonly activateDomains          = signal<PublicDomain[]>([]);
+  readonly activateSelectedDomain   = signal<PublicDomain | null>(null);
+  readonly activateDomainOpen       = signal(false);
+  readonly activateMultiDomain      = computed(() => this.activateDomains().length > 1);
 
   private selectedCandidateId = '';
   private _processId          = '';
@@ -207,6 +219,16 @@ export class SelectionProcessDetail implements OnInit {
       this.depts.set(depts);
       this.allEmployees.set(employees);
     });
+
+    // Dominios de correo para asignación de correo corporativo
+    this.domainsSvc.list()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(list => {
+        const active = list.filter(d => d.isActive);
+        this.activateDomains.set(active);
+        const primary = active.find(d => d.isPrimary) ?? active[0] ?? null;
+        this.activateSelectedDomain.set(primary);
+      });
 
     // Cascade: al cambiar área → reset subárea y puesto
     this.editAreaCtrl.valueChanges.pipe(
@@ -273,7 +295,6 @@ export class SelectionProcessDetail implements OnInit {
     this.approvalData.set(null);
     this.approvalError.set('');
     this.convertError.set('');
-    this.approvalCommentCtrl.reset('');
     this.isApprovalModalOpen.set(true);
     this.loadApprovals();
   }
@@ -297,19 +318,18 @@ export class SelectionProcessDetail implements OnInit {
       });
   }
 
-  submitApproval(status: 'APPROVED' | 'REJECTED'): void {
+  submitApproval(status: 'APPROVED' | 'REJECTED', comment: string | null): void {
     this.isSubmittingApproval.set(true);
     this.approvalError.set('');
     const payload: SubmitApprovalPayload = {
       status,
-      comment: this.approvalCommentCtrl.value?.trim() || undefined,
+      comment: comment?.trim() || undefined,
     };
     this.approvalsSvc.submitApproval(this._processId, this.selectedCandidateId, payload)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: () => {
           this.isSubmittingApproval.set(false);
-          this.approvalCommentCtrl.reset('');
           this.loadApprovals();
         },
         error: err => {
@@ -320,14 +340,57 @@ export class SelectionProcessDetail implements OnInit {
   }
 
   convertToEmployee(): void {
-    if (!confirm('¿Confirmas convertir este candidato en colaborador activo?')) return;
+    this.activateError.set('');
+    this.corporateEmailCtrl.reset('');
+    this.isActivateModalOpen.set(true);
+  }
+
+  closeActivateModal(): void {
+    this.isActivateModalOpen.set(false);
+    this.activateError.set('');
+    this.activateEmailWarning.set('');
+    this.activateDomainOpen.set(false);
+    this.corporateEmailCtrl.reset('');
+  }
+
+  toggleActivateDomainMenu(): void {
+    if (this.activateMultiDomain()) this.activateDomainOpen.update(v => !v);
+  }
+
+  selectActivateDomain(d: PublicDomain): void {
+    this.activateSelectedDomain.set(d);
+    this.activateDomainOpen.set(false);
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    if (this.activateDomainOpen() && !this.elRef.nativeElement.contains(event.target)) {
+      this.activateDomainOpen.set(false);
+    }
+  }
+
+  confirmActivation(): void {
+    this.corporateEmailCtrl.markAsTouched();
+    if (this.corporateEmailCtrl.invalid) return;
+    const domain = this.activateSelectedDomain();
+    if (!domain) { this.activateError.set('Selecciona un dominio de correo.'); return; }
+    const corporateEmail = `${this.corporateEmailCtrl.value!.trim().toLowerCase()}@${domain.domain}`;
     this.isConverting.set(true);
-    this.convertError.set('');
-    this.approvalsSvc.convertToEmployee(this._processId, this.selectedCandidateId)
-      .pipe(takeUntilDestroyed(this.destroyRef))
+    this.activateError.set('');
+    this.approvalsSvc.convertToEmployee(
+      this._processId,
+      this.selectedCandidateId,
+      corporateEmail,
+    ).pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: () => {
+        next: res => {
           this.isConverting.set(false);
+          this.isActivateModalOpen.set(false);
+          if (!res.emailSent) {
+            this.activateEmailWarning.set(
+              `Colaborador activado, pero no se pudo enviar el correo de bienvenida (${res.emailError ?? 'error desconocido'}). Verifica la configuración de correo.`,
+            );
+          }
           this.closeApprovalModal();
           this.page.set(1);
           this.loadCandidates();
@@ -335,20 +398,12 @@ export class SelectionProcessDetail implements OnInit {
         },
         error: err => {
           this.isConverting.set(false);
-          this.convertError.set(err?.error?.message ?? 'Error al convertir el candidato.');
+          this.activateError.set(err?.error?.message ?? 'Error al activar al colaborador.');
         },
       });
   }
 
   // Checks if the current user is an approver in this process and hasn't approved yet
-  canApproveAsApprover(data: CandidateApprovalsResponse): boolean {
-    return data.approverLines.some(l => l.isCurrentUser);
-  }
-
-  myApprovalLine(data: CandidateApprovalsResponse) {
-    return data.approverLines.find(l => l.isCurrentUser) ?? null;
-  }
-
   // ── Editar proceso ─────────────────────────────────────────────────────────
 
   openAddCandidate(): void {

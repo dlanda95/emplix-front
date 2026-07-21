@@ -4,10 +4,10 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { forkJoin, switchMap } from 'rxjs';
-import { Badge, Banner, Button, Field, LoadingSkeleton, SectionCard, Modal, AppSelect, AppInput, AdminPageLayout, DocCard, FilterChips, EmptyState } from '@shared/ui';
+import { Badge, Banner, Button, Field, LoadingSkeleton, SectionCard, Modal, AppSelect, AppInput, AdminPageLayout } from '@shared/ui';
+import { CandidateDocPanel } from '@shared/components/ui/candidate-doc-panel/candidate-doc-panel';
 import { OnboardingLabelPipe, OnboardingVariantPipe } from '../onboarding-status.pipe';
-import type { SelectOption, FilterChipItem } from '@shared/ui';
-import { DOC_CATEGORIES, DocCategoryId, EmployeeDocument, filterDocsByCategory } from '@features/portal/models/document.model';
+import type { SelectOption } from '@shared/ui';
 import { CandidatesService } from '../../services/candidates.service';
 import type { CandidateDetail as CandidateDetailModel, DeptWithPositions, EmployeeMinimal } from '../../services/candidates.service';
 import { ApprovalsService } from '../../services/approvals.service';
@@ -20,7 +20,7 @@ import {
 
 @Component({
   selector: 'app-candidate-detail',
-  imports: [CommonModule, ReactiveFormsModule, Badge, Banner, Button, Field, LoadingSkeleton, SectionCard, Modal, AppSelect, AppInput, OnboardingLabelPipe, OnboardingVariantPipe, AdminPageLayout, DocCard, FilterChips, EmptyState],
+  imports: [CommonModule, ReactiveFormsModule, Badge, Banner, Button, Field, LoadingSkeleton, SectionCard, Modal, AppSelect, AppInput, OnboardingLabelPipe, OnboardingVariantPipe, AdminPageLayout, CandidateDocPanel],
   templateUrl: './candidate-detail.html',
   host: { style: 'display:block' },
 })
@@ -54,20 +54,6 @@ export class CandidateDetail implements OnInit {
 
   // Estado de aprobaciones del proceso vinculado
   readonly fullyApproved = signal(false);
-
-  // ── Documentos: filtro por categoría ────────────────────────────────────────
-  readonly activeDocCat = signal<DocCategoryId>('ALL');
-
-  readonly docCategoryChips = computed<FilterChipItem[]>(() => {
-    const docs = this.candidate()?.documents ?? [];
-    return DOC_CATEGORIES
-      .filter(cat => cat.type === 'ALL' ? docs.length > 0 : filterDocsByCategory(docs, cat.type).length > 0)
-      .map(cat => ({ id: cat.type, label: cat.label }));
-  });
-
-  readonly filteredDocs = computed<EmployeeDocument[]>(() =>
-    filterDocsByCategory(this.candidate()?.documents ?? [], this.activeDocCat())
-  );
 
   hrForm = this.fb.group({
     areaId:       [''],   // UI only — no se envía al backend
@@ -314,11 +300,6 @@ export class CandidateDetail implements OnInit {
     if (!statusOk) return false;
     if (c.selectionProcess) return this.fullyApproved();
     return true;
-  }
-
-  downloadDoc(doc: EmployeeDocument): void {
-    const url = this.docUrls()[doc.id];
-    if (url) window.open(url, '_blank', 'noopener');
   }
 
   back(): void {

@@ -27,6 +27,8 @@ export interface HRAnalysis {
   identifiedRisks:      string | null;
   recommendation:       HRRecommendation;
   recommendationNotes:  string | null;
+  salaryExpectation:    number | null;
+  createdByName:        string | null;
   documents:            HRAnalysisDoc[];
   updatedAt:            string;
 }
@@ -40,6 +42,7 @@ export interface UpsertHRAnalysisPayload {
   identifiedRisks?:      string | null;
   recommendation?:       HRRecommendation;
   recommendationNotes?:  string | null;
+  salaryExpectation?:    number | null;
 }
 
 @Injectable({ providedIn: 'root' })

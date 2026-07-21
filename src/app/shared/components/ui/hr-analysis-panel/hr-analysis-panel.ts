@@ -10,6 +10,9 @@ import { Button }          from '../button/button';
 import { LoadingSkeleton } from '../loading-skeleton/loading-skeleton';
 import { Modal }           from '../modal/modal';
 import { HRAnalysisService, HRAnalysis, HRAnalysisDoc, HRRecommendation, UpsertHRAnalysisPayload } from '@features/admin/services/hr-analysis.service';
+import { AppInput }    from '../input/input';
+import { AppSelect }   from '../app-select/app-select';
+import { AppTextarea } from '../app-textarea/app-textarea';
 import type { SelectOption } from '../app-select/app-select';
 
 const RECOMMENDATION_OPTIONS: SelectOption[] = [
@@ -37,8 +40,9 @@ const SECTIONS: { key: keyof UpsertHRAnalysisPayload; label: string; icon: strin
 
 @Component({
   selector: 'app-hr-analysis-panel',
-  imports: [CommonModule, ReactiveFormsModule, Banner, Button, LoadingSkeleton, Modal],
+  imports: [CommonModule, ReactiveFormsModule, AppInput, AppSelect, AppTextarea, Banner, Button, LoadingSkeleton, Modal],
   templateUrl: './hr-analysis-panel.html',
+  styleUrl: './hr-analysis-panel.scss',
   host: { style: 'display:block' },
 })
 export class HRAnalysisPanel {
@@ -99,6 +103,7 @@ export class HRAnalysisPanel {
     identifiedRisks:      [''],
     recommendation:       ['PENDING'],
     recommendationNotes:  [''],
+    salaryExpectation:    [null as number | null],
   });
 
   // ── API pública: abrir modal ──────────────────────────────────────────────
@@ -141,6 +146,7 @@ export class HRAnalysisPanel {
       identifiedRisks:      a?.identifiedRisks      ?? '',
       recommendation:       a?.recommendation       ?? 'PENDING',
       recommendationNotes:  a?.recommendationNotes  ?? '',
+      salaryExpectation:    a?.salaryExpectation    ?? null,
     });
     this.saveError.set('');
     this.isEditMode.set(true);
@@ -161,6 +167,7 @@ export class HRAnalysisPanel {
       identifiedRisks:      v.identifiedRisks      || null,
       recommendation:       (v.recommendation as HRRecommendation) || 'PENDING',
       recommendationNotes:  v.recommendationNotes  || null,
+      salaryExpectation:    v.salaryExpectation != null ? Number(v.salaryExpectation) : null,
     };
     this.svc.upsert(this.processId(), this.candidateId(), payload)
       .pipe(takeUntilDestroyed(this.destroyRef))

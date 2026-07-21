@@ -2,14 +2,14 @@ import { Component, inject, signal, effect, computed } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { pastDateValidator } from '@shared/validators/date-range.validator';
-import { AppInput, AppSelect, Banner, Button, SectionCard } from '@shared/ui';
+import { AppInput, AppSelect, Banner, Button, SectionCard, LocationCascade } from '@shared/ui';
 import { OnboardingService } from '../../services/onboarding.service';
 import { DOCUMENT_TYPE_OPTIONS, GENDER_OPTIONS, MARITAL_STATUS_OPTIONS,
          ACADEMIC_LEVEL_OPTIONS } from '@features/portal/models/catalog.model';
 
 @Component({
   selector: 'app-paso-identidad',
-  imports: [ReactiveFormsModule, AppInput, AppSelect, Banner, Button, SectionCard],
+  imports: [ReactiveFormsModule, AppInput, AppSelect, Banner, Button, SectionCard, LocationCascade],
   templateUrl: './paso-identidad.html',
 })
 export class PasoIdentidad {
