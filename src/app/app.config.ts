@@ -1,5 +1,12 @@
 import { ApplicationConfig, inject, provideAppInitializer } from '@angular/core';
-import { provideRouter } from '@angular/router';
+import {
+  provideRouter,
+  PreloadAllModules,
+  withPreloading,
+  withComponentInputBinding,
+  withViewTransitions,
+  withInMemoryScrolling,
+} from '@angular/router';
 import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { provideNativeDateAdapter } from '@angular/material/core';
@@ -15,7 +22,13 @@ import { routes } from './app.routes';
 export const appConfig: ApplicationConfig = {
   providers: [
     provideZonelessChangeDetection(),
-    provideRouter(routes),
+    provideRouter(
+      routes,
+      withPreloading(PreloadAllModules),
+      withComponentInputBinding(),
+      withViewTransitions({ skipInitialTransition: true }),
+      withInMemoryScrolling({ scrollPositionRestoration: 'top', anchorScrolling: 'enabled' }),
+    ),
     provideNativeDateAdapter(),
 
     provideHttpClient(

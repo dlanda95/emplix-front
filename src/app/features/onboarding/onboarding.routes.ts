@@ -1,10 +1,9 @@
 import { Routes } from '@angular/router';
-import { OnboardingShell } from './shell/onboarding-shell';
 
 export const ONBOARDING_ROUTES: Routes = [
   {
     path: '',
-    component: OnboardingShell,
+    loadComponent: () => import('./shell/onboarding-shell').then(m => m.OnboardingShell),
     children: [
       { path: '', redirectTo: 'identidad', pathMatch: 'full' },
       { path: 'identidad',  loadComponent: () => import('./steps/paso-identidad/paso-identidad').then(m => m.PasoIdentidad)   },
