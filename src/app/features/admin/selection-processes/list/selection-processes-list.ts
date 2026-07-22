@@ -55,6 +55,7 @@ export class SelectionProcessesList implements OnInit {
   readonly isCreateModalOpen = signal(false);
   readonly isCreating        = signal(false);
   readonly createError       = signal('');
+  readonly masterLoading     = signal(false);
 
   // Controles del formulario de creación (cascade: área → subárea → puesto)
   private readonly areaIdCtrl    = new FormControl('', Validators.required);
@@ -163,15 +164,6 @@ export class SelectionProcessesList implements OnInit {
       distinctUntilChanged(), takeUntilDestroyed(this.destroyRef),
     ).subscribe(() => this.createForm.patchValue({ positionId: '' }));
 
-    // Cargar datos maestros
-    this.candidatesSvc.listDepartments()
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(d => this.depts.set(d));
-
-    this.candidatesSvc.listActiveEmployees()
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(e => this.allEmployees.set(e));
-
     this.load();
   }
 
@@ -199,6 +191,24 @@ export class SelectionProcessesList implements OnInit {
     this.approverSearchCtrl.reset('');
     this.createError.set('');
     this.isCreateModalOpen.set(true);
+
+    // Carga datos maestros solo la primera vez que se abre el modal
+    if (this.depts().length === 0) {
+      this.masterLoading.set(true);
+      this.candidatesSvc.listDepartments()
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe(d => {
+          this.depts.set(d);
+          if (this.allEmployees().length > 0) this.masterLoading.set(false);
+        });
+
+      this.candidatesSvc.listActiveEmployees()
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe(e => {
+          this.allEmployees.set(e);
+          if (this.depts().length > 0) this.masterLoading.set(false);
+        });
+    }
   }
 
   closeCreateModal(): void { this.isCreateModalOpen.set(false); }

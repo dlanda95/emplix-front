@@ -105,7 +105,11 @@
     <app-banner variant="error" icon="error" [title]="createError()"></app-banner>
   }
 
-  <form [formGroup]="createForm" class="sp-create-form">
+  @if (masterLoading()) {
+    <app-loading-skeleton variant="text" [lines]="4"></app-loading-skeleton>
+  }
+
+  <form [formGroup]="createForm" class="sp-create-form" [style.display]="masterLoading() ? 'none' : ''">
 
     <!-- ── Sección: Ubicación del puesto ─────────────────────────────────── -->
     <div class="sp-create-form__section">
