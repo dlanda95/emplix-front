@@ -1,16 +1,14 @@
 import { Routes } from '@angular/router';
-import { PortalLayout } from './layout/portal-layout/portal-layout';
-import { Ficha }        from './pages/ficha/ficha';
 
 export const PORTAL_ROUTES: Routes = [
   {
     path: '',
-    component: PortalLayout,
+    loadComponent: () => import('./layout/portal-layout/portal-layout').then(m => m.PortalLayout),
     children: [
       { path: '', redirectTo: 'ficha', pathMatch: 'full' },
       {
         path: 'ficha',
-        component: Ficha,
+        loadComponent: () => import('./pages/ficha/ficha').then(m => m.Ficha),
         children: [
           { path: '', redirectTo: 'general', pathMatch: 'full' },
           {
